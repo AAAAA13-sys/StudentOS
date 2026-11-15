@@ -27,9 +27,15 @@ How Safe-to-Spend is calculated (differs from the dossier blueprint): money on h
 
 Quick expense categories are `Food`, `Transport`, `School`, `Other`, taken from the existing category list. Icons are Material icons, not emoji, per `DESIGN_SYSTEM.md`.
 
+Also done after the team review (2026-11-16): allowance day on the Safe-to-Spend card; notes can be saved without a title; an event's note is stored only when saved; delete asks first everywhere; backup and restore both run on the device.
+
 Still open, in suggested order:
-1. R8 minification in `app/android/app/build.gradle.kts`.
-2. Notes checklists, pinning and tints; exam countdown pills.
+1. Event reminders as local notifications (`reminder_minutes` is stored but nothing fires; needs a notification package and permission).
+2. Widget refresh without opening the app (the spending line can be a day old).
+3. Fixed bills for Safe-to-Spend; a repeating allowance schedule.
+4. Notes checklists and pinning; exam countdown pills.
+
+Warning for whoever works next: on 2026-11-16 around 07:25 GMT+8 this file and `PROGRESS.md` were overwritten with their pre-shift text by something other than Claude's session. Re-read both before writing to them, and do not write a stale copy back.
 
 Not verified: the widget's new spending line was not looked at on a home screen. It refreshes only when the app runs, so it can be a day old.
 

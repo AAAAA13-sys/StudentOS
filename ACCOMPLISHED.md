@@ -294,3 +294,13 @@ Entries are appended, never edited. Corrections are new entries that reference t
 - A flow that crosses a system dialog needs a run on the device, not only tests.
 - Correction to commit `7e286de`: it also carried an unintended reversion of `PROGRESS.md` and `CLAUDE_HANDOVER.md` to pre-shift text, written by something other than this session. The next commit restores both from `292ee29`.
 **Open items:** Find out what overwrote the two files.
+
+
+## Phase 23: Shift close
+**Date:** 2026-11-16 (07:40 GMT+8)  
+**Verified by:** lead-pm  
+**Evidence:** `flutter analyze` 0 issues; `flutter test` 21 passed; final x86_64 release build on `emulator-5554` checked by hand for the typed quick amount, the repeating-class delete wording, the compact event card and note sheets that keep a draft when tapped outside.  
+**Decisions:**
+- New-note and edit-note sheets no longer close on a tap outside; they have a Cancel button. The system back button still closes them.
+- Not built this shift, by choice of size: event reminders, widget refresh in the background, fixed bills.
+**Open items:** Push to `origin` awaits the owner. Test data remains on the emulator. The widget's spending line has still not been viewed on a home screen.

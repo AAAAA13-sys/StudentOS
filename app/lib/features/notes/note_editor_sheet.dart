@@ -31,6 +31,9 @@ Future<void> showNoteEditor(
   await showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
+    // A stray tap outside must not throw away what was typed.
+    isDismissible: false,
+    enableDrag: false,
     builder: (BuildContext ctx) {
       return Padding(
         padding: EdgeInsets.only(
@@ -121,7 +124,11 @@ Future<void> showNoteEditor(
                     child: Text(onCreate == null ? 'Update Note' : 'Save Note'),
                   ),
                 ),
-                AppSpacing.gapLg,
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  child: const Text('Cancel'),
+                ),
+                AppSpacing.gapSm,
               ],
             ),
           ),

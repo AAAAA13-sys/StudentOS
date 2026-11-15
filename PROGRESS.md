@@ -1,10 +1,11 @@
 # PROGRESS
 
 ## Current Phase
-Phase 18: Toolbar cleanup and team-review fixes
+Phase 23: Team-review fixes complete for this shift (ended 08:00 GMT+8, 2026-11-16)
 
 > **Direction (owner, 2026-11-15):** local, single-user app with no login and no server. See `AGENTS.md` Part 0.
-> Commits are local; push to `origin` awaits the owner's confirmation.
+> Commits are local (`ccf79db` onward); push to `origin` awaits the owner's confirmation.
+> Latest build on `emulator-5554` is the x86_64 release APK from the last commit. Test data is still on it.
 
 ## Completed Tasks
 | Task | Agent | Verified By | Evidence |
@@ -48,6 +49,7 @@ Phase 18: Toolbar cleanup and team-review fixes
 | Notes: title optional (first line is used); an event's note is stored only when saved | flutter-dev | lead-pm | `flutter analyze` 0 issues; `flutter test` 20 passed. Not looked at on the emulator |
 | Allowance day for Safe-to-Spend | flutter-dev | lead-pm | `flutter analyze` 0 issues; `flutter test` 21 passed. On `emulator-5554`: installed over existing data (database v2 to v3, data kept); setting the allowance day to Nov 19 changed the card from 250.00 to 1,150.00 with "4 days until allowance" (4,800 / 4 - 50) |
 | Restore fixed after a hand check; Notes flow seen on device | flutter-dev | lead-pm | On `emulator-5554`: a note saved with only body text took its first line as title. Restore first failed with "Could not read that file" (it used the closed menu's provider handle after the file picker returned); after the fix it restored 3 events, 2 transactions and 1 note and the note added after the backup was gone. `flutter analyze` 0 issues; `flutter test` 21 passed. The "1 note" wording fix was made after that device run |
+| Final device pass; note sheets keep drafts | flutter-dev | lead-pm | `flutter analyze` 0 issues; `flutter test` 21 passed. On `emulator-5554` with the final build: typed quick amount (37, Transport) saved and the card went 250.00 to 213.00; delete on a weekly class asked "Delete every Math101?"; event card shows the repeat pill and note button on one row; the New Note sheet stayed open after a tap outside and has Cancel |
 
 ## Blockers
 | Blocker | Since | Owner | Resolution Attempts |
