@@ -1,0 +1,441 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
+
+import '../../core/theme/app_spacing.dart';
+import '../../core/theme/app_theme.dart';
+import 'note.dart';
+import 'notes_controller.dart';
+
+class NotesScreen extends ConsumerStatefulWidget {
+  const NotesScreen({super.key});
+
+  @override
+  ConsumerState<NotesScreen> createState() => _NotesScreenState();
+}
+
+class _NotesScreenState extends ConsumerState<NotesScreen> {
+  final TextEditingController _searchController = TextEditingController();
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final AsyncValue<NotesState> notesState = ref.watch(notesControllerProvider);
+    final ColorScheme colors = context.colors;
+    final TextTheme textStyles = context.textStyles;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Lecture Notes'),
+        centerTitle: true,
+      ),
+      body: Column(
+        children: <Widget>[
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                hintText: 'Search notes, bodies, or tags...',
+                prefixIcon: const Icon(Icons.search_rounded),
+                suffixIcon: _searchController.text.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear_rounded),
+                        onPressed: () {
+                          _searchController.clear();
+                          ref.read(notesControllerProvider.notifier).search('');
+                        },
+                      )
+                    : null,
+                border: const OutlineInputBorder(borderRadius: AppRadius.medium),
+                contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: AppSpacing.md),
+              ),
+              onChanged: (String val) {
+                ref.read(notesControllerProvider.notifier).search(val.trim());
+              },
+            ),
+          ),
+          notesState.when(
+            loading: () => const Expanded(child: Center(child: CircularProgressIndicator())),
+            error: (Object err, _) => Expanded(
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Icon(Icons.error_outline_rounded, size: 48, color: colors.error),
+                    AppSpacing.gapMd,
+                    Text('Failed to load notes: $err'),
+                    AppSpacing.gapLg,
+                    FilledButton(
+                      onPressed: () => ref.read(notesControllerProvider.notifier).refresh(),
+                      child: const Text('Retry'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            data: (NotesState state) {
+              return Expanded(
+                child: Column(
+                  children: <Widget>[
+                    if (state.tags.isNotEmpty)
+                      SizedBox(
+                        height: 48,
+                        child: ListView.separated(
+                          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                          scrollDirection: Axis.horizontal,
+                          itemCount: state.tags.length + 1,
+                          separatorBuilder: (_, _) => AppSpacing.gapSm,
+                          itemBuilder: (BuildContext ctx, int index) {
+                            if (index == 0) {
+                              final bool isSelected = state.selectedTag == null;
+                              return FilterChip(
+                                label: const Text('All'),
+                                selected: isSelected,
+                                onSelected: (_) {
+                                  ref.read(notesControllerProvider.notifier).selectTag(null);
+                                },
+                              );
+                            }
+                            final String tag = state.tags[index - 1];
+                            final bool isSelected = state.selectedTag == tag;
+                            return FilterChip(
+                              label: Text('#$tag'),
+                              selected: isSelected,
+                              onSelected: (_) {
+                                ref
+                                    .read(notesControllerProvider.notifier)
+                                    .selectTag(isSelected ? null : tag);
+                              },
+                            );
+                          },
+                        ),
+                      ),
+                    Expanded(
+                      child: state.notes.isEmpty
+                          ? Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: <Widget>[
+                                  Icon(
+                                    Icons.note_alt_outlined,
+                                    size: 56,
+                                    color: colors.outlineVariant,
+                                  ),
+                                  AppSpacing.gapMd,
+                                  Text(
+                                    state.searchQuery.isNotEmpty
+                                        ? 'No notes match "${state.searchQuery}"'
+                                        : 'No notes yet',
+                                    style: textStyles.bodyMedium?.copyWith(
+                                      color: colors.onSurfaceVariant,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                          : RefreshIndicator(
+                              onRefresh: () =>
+                                  ref.read(notesControllerProvider.notifier).refresh(),
+                              child: ListView.separated(
+                                padding: AppSpacing.screen,
+                                itemCount: state.notes.length,
+                                separatorBuilder: (_, _) => AppSpacing.gapMd,
+                                itemBuilder: (BuildContext context, int index) {
+                                  final Note note = state.notes[index];
+                                  final DateTime? updated = note.updatedAt?.toLocal();
+
+                                  return Card(
+                                    elevation: 0,
+                                    color: colors.surfaceContainerLow,
+                                    shape: const RoundedRectangleBorder(
+                                      borderRadius: AppRadius.large,
+                                    ),
+                                    child: InkWell(
+                                      borderRadius: AppRadius.large,
+                                      onTap: () => _showEditNoteDialog(context, note),
+                                      child: Padding(
+                                        padding: AppSpacing.card,
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: <Widget>[
+                                            Row(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: <Widget>[
+                                                Expanded(
+                                                  child: Text(
+                                                    note.title,
+                                                    style: textStyles.titleMedium?.copyWith(
+                                                      fontWeight: FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                ),
+                                                IconButton(
+                                                  icon: Icon(
+                                                    Icons.delete_outline_rounded,
+                                                    size: 20,
+                                                    color: colors.outline,
+                                                  ),
+                                                  onPressed: () {
+                                                    ref
+                                                        .read(notesControllerProvider.notifier)
+                                                        .deleteNote(note.id);
+                                                  },
+                                                ),
+                                              ],
+                                            ),
+                                            if (note.body.isNotEmpty) ...<Widget>[
+                                              AppSpacing.gapSm,
+                                              Text(
+                                                note.body,
+                                                maxLines: 3,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: textStyles.bodyMedium?.copyWith(
+                                                  color: colors.onSurfaceVariant,
+                                                ),
+                                              ),
+                                            ],
+                                            AppSpacing.gapMd,
+                                            Row(
+                                              children: <Widget>[
+                                                if (updated != null)
+                                                  Text(
+                                                    DateFormat('MMM d, h:mm a').format(updated),
+                                                    style: textStyles.labelSmall?.copyWith(
+                                                      color: colors.outline,
+                                                    ),
+                                                  ),
+                                                const Spacer(),
+                                                if (note.tags.isNotEmpty)
+                                                  Wrap(
+                                                    spacing: 4,
+                                                    children: note.tags.map((String t) {
+                                                      return Container(
+                                                        padding: const EdgeInsets.symmetric(
+                                                          horizontal: 6,
+                                                          vertical: 2,
+                                                        ),
+                                                        decoration: BoxDecoration(
+                                                          color: colors.secondaryContainer,
+                                                          borderRadius: AppRadius.small,
+                                                        ),
+                                                        child: Text(
+                                                          '#$t',
+                                                          style: textStyles.labelSmall?.copyWith(
+                                                            color: colors.onSecondaryContainer,
+                                                          ),
+                                                        ),
+                                                      );
+                                                    }).toList(),
+                                                  ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _showAddNoteDialog(context),
+        child: const Icon(Icons.add_rounded),
+      ),
+    );
+  }
+
+  Future<void> _showAddNoteDialog(BuildContext context) async {
+    final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+    final TextEditingController titleController = TextEditingController();
+    final TextEditingController bodyController = TextEditingController();
+    final TextEditingController tagsController = TextEditingController();
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (BuildContext ctx) {
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(ctx).viewInsets.bottom,
+            left: AppSpacing.lg,
+            right: AppSpacing.lg,
+            top: AppSpacing.xl,
+          ),
+          child: Form(
+            key: formKey,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  Text(
+                    'New Note',
+                    style: ctx.textStyles.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                  ),
+                  AppSpacing.gapLg,
+                  TextFormField(
+                    controller: titleController,
+                    decoration: const InputDecoration(
+                      labelText: 'Title',
+                      border: OutlineInputBorder(borderRadius: AppRadius.medium),
+                    ),
+                    validator: (String? val) =>
+                        val == null || val.trim().isEmpty ? 'Title required' : null,
+                  ),
+                  AppSpacing.gapMd,
+                  TextFormField(
+                    controller: bodyController,
+                    maxLines: 5,
+                    decoration: const InputDecoration(
+                      labelText: 'Note content (plain text)',
+                      border: OutlineInputBorder(borderRadius: AppRadius.medium),
+                    ),
+                  ),
+                  AppSpacing.gapMd,
+                  TextFormField(
+                    controller: tagsController,
+                    decoration: const InputDecoration(
+                      labelText: 'Tags (comma separated, e.g. math, lecture)',
+                      border: OutlineInputBorder(borderRadius: AppRadius.medium),
+                    ),
+                  ),
+                  AppSpacing.gapXl,
+                  SizedBox(
+                    height: AppSizes.buttonHeight,
+                    child: FilledButton(
+                      onPressed: () {
+                        if (!formKey.currentState!.validate()) return;
+                        final List<String> tags = tagsController.text
+                            .split(',')
+                            .map((String s) => s.trim())
+                            .where((String s) => s.isNotEmpty)
+                            .toList();
+
+                        ref.read(notesControllerProvider.notifier).addNote(
+                              Note(
+                                id: 0,
+                                title: titleController.text.trim(),
+                                body: bodyController.text,
+                                tags: tags,
+                              ),
+                            );
+                        Navigator.pop(ctx);
+                      },
+                      child: const Text('Save Note'),
+                    ),
+                  ),
+                  AppSpacing.gapLg,
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _showEditNoteDialog(BuildContext context, Note note) async {
+    final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+    final TextEditingController titleController = TextEditingController(text: note.title);
+    final TextEditingController bodyController = TextEditingController(text: note.body);
+    final TextEditingController tagsController =
+        TextEditingController(text: note.tags.join(', '));
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (BuildContext ctx) {
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(ctx).viewInsets.bottom,
+            left: AppSpacing.lg,
+            right: AppSpacing.lg,
+            top: AppSpacing.xl,
+          ),
+          child: Form(
+            key: formKey,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  Text(
+                    'Edit Note',
+                    style: ctx.textStyles.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                  ),
+                  AppSpacing.gapLg,
+                  TextFormField(
+                    controller: titleController,
+                    decoration: const InputDecoration(
+                      labelText: 'Title',
+                      border: OutlineInputBorder(borderRadius: AppRadius.medium),
+                    ),
+                    validator: (String? val) =>
+                        val == null || val.trim().isEmpty ? 'Title required' : null,
+                  ),
+                  AppSpacing.gapMd,
+                  TextFormField(
+                    controller: bodyController,
+                    maxLines: 6,
+                    decoration: const InputDecoration(
+                      labelText: 'Note content',
+                      border: OutlineInputBorder(borderRadius: AppRadius.medium),
+                    ),
+                  ),
+                  AppSpacing.gapMd,
+                  TextFormField(
+                    controller: tagsController,
+                    decoration: const InputDecoration(
+                      labelText: 'Tags (comma separated)',
+                      border: OutlineInputBorder(borderRadius: AppRadius.medium),
+                    ),
+                  ),
+                  AppSpacing.gapXl,
+                  SizedBox(
+                    height: AppSizes.buttonHeight,
+                    child: FilledButton(
+                      onPressed: () {
+                        if (!formKey.currentState!.validate()) return;
+                        final List<String> tags = tagsController.text
+                            .split(',')
+                            .map((String s) => s.trim())
+                            .where((String s) => s.isNotEmpty)
+                            .toList();
+
+                        ref.read(notesControllerProvider.notifier).updateNote(
+                          note.id,
+                          <String, dynamic>{
+                            'title': titleController.text.trim(),
+                            'body': bodyController.text,
+                            'tags': tags,
+                          },
+                        );
+                        Navigator.pop(ctx);
+                      },
+                      child: const Text('Update Note'),
+                    ),
+                  ),
+                  AppSpacing.gapLg,
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
