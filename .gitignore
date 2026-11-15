@@ -1,4 +1,6 @@
 .env
 *.log
+*.sqlite
+*.sqlite-journal
 graphify-out/cache/
 .claude/settings.local.json
