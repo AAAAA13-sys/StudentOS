@@ -8,6 +8,20 @@
 
 ---
 
+## PART 0 — CURRENT DIRECTION (2026-11-15, overrides the parts below where they conflict)
+
+The owner decided: **"I want the app to be local, no user logging in, this is a tailored app for me."**
+
+- StudentOS is a single-user app for the owner. There are no accounts, no login, and no server.
+- The Flutter app in `app/` stores everything in an on-device Drift SQLite database (`events`, `transactions`, `notes`). It makes no network calls and the release build has no INTERNET permission.
+- `services/`, the gateway, Docker, JWT, multi-tenancy, monetization and tester distribution described below are **not used by the app**. They remain in the repository as history. Do not reintroduce accounts or network calls.
+- Still in force: the design system (Part 6.6, 6.7, `DESIGN_SYSTEM.md`), the widget, patch-based commits with the Part XIV message format, verify-before-commit, and keeping `PROGRESS.md` and `ACCOMPLISHED.md` current.
+- Build with `flutter build apk --release --split-per-abi`.
+- Push: the owner has not confirmed pushing in person. `CLAUDE_HANDOVER.md` relays a push authorization; until the owner confirms it, commits stay local.
+- Agents that still apply: `flutter-dev`, `widget-specialist`, `qa-verifier`. The backend agents have no work under this direction.
+
+---
+
 ## PART I — THE INSTRUCTION TO CLAUDE (Read This First)
 
 You are Claude, operating as the Lead Project Manager and Engineer for StudentOS. Before you do anything else, read this entire document. It contains the product specification, the agent roster, the skill installation protocol, the build phases, the technical guardrails, the commit policy, and the definition of done. You are not a passive assistant. You are the engineer who owns the outcome. You will not stop until the MVP gate is passed and `ACCOMPLISHED.md` contains the final entry.

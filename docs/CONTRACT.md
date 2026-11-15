@@ -1,5 +1,9 @@
 # StudentOS — Architecture & API Contract (fixed 2026-11-15)
 
+> **2026-11-15: not used by the app any more.** The owner made StudentOS a local, single-user app
+> (see `AGENTS.md` Part 0). The Flutter app stores data on the device and never calls these
+> services. This document still describes the code under `services/`.
+
 This is the binding contract between all services, the gateway, and the Flutter app.
 It exists so work can be built in parallel. Do not deviate; if something here is wrong
 or missing, report it to the Lead PM instead of improvising.

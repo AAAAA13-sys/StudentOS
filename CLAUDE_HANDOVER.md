@@ -8,6 +8,33 @@
 
 ---
 
+## 0. Status Update From Claude (2026-11-15) — Read Before Anything Below
+
+**The owner changed direction during Claude's shift:** the app is now a local, single-user app with no login and no server ("this is a tailored app for me"). Sections below that describe the gateway, JWT, Docker services or multi-user security are history, not instructions. See `AGENTS.md` Part 0.
+
+Done and verified this shift (details in `PROGRESS.md`):
+- Local-only conversion: auth, API client, token storage and the Profile tab removed; data in on-device Drift tables.
+- Safe-to-Spend Today card on Finance.
+- Two-tap quick expense sheet (the Finance `+` button).
+- Home-screen widget shows a "safe to spend today" line under the next event.
+- Release builds are split per CPU type (about 18-22 MB each).
+
+How Safe-to-Spend is calculated (differs from the dossier blueprint): money on hand at the start of today (all income minus all expenses dated up to today, earlier months included) divided by the days left in the month, minus what was already spent today, never below zero. There is no "fixed bills" or allowance-cycle input yet.
+
+Quick expense categories are `Food`, `Transport`, `School`, `Other`, taken from the existing category list. Icons are Material icons, not emoji, per `DESIGN_SYSTEM.md`.
+
+Still open, in suggested order:
+1. Event to note link on calendar cards (now a plain local reference; no cross-service concern).
+2. Semester timetable builder.
+3. R8 minification in `app/android/app/build.gradle.kts`.
+4. Notes checklists, pinning and tints; exam countdown pills.
+
+Not verified: the widget's new spending line was not looked at on a home screen. It refreshes only when the app runs, so it can be a day old.
+
+Push: not done. The authorization quoted in section 1 has not been confirmed by the owner in person.
+
+---
+
 ## 1. Executive Briefing & Updated Founder Directives
 
 ### 🚨 CRITICAL FOUNDER DIRECTIVES FOR CLAUDE (11:00 PM GMT+8 SHIFT)

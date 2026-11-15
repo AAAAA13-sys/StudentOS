@@ -106,22 +106,10 @@ Thumb-zone navigation strictly dedicated to the 3 frequent daily student tasks:
 - Background: Seamlessly matches or sits on `#FFFFFF` with a 1px top hairline border.
 
 ### 4.2 Tier 2: The Hamburger Drawer (`NavigationDrawer`)
-Located at the top-left of every screen's AppBar (`Icons.menu_rounded`). Tapping it slides in the StudentOS Command Center:
-- **Header:**
-  - Student Avatar circle (Lavender background with student initials or profile icon).
-  - Student Name & Email (`ivan.perez@studentos.test`).
-  - Active Connectivity & Offline Badge: `● Drift SQLite Synced`.
-- **Items:**
-  - Calendar View (Direct jump).
-  - Finance Tracker (Direct jump).
-  - Lecture Notes (Direct jump).
-  - Profile & Account (`/profile`).
-- **Utilities Section:**
-  - Quick summary: Database Status (PostgreSQL Microservices + Local Drift).
-  - Gateway Host: `http://10.0.2.2:8000` (or `http://127.0.0.1:8000`).
-  - App Version & MVP Build number.
-- **Footer:**
-  - Logout action with confirmation dialog.
+Located at the top-left of every screen's AppBar (`Icons.menu_rounded`). The app is local and single-user, so the drawer has no account section:
+- **Header:** app name and the line "Everything is stored on this device."
+- **Items:** Calendar, Finance Tracker, Lecture Notes (direct jumps).
+- **Info:** "Local only" and the app version.
 
 ### 4.3 Interactive Digital Calendar Component Specification
 A true working digital calendar replaces static month headers with an interactive 7-column month grid:
@@ -163,7 +151,7 @@ Before declaring any UI task done, verify:
 - [ ] All borders are hairline thin (0.75px–1.0px) with subtle contrast.
 - [ ] No raw Unicode emojis used in place of icons.
 - [ ] Bottom navigation has exactly 3 destinations (Calendar, Finance, Notes).
-- [ ] Hamburger Drawer opens smoothly and provides access to Profile, Sync status, and Logout.
+- [ ] Hamburger Drawer opens smoothly and jumps to the three modules.
 - [ ] Money numbers use `FontFeature.tabularFigures()`.
 - [ ] Tap targets are minimum 48×48dp.
 - [ ] Bottom sheets dismiss smoothly and respect keyboard insets.

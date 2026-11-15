@@ -5,6 +5,7 @@ import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.Context
 import android.content.Intent
+import android.view.View
 import android.widget.RemoteViews
 import es.antonborri.home_widget.HomeWidgetPlugin
 
@@ -21,6 +22,13 @@ class CalendarWidgetProvider : AppWidgetProvider() {
                 val time = widgetData.getString("event_time", "Enjoy your free time!")
                 setTextViewText(R.id.widget_event_title, title)
                 setTextViewText(R.id.widget_event_time, time)
+
+                val safeSpend = widgetData.getString("safe_spend", "") ?: ""
+                setTextViewText(R.id.widget_safe_spend, safeSpend)
+                setViewVisibility(
+                    R.id.widget_safe_spend,
+                    if (safeSpend.isEmpty()) View.GONE else View.VISIBLE
+                )
 
                 val pendingIntent = Intent(context, MainActivity::class.java).let { intent ->
                     intent.action = "OPEN_CALENDAR"

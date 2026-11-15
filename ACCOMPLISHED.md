@@ -204,3 +204,16 @@ Entries are appended, never edited. Corrections are new entries that reference t
 - Bottom bar is back to three destinations; the Profile tab is removed.
 - Backend services remain in the repository, unused by the app.
 **Open items:** Data previously stored on the server is not migrated. Push to `origin` awaits the owner's confirmation.
+
+
+## Phase 15: Finance for daily use
+**Date:** 2026-11-15
+**Verified by:** lead-pm
+**Evidence:** `flutter analyze` 0 issues; `flutter test` 12 passed; on `emulator-5554` an income of 4,800 followed by a two-tap 50 Food expense produced "250.00 safe to spend today" with 16 days left (4,800 / 16 - 50).
+**Decisions:**
+- Safe to spend = money on hand at the start of today (all dated transactions up to today, earlier months included) / days left in the month, minus today's spending, floored at zero. No fixed-bills input yet.
+- The Finance `+` button opens the quick expense sheet; the full form is one tap further.
+- Quick categories come from the existing list (Food, Transport, School, Other); Material icons, no emoji.
+- The widget shows the spending figure as last computed by the app; no background refresh.
+- Docs updated for the local-only direction: `AGENTS.md` Part 0, `CLAUDE_HANDOVER.md` section 0, `docs/CONTRACT.md` note, `DESIGN_SYSTEM.md` drawer, `app/README.md`.
+**Open items:** Widget spending line not viewed on a home screen. Push to `origin` awaits the owner's confirmation.

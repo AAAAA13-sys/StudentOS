@@ -137,6 +137,12 @@ void main() {
     await tester.tap(find.byType(FloatingActionButton));
     await tester.pumpAndSettle();
 
+    expect(find.text('Quick expense'), findsOneWidget);
+    expect(find.text('₱50'), findsOneWidget);
+
+    await tester.tap(find.text('Custom amount, income or another date'));
+    await tester.pumpAndSettle();
+
     expect(find.text('Add Transaction'), findsOneWidget);
   });
 

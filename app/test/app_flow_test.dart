@@ -6,6 +6,8 @@ import 'package:studentos/core/db/app_database.dart';
 import 'package:studentos/features/calendar/calendar_repository.dart';
 import 'package:studentos/features/calendar/event.dart';
 import 'package:studentos/features/finance/finance_repository.dart';
+import 'package:studentos/features/finance/finance_screen.dart';
+import 'package:studentos/features/finance/safe_to_spend.dart';
 import 'package:studentos/features/finance/transaction.dart';
 import 'package:studentos/features/notes/note.dart';
 import 'package:studentos/features/notes/notes_repository.dart';
@@ -205,6 +207,107 @@ void main() {
 
     await repo.deleteTransaction(november.first.id);
     expect((await repo.getSummary(month: '2026-11')).totalExpenses, 200.30);
+  });
+
+  test('Safe to spend spreads the balance over the days left', () {
+    // 3,000 on hand, 10 days left, nothing spent yet today.
+    SafeToSpend value = SafeToSpend.calculate(
+      balanceCents: 300000,
+      spentTodayCents: 0,
+      daysLeft: 10,
+    );
+    expect(value.leftToday, 300);
+
+    // 120 spent today: today's share of 300 has 180 left.
+    value = SafeToSpend.calculate(
+      balanceCents: 288000,
+      spentTodayCents: 12000,
+      daysLeft: 10,
+    );
+    expect(value.leftToday, 180);
+    expect(value.spentToday, 120);
+
+    // Overspent today: never negative.
+    value = SafeToSpend.calculate(
+      balanceCents: 250000,
+      spentTodayCents: 50000,
+      daysLeft: 10,
+    );
+    expect(value.leftToday, 0);
+    expect(value.hasFunds, isTrue);
+
+    // Nothing on hand.
+    value = SafeToSpend.calculate(
+      balanceCents: -5000,
+      spentTodayCents: 5000,
+      daysLeft: 3,
+    );
+    expect(value.leftToday, 0);
+    expect(value.hasFunds, isFalse);
+  });
+
+  test('Safe to spend counts earlier months, not future entries', () async {
+    final FinanceRepository repo = FinanceRepository(database);
+    Future<void> add(String type, double amount, DateTime on) {
+      return repo.createTransaction(
+        Transaction(
+          id: 0,
+          type: type,
+          amount: amount,
+          category: 'Other',
+          occurredOn: on,
+        ),
+      );
+    }
+
+    await add('income', 1000, DateTime(2026, 10, 20)); // carried over
+    await add('income', 2100, DateTime(2026, 11, 1));
+    await add('expense', 100, DateTime(2026, 11, 10));
+    await add('expense', 60, DateTime(2026, 11, 21)); // today
+    await add('income', 9999, DateTime(2026, 11, 25)); // not yet received
+
+    final SafeToSpend value = await repo.getSafeToSpend(
+      DateTime(2026, 11, 21, 14),
+    );
+    // 3,000 at the start of the day over 10 days = 300, minus 60 spent.
+    expect(value.daysLeft, 10);
+    expect(value.spentToday, 60);
+    expect(value.leftToday, 240);
+  });
+
+  testWidgets('Quick expense is logged in two taps', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [appDatabaseProvider.overrideWithValue(database)],
+        child: const MaterialApp(home: FinanceScreen()),
+      ),
+    );
+    Future<void> settle() async {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 100)),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    await settle();
+    expect(find.text('Safe to spend today'), findsOneWidget);
+
+    await tester.tap(find.byType(FloatingActionButton));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('₱50'));
+    await tester.pump();
+    await tester.tap(find.text('Transport'));
+    await settle();
+
+    final List<Transaction>? saved = await tester.runAsync(
+      () => FinanceRepository(database).getTransactions(),
+    );
+    expect(saved!.single.amount, 50);
+    expect(saved.single.category, 'Transport');
+    expect(saved.single.type, 'expense');
+    expect(find.text('Quick expense'), findsNothing);
   });
 
   test('Notes: search matches title, body and tags', () async {

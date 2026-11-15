@@ -1,12 +1,10 @@
 # PROGRESS
 
 ## Current Phase
-Phase 14: Local-only personal app (owner directive 2026-11-15)
+Phase 15: Finance for daily use, on the local-only app
 
-> **Direction change from the owner:** "I want the app to be local, no user logging in, this is a tailored app for me."
-> The Flutter app no longer talks to the gateway or has accounts. All data lives in the on-device Drift SQLite database (`studentos`).
-> This overrides the microservices/auth parts of `AGENTS.md` and the handover for the app. `services/` and Docker are untouched and unused by the app.
-> Push to `origin` is still unconfirmed by the owner; commits are local.
+> **Direction (owner, 2026-11-15):** local, single-user app with no login and no server. See `AGENTS.md` Part 0.
+> Commits are local; push to `origin` awaits the owner's confirmation.
 
 ## Completed Tasks
 | Task | Agent | Verified By | Evidence |
@@ -42,6 +40,7 @@ Phase 14: Local-only personal app (owner directive 2026-11-15)
 | Agency-Agents IT Department Technical Dossier | agency-backend-architect | lead-pm | Created `docs/IT_DEPARTMENT_ENGINEERING_DOSSIER.md`: Full-stack engineering audit, 60fps budget, API error contract, PostgreSQL indexing, and STRIDE/OWASP penetration test |
 | UI Anti-Slop Scan & Forensic APK Size Optimization | ui-anti-slop | lead-pm | Created `docs/UNSLOP_AND_APP_SIZE_AUDIT.md`: UI Finish Gate PASS; decompiled 60.3MB APK proving 58.93MB is multi-ABI packaging; authored 5-step playbook dropping size to ~18MB |
 | Local-only conversion (no login, no backend) | lead-pm | lead-pm | Removed auth, API client, token storage, profile; Drift tables `events`, `transactions`, `notes`; INTERNET permission removed from release manifest. `flutter analyze` 0 issues; `flutter test` 9 passed; x86_64 release APK (22.2MB, split-per-abi) on `emulator-5554`: opens on Calendar with no login, event saved and still present after force-stop and relaunch in airplane mode |
+| Safe-to-Spend Today card, two-tap quick expense, widget spending line | flutter-dev / widget-specialist | lead-pm | `flutter analyze` 0 issues; `flutter test` 12 passed. On `emulator-5554`: income 4,800 then quick expense 50 Food in two taps showed "250.00 safe to spend today, 16 days left, 50.00 spent today" (4,800 / 16 - 50). Widget line builds and installs but was not viewed on a home screen |
 
 ## Blockers
 | Blocker | Since | Owner | Resolution Attempts |
@@ -54,7 +53,7 @@ Phase 14: Local-only personal app (owner directive 2026-11-15)
 - **Gemini on Standby:** Gemini transitions to Standby Mode. Claude works his terminal shift starting at 11:00 PM GMT+8. When Claude exhausts credits/tokens, Claude updates `PROGRESS.md`, commits & pushes, and Gemini will resume seamlessly while the user sleeps.
 
 ## Next Action
-Owner to confirm what comes next. Candidates from the handover, now built on local data: Safe-to-Spend Today card, 2-tap fast expense logger. Finance and Notes were checked by tests only after the conversion, not by hand on the emulator.
+Event to note link on calendar cards, then the semester timetable builder. Also open: view the widget's spending line on a home screen; enable R8 minification; hand-check Notes on the emulator (covered by tests only since the local conversion).
 
 ## MVP & Strategic Checklist
 - [x] Calendar: create event → widget shows next event
@@ -72,3 +71,7 @@ Owner to confirm what comes next. Candidates from the handover, now built on loc
 - [x] Strategic Handover manual (`CLAUDE_HANDOVER.md`) updated with live emulator notice & remote push authorization
 - [x] Remote push permission granted by founder for Claude's shift
 - [x] Gemini placed on Standby Mode ready to relieve Claude when credits expire
+- [x] Local-only app: no login, no server, data on device
+- [x] Safe-to-Spend Today card
+- [x] Two-tap quick expense
+- [ ] Widget spending line viewed on a home screen

@@ -5,7 +5,10 @@ import 'package:intl/intl.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_theme.dart';
 import 'finance_controller.dart';
+import 'finance_repository.dart';
 import 'transaction.dart';
+import 'widgets/quick_expense_sheet.dart';
+import 'widgets/safe_to_spend_card.dart';
 
 class FinanceScreen extends ConsumerWidget {
   const FinanceScreen({super.key});
@@ -97,6 +100,10 @@ class FinanceScreen extends ConsumerWidget {
                           ],
                         ),
                         AppSpacing.gapMd,
+                        if (state.safeToSpend != null) ...<Widget>[
+                          SafeToSpendCard(value: state.safeToSpend!),
+                          AppSpacing.gapMd,
+                        ],
                         // Balance Summary Card
                         Card(
                           elevation: 0,
@@ -372,10 +379,42 @@ class FinanceScreen extends ConsumerWidget {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _showAddTransactionDialog(context, ref),
+        tooltip: 'Quick expense',
+        onPressed: () => _quickLog(context, ref),
         child: const Icon(Icons.add_rounded),
       ),
     );
+  }
+
+  Future<void> _quickLog(BuildContext context, WidgetRef ref) async {
+    final QuickExpenseResult? result = await showQuickExpenseSheet(context);
+    if (!context.mounted) return;
+    switch (result) {
+      case QuickExpense(:final double amount, :final String category):
+        await ref
+            .read(financeControllerProvider.notifier)
+            .addTransaction(
+              Transaction(
+                id: 0,
+                type: 'expense',
+                amount: amount,
+                category: category,
+                occurredOn: DateTime.now(),
+              ),
+            );
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            SnackBar(
+              content: Text('Logged ₱${amount.toStringAsFixed(0)} · $category'),
+            ),
+          );
+      case QuickExpenseMoreOptions():
+        await _showAddTransactionDialog(context, ref);
+      case null:
+        break;
+    }
   }
 
   Future<void> _showAddTransactionDialog(
@@ -389,17 +428,7 @@ class FinanceScreen extends ConsumerWidget {
     String category = 'Food';
     DateTime occurredOn = DateTime.now();
 
-    final List<String> categories =
-        ref.read(financeControllerProvider).value?.categories ??
-            const <String>[
-              'Food',
-              'Transport',
-              'School',
-              'Entertainment',
-              'Allowance',
-              'Part-time Job',
-              'Other',
-            ];
+    const List<String> categories = FinanceRepository.categories;
 
     await showModalBottomSheet<void>(
       context: context,

@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/db/app_database.dart';
+import 'safe_to_spend.dart';
 import 'transaction.dart';
 
 class FinanceRepository {
@@ -59,10 +60,7 @@ class FinanceRepository {
             type: transaction.type,
             amountCents: (transaction.amount * 100).round(),
             category: transaction.category,
-            occurredOn:
-                '${day.year.toString().padLeft(4, '0')}-'
-                '${day.month.toString().padLeft(2, '0')}-'
-                '${day.day.toString().padLeft(2, '0')}',
+            occurredOn: _dateKey(day),
             note: Value(transaction.note),
           ),
         );
@@ -72,6 +70,40 @@ class FinanceRepository {
     return (_db.delete(
       _db.transactionRows,
     )..where((t) => t.id.equals(id))).go();
+  }
+
+  /// Today's spending room, from every transaction dated up to [today].
+  Future<SafeToSpend> getSafeToSpend(DateTime today) async {
+    final String key = _dateKey(today);
+    final List<TransactionRow> rows = await (_db.select(
+      _db.transactionRows,
+    )..where((t) => t.occurredOn.isSmallerOrEqualValue(key))).get();
+
+    int balance = 0;
+    int spentToday = 0;
+    for (final TransactionRow row in rows) {
+      if (row.type == 'income') {
+        balance += row.amountCents;
+      } else {
+        balance -= row.amountCents;
+        if (row.occurredOn == key) {
+          spentToday += row.amountCents;
+        }
+      }
+    }
+
+    final int lastDay = DateTime(today.year, today.month + 1, 0).day;
+    return SafeToSpend.calculate(
+      balanceCents: balance,
+      spentTodayCents: spentToday,
+      daysLeft: lastDay - today.day + 1,
+    );
+  }
+
+  static String _dateKey(DateTime day) {
+    return '${day.year.toString().padLeft(4, '0')}-'
+        '${day.month.toString().padLeft(2, '0')}-'
+        '${day.day.toString().padLeft(2, '0')}';
   }
 
   /// Totals for [month] (`YYYY-MM`), summed in centavos.
