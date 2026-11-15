@@ -31,13 +31,13 @@ Also done after the team review (2026-11-16): allowance day on the Safe-to-Spend
 
 Still open, in suggested order:
 1. Event reminders as local notifications (`reminder_minutes` is stored but nothing fires; needs a notification package and permission).
-2. Widget refresh without opening the app (the spending line can be a day old).
+2. Widget: the spending line is stamped with its date and hidden once that day is over (the widget re-checks every 30 minutes), so it is never a day old, but it only reappears after the app is opened. Not yet viewed on a home screen. A true background recompute is still open.
 3. Fixed bills for Safe-to-Spend; a repeating allowance schedule.
 4. Notes checklists and pinning; exam countdown pills.
 
 Warning for whoever works next: on 2026-11-16 around 07:25 GMT+8 this file and `PROGRESS.md` were overwritten with their pre-shift text by something other than Claude's session. Re-read both before writing to them, and do not write a stale copy back.
 
-Not verified: the widget's new spending line was not looked at on a home screen. It refreshes only when the app runs, so it can be a day old.
+Not verified: the widget's spending line has not been looked at on a home screen.
 
 Push: not done. The authorization quoted in section 1 has not been confirmed by the owner in person.
 

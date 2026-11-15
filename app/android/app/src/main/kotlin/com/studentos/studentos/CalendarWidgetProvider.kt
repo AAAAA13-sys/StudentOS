@@ -7,6 +7,9 @@ import android.content.Context
 import android.content.Intent
 import android.view.View
 import android.widget.RemoteViews
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import es.antonborri.home_widget.HomeWidgetPlugin
 
 class CalendarWidgetProvider : AppWidgetProvider() {
@@ -23,7 +26,12 @@ class CalendarWidgetProvider : AppWidgetProvider() {
                 setTextViewText(R.id.widget_event_title, title)
                 setTextViewText(R.id.widget_event_time, time)
 
-                val safeSpend = widgetData.getString("safe_spend", "") ?: ""
+                // The figure is for one day only; yesterday's must not be shown.
+                val safeSpendDay = widgetData.getString("safe_spend_date", "")
+                val today = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
+                val isToday = safeSpendDay == today
+                val safeSpend =
+                    if (isToday) widgetData.getString("safe_spend", "") ?: "" else ""
                 setTextViewText(R.id.widget_safe_spend, safeSpend)
                 setViewVisibility(
                     R.id.widget_safe_spend,

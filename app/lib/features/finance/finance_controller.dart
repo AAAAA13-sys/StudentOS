@@ -58,8 +58,9 @@ class FinanceController extends AsyncNotifier<FinanceState> {
     );
   }
 
-  /// Shows today's spending room on the home-screen widget. It is only
-  /// refreshed when the app runs, so it can be a day old.
+  /// Shows today's spending room on the home-screen widget. The app is the
+  /// only thing that computes it, so it is stamped with today's date and the
+  /// widget hides it once that day is over.
   Future<void> _syncWidget(SafeToSpend value) async {
     try {
       await HomeWidget.saveWidgetData<String>(
@@ -67,6 +68,10 @@ class FinanceController extends AsyncNotifier<FinanceState> {
         value.hasFunds
             ? '₱${NumberFormat('#,##0').format(value.leftToday)} safe to spend today'
             : '',
+      );
+      await HomeWidget.saveWidgetData<String>(
+        'safe_spend_date',
+        DateFormat('yyyy-MM-dd').format(DateTime.now()),
       );
       await HomeWidget.updateWidget(
         name: 'CalendarWidgetProvider',

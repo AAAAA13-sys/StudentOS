@@ -304,3 +304,13 @@ Entries are appended, never edited. Corrections are new entries that reference t
 - New-note and edit-note sheets no longer close on a tap outside; they have a Cancel button. The system back button still closes them.
 - Not built this shift, by choice of size: event reminders, widget refresh in the background, fixed bills.
 **Open items:** Push to `origin` awaits the owner. Test data remains on the emulator. The widget's spending line has still not been viewed on a home screen.
+
+
+## Phase 24: Widget drops a stale spending figure
+**Date:** 2026-11-16 (07:45 GMT+8)  
+**Verified by:** lead-pm  
+**Evidence:** `flutter analyze` 0 issues; `flutter test` 21 passed; release build installs and launches on `emulator-5554` with no crash logged. Not verified: the widget was not placed on a home screen, so the behaviour itself was not seen.  
+**Decisions:**
+- The app writes the date with the figure; the widget shows the figure only on that date and re-checks every 30 minutes (`updatePeriodMillis`).
+- Showing nothing is preferred to showing yesterday's number.
+**Open items:** View the widget on a home screen across a date change.
