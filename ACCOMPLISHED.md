@@ -283,3 +283,14 @@ Entries are appended, never edited. Corrections are new entries that reference t
 - The allowance day is one date kept in a new `settings` table; once it passes, the card falls back to the end of the month until a new date is set.
 - Backups include settings; older backups without them still restore.
 **Open items:** No repeating allowance schedule and no fixed bills yet.
+
+
+## Phase 22: Restore fixed on device
+**Date:** 2026-11-16  
+**Verified by:** lead-pm  
+**Evidence:** On `emulator-5554`, Restore with the saved backup file first failed with "Could not read that file"; after the fix it restored 3 events, 2 transactions and 1 note and removed a note created after the backup. `flutter analyze` 0 issues; `flutter test` 21 passed.  
+**Decisions:**
+- Correction to Phase 18: restore passed its unit tests but did not work in the app, because the menu closes before the file picker returns and the code kept using the closed menu's provider handle. The service and container are now taken before the menu closes.
+- A flow that crosses a system dialog needs a run on the device, not only tests.
+- Correction to commit `7e286de`: it also carried an unintended reversion of `PROGRESS.md` and `CLAUDE_HANDOVER.md` to pre-shift text, written by something other than this session. The next commit restores both from `292ee29`.
+**Open items:** Find out what overwrote the two files.
