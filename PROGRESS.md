@@ -45,6 +45,7 @@ Phase 18: Toolbar cleanup and team-review fixes
 | Class schedule builder | flutter-dev | lead-pm | `flutter analyze` 0 issues; `flutter test` 15 passed. On `emulator-5554`: "Add a class" with Mon and Wed created two weekly events, dots appeared on every Monday and Wednesday from Nov 16, and the shortened "Nov 2026" title fits beside the new toolbar button |
 | Team review (UI designer, UX architect, product manager) and toolbar cleanup | lead-pm | lead-pm | `flutter analyze` 0 issues; `flutter test` 17 passed. Seen on `emulator-5554` after a reboot: Calendar bar (title, Today, More menu), month row above the grid, "This day" list, Notes bar, menu with Back up / Restore. NOT seen: Finance screen and the backup file dialog (emulator screen capture froze) |
 | Edit a transaction; typed amount in quick expense; Finance and backup seen on device | flutter-dev | lead-pm | `flutter analyze` 0 issues; `flutter test` 19 passed. On `emulator-5554` after a second reboot: Finance with the new bar and cards; tapping a transaction opened "Edit Transaction" prefilled; Back up saved `studentos-backup-2026-11-15.json` (1,468 bytes, real rows) to Downloads. Restore and the typed quick amount are covered by tests only |
+| Notes: title optional (first line is used); an event's note is stored only when saved | flutter-dev | lead-pm | `flutter analyze` 0 issues; `flutter test` 20 passed. Not looked at on the emulator |
 
 ## Blockers
 | Blocker | Since | Owner | Resolution Attempts |
@@ -58,7 +59,7 @@ Phase 18: Toolbar cleanup and team-review fixes
 
 ## Next Action
 1. Run Restore by hand once (tests cover it; the file dialog path was not exercised on device).
-2. Remaining review items, in order: event reminders as local notifications (`reminder_minutes` is stored but nothing fires); allowance-cycle setting for Safe-to-Spend; widget refresh without opening the app; note title defaulting to the first line; create the event note on first save rather than on tap.
+2. Remaining review items, in order: event reminders as local notifications (`reminder_minutes` is stored but nothing fires); allowance-cycle setting for Safe-to-Spend; widget refresh without opening the app.
 
 ## Team Review Verdict (2026-11-16)
 Three reviewers looked at the screens. Agreed and done: one shared top bar with left-aligned tab names; Calendar keeps only Today and a More menu (Add a class); month switching sits above the grid and by swipe; one "+" per screen; Calendar opens on today's events; delete asks first everywhere and says so when it removes a whole repeating series; cards share one style; lists clear the floating button; backup and restore exist.

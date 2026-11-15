@@ -512,25 +512,31 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
       );
   }
 
-  /// Opens the note attached to [event], creating and attaching one titled
-  /// after the event when there is none (or it was deleted).
+  /// Opens the note attached to [event]. When there is none (or it was
+  /// deleted) a draft titled after the event opens instead; it is stored and
+  /// attached only when saved.
   Future<void> _openNote(CalendarEvent event) async {
     final NotesRepository notes = ref.read(notesRepositoryProvider);
-    Note? note = event.noteId == null
+    final Note? note = event.noteId == null
         ? null
         : await notes.getNote(event.noteId!);
-    if (note == null) {
-      final int noteId = await notes.createNote(
-        Note(id: 0, title: event.title, body: '', tags: const <String>[]),
-      );
-      await ref
-          .read(calendarControllerProvider.notifier)
-          .updateEvent(event.withIds(id: event.id, noteId: noteId));
-      ref.invalidate(notesControllerProvider);
-      note = await notes.getNote(noteId);
+    if (!mounted) return;
+    if (note != null) {
+      await showNoteEditor(context, ref, note);
+      return;
     }
-    if (note == null || !mounted) return;
-    await showNoteEditor(context, ref, note);
+    await showNoteEditor(
+      context,
+      ref,
+      Note(id: 0, title: event.title, body: '', tags: const <String>[]),
+      onCreate: (Note draft) async {
+        final int noteId = await notes.createNote(draft);
+        await ref
+            .read(calendarControllerProvider.notifier)
+            .updateEvent(event.withIds(id: event.id, noteId: noteId));
+        ref.invalidate(notesControllerProvider);
+      },
+    );
   }
 
   /// Builds the 7-column interactive digital month calendar grid.

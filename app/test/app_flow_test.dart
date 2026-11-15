@@ -284,7 +284,7 @@ void main() {
     expect(saved.every((e) => e.title == 'Chem 101'), isTrue);
   });
 
-  testWidgets('Add note on an event creates, attaches and opens a note', (
+  testWidgets('Add note on an event attaches a note once it is saved', (
     WidgetTester tester,
   ) async {
     await tester.runAsync(
@@ -313,7 +313,17 @@ void main() {
     await tester.tap(find.text('Add note'));
     await settle();
 
-    expect(find.text('Edit Note'), findsOneWidget);
+    // Nothing is stored until the draft is saved.
+    expect(find.text('New Note'), findsOneWidget);
+    expect(
+      await tester.runAsync(() => NotesRepository(database).getNotes()),
+      isEmpty,
+    );
+    await tester.ensureVisible(find.text('Save Note'));
+    await tester.tap(find.text('Save Note'));
+    await settle();
+
+    expect(find.text('Open note'), findsOneWidget);
     final CalendarEvent? event = await tester.runAsync(
       () async => (await CalendarRepository(database).getEvents()).single,
     );
@@ -501,6 +511,13 @@ void main() {
     expect(saved, hasLength(1));
     expect(saved!.single.amount, 50);
     expect(saved.single.note, 'Typo');
+  });
+
+  test('A note without a title is named after its first line', () {
+    expect(noteTitleFor('  Physics  ', 'body'), 'Physics');
+    expect(noteTitleFor('', 'Quiz on Friday\nchapters 3-4'), 'Quiz on Friday');
+    expect(noteTitleFor(' ', '  \n '), isNull);
+    expect(noteTitleFor('', 'x' * 80)!.length, 61);
   });
 
   test('Notes: search matches title, body and tags', () async {

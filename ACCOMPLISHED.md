@@ -263,3 +263,13 @@ Entries are appended, never edited. Corrections are new entries that reference t
 - Quick expense has an "Other" tile with an inline amount field, so non-preset amounts stay two steps.
 - After a quick expense the screen returns to the current month, where the entry is.
 **Open items:** Restore has not been run by hand. The emulator needed two reboots tonight (black window, frozen capture) after the host slept.
+
+
+## Phase 20: Faster note capture
+**Date:** 2026-11-16  
+**Verified by:** lead-pm  
+**Evidence:** `flutter analyze` 0 issues; `flutter test` 20 passed. Not checked on the emulator.  
+**Decisions:**
+- A note needs a title or some text; with no title, the first line (up to 60 characters) becomes the title.
+- "Add note" on an event opens a draft; the note is created and attached only on save, so backing out leaves nothing behind.
+**Open items:** Look at both flows on the emulator.

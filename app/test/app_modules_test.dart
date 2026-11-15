@@ -178,7 +178,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('New Note'), findsOneWidget);
-    expect(find.text('Title'), findsOneWidget);
+    expect(find.text('Title (optional)'), findsOneWidget);
     expect(find.text('Note content (plain text)'), findsOneWidget);
   });
 }

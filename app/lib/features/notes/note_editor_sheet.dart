@@ -7,11 +7,16 @@ import 'note.dart';
 import 'notes_controller.dart';
 
 /// Opens [note] for editing in a bottom sheet.
+///
+/// With [onCreate], [note] is a draft that is not stored yet: saving calls
+/// [onCreate] with the finished note instead of updating one, and closing
+/// the sheet without saving stores nothing.
 Future<void> showNoteEditor(
   BuildContext context,
   WidgetRef ref,
-  Note note,
-) async {
+  Note note, {
+  Future<void> Function(Note draft)? onCreate,
+}) async {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   final TextEditingController titleController = TextEditingController(
     text: note.title,
@@ -42,7 +47,7 @@ Future<void> showNoteEditor(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
                 Text(
-                  'Edit Note',
+                  onCreate == null ? 'Edit Note' : 'New Note',
                   style: ctx.textStyles.titleLarge?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -51,11 +56,12 @@ Future<void> showNoteEditor(
                 TextFormField(
                   controller: titleController,
                   decoration: const InputDecoration(
-                    labelText: 'Title',
+                    labelText: 'Title (optional)',
                     border: OutlineInputBorder(borderRadius: AppRadius.medium),
                   ),
-                  validator: (String? val) => val == null || val.trim().isEmpty
-                      ? 'Title required'
+                  validator: (String? val) =>
+                      noteTitleFor(val ?? '', bodyController.text) == null
+                      ? 'Write a title or some text'
                       : null,
                 ),
                 AppSpacing.gapMd,
@@ -87,17 +93,32 @@ Future<void> showNoteEditor(
                           .where((String s) => s.isNotEmpty)
                           .toList();
 
-                      ref
-                          .read(notesControllerProvider.notifier)
-                          .updateNote(
-                            note.id,
-                            title: titleController.text.trim(),
+                      final String title = noteTitleFor(
+                        titleController.text,
+                        bodyController.text,
+                      )!;
+                      if (onCreate != null) {
+                        onCreate(
+                          Note(
+                            id: 0,
+                            title: title,
                             body: bodyController.text,
                             tags: tags,
-                          );
+                          ),
+                        );
+                      } else {
+                        ref
+                            .read(notesControllerProvider.notifier)
+                            .updateNote(
+                              note.id,
+                              title: title,
+                              body: bodyController.text,
+                              tags: tags,
+                            );
+                      }
                       Navigator.pop(ctx);
                     },
-                    child: const Text('Update Note'),
+                    child: Text(onCreate == null ? 'Update Note' : 'Save Note'),
                   ),
                 ),
                 AppSpacing.gapLg,

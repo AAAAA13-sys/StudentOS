@@ -350,14 +350,14 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
                   TextFormField(
                     controller: titleController,
                     decoration: const InputDecoration(
-                      labelText: 'Title',
+                      labelText: 'Title (optional)',
                       border: OutlineInputBorder(
                         borderRadius: AppRadius.medium,
                       ),
                     ),
                     validator: (String? val) =>
-                        val == null || val.trim().isEmpty
-                        ? 'Title required'
+                        noteTitleFor(val ?? '', bodyController.text) == null
+                        ? 'Write a title or some text'
                         : null,
                   ),
                   AppSpacing.gapMd,
@@ -398,7 +398,10 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
                             .addNote(
                               Note(
                                 id: 0,
-                                title: titleController.text.trim(),
+                                title: noteTitleFor(
+                                  titleController.text,
+                                  bodyController.text,
+                                )!,
                                 body: bodyController.text,
                                 tags: tags,
                               ),
