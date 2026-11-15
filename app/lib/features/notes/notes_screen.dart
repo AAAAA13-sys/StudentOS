@@ -31,6 +31,11 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.menu_rounded),
+          tooltip: 'Open Menu',
+          onPressed: () => Scaffold.of(context).openDrawer(),
+        ),
         title: const Text('Lecture Notes'),
         centerTitle: true,
       ),

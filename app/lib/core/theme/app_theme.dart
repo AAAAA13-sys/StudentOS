@@ -3,22 +3,23 @@ import 'package:flutter/material.dart';
 import 'app_colors.dart';
 import 'app_spacing.dart';
 
-/// Builds the light and dark Material 3 themes from the DESIGN.md tokens.
+/// Builds the light and dark Material 3 themes following DESIGN_SYSTEM.md.
+/// Implements the Anti-Slop "Hint of Lavender" aesthetic with high-craft hairlines.
 abstract final class AppTheme {
   static ThemeData get light => _build(_lightScheme, ModuleColors.light);
 
   static ThemeData get dark => _build(_darkScheme, ModuleColors.dark);
 
   static final ColorScheme _lightScheme =
-      ColorScheme.fromSeed(seedColor: AppColors.cyan700).copyWith(
-        primary: AppColors.cyan700,
+      ColorScheme.fromSeed(seedColor: AppColors.lavender600).copyWith(
+        primary: AppColors.lavender700,
         onPrimary: AppColors.white,
-        primaryContainer: AppColors.cyan100,
-        onPrimaryContainer: AppColors.cyan900,
-        secondary: AppColors.emerald700,
+        primaryContainer: AppColors.lavender100,
+        onPrimaryContainer: AppColors.lavender950,
+        secondary: AppColors.lavender600,
         onSecondary: AppColors.white,
-        secondaryContainer: AppColors.emerald100,
-        onSecondaryContainer: AppColors.emerald900,
+        secondaryContainer: AppColors.lavender50,
+        onSecondaryContainer: AppColors.lavender900,
         tertiary: AppColors.amber700,
         onTertiary: AppColors.white,
         tertiaryContainer: AppColors.amber100,
@@ -27,35 +28,35 @@ abstract final class AppTheme {
         onError: AppColors.white,
         errorContainer: AppColors.red100,
         onErrorContainer: AppColors.red900,
-        surface: AppColors.slate50,
+        surface: AppColors.lavenderMist,
         onSurface: AppColors.slate900,
         onSurfaceVariant: AppColors.slate600,
         surfaceContainerLowest: AppColors.white,
-        surfaceContainerLow: AppColors.slate100,
+        surfaceContainerLow: AppColors.lavender50,
         surfaceContainer: AppColors.slate150,
         surfaceContainerHigh: AppColors.slate200,
         surfaceContainerHighest: AppColors.slate250,
         outline: AppColors.slate500,
-        outlineVariant: AppColors.slate300,
+        outlineVariant: AppColors.hairlineLight,
         inverseSurface: AppColors.slate800,
         onInverseSurface: AppColors.slate100,
-        inversePrimary: AppColors.cyan300,
+        inversePrimary: AppColors.lavender300,
         surfaceTint: Colors.transparent,
       );
 
   static final ColorScheme _darkScheme =
       ColorScheme.fromSeed(
-        seedColor: AppColors.cyan700,
+        seedColor: AppColors.lavender600,
         brightness: Brightness.dark,
       ).copyWith(
-        primary: AppColors.cyan300,
-        onPrimary: AppColors.cyan950,
-        primaryContainer: AppColors.cyan800,
-        onPrimaryContainer: AppColors.cyan100,
-        secondary: AppColors.emerald300,
-        onSecondary: AppColors.emerald950,
-        secondaryContainer: AppColors.emerald800,
-        onSecondaryContainer: AppColors.emerald100,
+        primary: AppColors.lavender400,
+        onPrimary: AppColors.lavender950,
+        primaryContainer: AppColors.lavender900,
+        onPrimaryContainer: AppColors.lavender100,
+        secondary: AppColors.lavender300,
+        onSecondary: AppColors.lavender950,
+        secondaryContainer: AppColors.lavender950,
+        onSecondaryContainer: AppColors.lavender200,
         tertiary: AppColors.amber300,
         onTertiary: AppColors.amber950,
         tertiaryContainer: AppColors.amber800,
@@ -64,19 +65,19 @@ abstract final class AppTheme {
         onError: AppColors.red950,
         errorContainer: AppColors.red900,
         onErrorContainer: AppColors.red100,
-        surface: AppColors.slate900,
+        surface: AppColors.obsidian950,
         onSurface: AppColors.slate100,
         onSurfaceVariant: AppColors.slate300,
-        surfaceContainerLowest: AppColors.slate950,
-        surfaceContainerLow: AppColors.slate850,
-        surfaceContainer: AppColors.slate800,
+        surfaceContainerLowest: AppColors.obsidian950,
+        surfaceContainerLow: AppColors.obsidian900,
+        surfaceContainer: AppColors.obsidian800,
         surfaceContainerHigh: AppColors.slate750,
         surfaceContainerHighest: AppColors.slate700,
         outline: AppColors.slate500,
-        outlineVariant: AppColors.slate700,
+        outlineVariant: AppColors.hairlineDark,
         inverseSurface: AppColors.slate100,
         onInverseSurface: AppColors.slate900,
-        inversePrimary: AppColors.cyan700,
+        inversePrimary: AppColors.lavender700,
         surfaceTint: Colors.transparent,
       );
 
@@ -104,6 +105,8 @@ abstract final class AppTheme {
       scaffoldBackgroundColor: scheme.surface,
       materialTapTargetSize: MaterialTapTargetSize.padded,
       visualDensity: VisualDensity.standard,
+      splashColor: scheme.primary.withValues(alpha: 0.08),
+      highlightColor: scheme.primary.withValues(alpha: 0.04),
       extensions: <ThemeExtension<dynamic>>[moduleColors],
       appBarTheme: AppBarTheme(
         backgroundColor: scheme.surface,
@@ -111,18 +114,29 @@ abstract final class AppTheme {
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: false,
-        titleTextStyle: textTheme.titleLarge,
+        titleTextStyle: textTheme.titleLarge?.copyWith(
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+      drawerTheme: DrawerThemeData(
+        backgroundColor: scheme.surfaceContainerLowest,
+        elevation: 1,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.horizontal(
+            right: Radius.circular(AppRadius.lg),
+          ),
+        ),
       ),
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: scheme.surfaceContainerLowest,
         indicatorColor: scheme.primaryContainer,
         elevation: 0,
-        height: 72,
+        height: 68,
         labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           final bool selected = states.contains(WidgetState.selected);
           return textTheme.labelMedium?.copyWith(
-            color: selected ? scheme.onSurface : scheme.onSurfaceVariant,
+            color: selected ? scheme.primary : scheme.onSurfaceVariant,
             fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
           );
         }),
@@ -131,7 +145,7 @@ abstract final class AppTheme {
           return IconThemeData(
             size: AppSizes.iconMd,
             color: selected
-                ? scheme.onPrimaryContainer
+                ? scheme.primary
                 : scheme.onSurfaceVariant,
           );
         }),
@@ -142,15 +156,18 @@ abstract final class AppTheme {
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
           borderRadius: AppRadius.large,
-          side: BorderSide(color: scheme.outlineVariant),
+          side: BorderSide(color: scheme.outlineVariant, width: 1.0),
         ),
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
+          backgroundColor: scheme.primary,
+          foregroundColor: scheme.onPrimary,
           minimumSize: minButtonSize,
           padding: buttonPadding,
           shape: buttonShape,
           textStyle: textTheme.labelLarge,
+          elevation: 0,
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
@@ -158,7 +175,7 @@ abstract final class AppTheme {
           minimumSize: minButtonSize,
           padding: buttonPadding,
           shape: buttonShape,
-          side: BorderSide(color: scheme.outline),
+          side: BorderSide(color: scheme.outlineVariant, width: 1.0),
           textStyle: textTheme.labelLarge,
         ),
       ),
@@ -169,7 +186,7 @@ abstract final class AppTheme {
             AppSizes.minTouchTarget,
           ),
           shape: buttonShape,
-          textStyle: textTheme.labelLarge,
+          textStyle: textTheme.labelLarge?.copyWith(color: scheme.primary),
         ),
       ),
       iconButtonTheme: IconButtonThemeData(
@@ -184,7 +201,7 @@ abstract final class AppTheme {
         backgroundColor: scheme.primary,
         foregroundColor: scheme.onPrimary,
         elevation: 2,
-        highlightElevation: 2,
+        highlightElevation: 3,
         shape: const RoundedRectangleBorder(borderRadius: AppRadius.large),
       ),
       inputDecorationTheme: InputDecorationThemeData(
@@ -194,23 +211,25 @@ abstract final class AppTheme {
           horizontal: AppSpacing.lg,
           vertical: AppSpacing.lg,
         ),
-        border: inputBorder(scheme.outline),
-        enabledBorder: inputBorder(scheme.outline),
-        focusedBorder: inputBorder(scheme.primary, 2),
+        border: inputBorder(scheme.outlineVariant),
+        enabledBorder: inputBorder(scheme.outlineVariant),
+        focusedBorder: inputBorder(scheme.primary, 1.5),
         errorBorder: inputBorder(scheme.error),
-        focusedErrorBorder: inputBorder(scheme.error, 2),
+        focusedErrorBorder: inputBorder(scheme.error, 1.5),
         labelStyle: textTheme.bodyLarge?.copyWith(
           color: scheme.onSurfaceVariant,
         ),
         hintStyle: textTheme.bodyLarge?.copyWith(
-          color: scheme.onSurfaceVariant,
+          color: scheme.onSurfaceVariant.withValues(alpha: 0.6),
         ),
         errorStyle: textTheme.bodySmall?.copyWith(color: scheme.error),
         errorMaxLines: 3,
       ),
       chipTheme: ChipThemeData(
-        shape: const RoundedRectangleBorder(borderRadius: AppRadius.small),
-        side: BorderSide(color: scheme.outlineVariant),
+        backgroundColor: scheme.surfaceContainerLowest,
+        selectedColor: scheme.primaryContainer,
+        shape: const RoundedRectangleBorder(borderRadius: AppRadius.medium),
+        side: BorderSide(color: scheme.outlineVariant, width: 1.0),
         labelStyle: textTheme.labelLarge?.copyWith(color: scheme.onSurface),
       ),
       listTileTheme: ListTileThemeData(
@@ -242,6 +261,7 @@ abstract final class AppTheme {
         backgroundColor: scheme.surfaceContainerLowest,
         elevation: 3,
         showDragHandle: true,
+        dragHandleColor: scheme.onSurfaceVariant.withValues(alpha: 0.4),
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(
             top: Radius.circular(AppRadius.xl),
@@ -282,19 +302,19 @@ abstract final class AppTheme {
     }
 
     return TextTheme(
-      displaySmall: style(36, 44, FontWeight.w700),
-      headlineLarge: style(32, 40, FontWeight.w700),
-      headlineMedium: style(28, 36, FontWeight.w700),
-      headlineSmall: style(24, 32, FontWeight.w600),
-      titleLarge: style(20, 28, FontWeight.w600),
+      displaySmall: style(36, 44, FontWeight.w700, -0.5),
+      headlineLarge: style(32, 40, FontWeight.w700, -0.4),
+      headlineMedium: style(28, 36, FontWeight.w700, -0.3),
+      headlineSmall: style(24, 32, FontWeight.w600, -0.2),
+      titleLarge: style(20, 28, FontWeight.w600, 0),
       titleMedium: style(16, 24, FontWeight.w600, 0.1),
       titleSmall: style(14, 20, FontWeight.w600, 0.1),
-      bodyLarge: style(16, 24, FontWeight.w400, 0.2),
+      bodyLarge: style(16, 24, FontWeight.w400, 0.15),
       bodyMedium: style(14, 20, FontWeight.w400, 0.2),
       bodySmall: style(12, 16, FontWeight.w400, 0.3),
       labelLarge: style(14, 20, FontWeight.w600, 0.1),
       labelMedium: style(12, 16, FontWeight.w500, 0.4),
-      labelSmall: style(11, 16, FontWeight.w500, 0.4),
+      labelSmall: style(11, 16, FontWeight.w500, 0.5),
     );
   }
 }

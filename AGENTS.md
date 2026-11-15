@@ -269,6 +269,18 @@ Every new endpoint has a corresponding Flutter screen test or a curl verificatio
 
 Before building any Flutter screen, invoke ui-ux-pro-max with the screen's purpose and the existing design tokens. Use the same colors, typography, spacing, and component library across all three modules. The app should feel like one product, not three apps stitched together.
 
+### 6.7 Anti-Slop Mobile UI & Lavender Design Standards
+
+The UI must adhere strictly to `DESIGN_SYSTEM.md` and eliminate all generic AI tropes:
+- **No Purple Gradient Syndrome:** No diagonal purple-to-indigo gradients, no glowing radial blobs, and no muddy backgrounds. Use a crisp, calming porcelain canvas (`#FAF8FF` / `#FFFFFF`) with a restrained **hint of lavender** (`#7C3AED` primary, `#EDE9FE` container).
+- **Hairlines Over Shadows:** Use high-craft 0.75px–1.0px hairline borders (`#E4E0F0` light, `#2D2845` dark) instead of heavy blurry drop shadows.
+- **Dual-Tier Navigation:** 
+  1. Bottom Navigation Bar: strictly 3 thumb-accessible destinations (Calendar, Finance, Notes).
+  2. Hamburger Drawer (`NavigationDrawer`): top-left menu icon (`Icons.menu_rounded`) opening the command center for Student Profile, Drift SQLite offline sync status, and secondary utilities.
+- **Physics Easing & Snappy Micro-Interactions:** 100–140ms for tactile button ink feedback, 250–300ms with `Curves.easeOutCubic` for modal sheets and drawer slides. No sluggish 800ms floating transitions.
+- **Tabular Figures:** Always use `FontFeature.tabularFigures()` on monetary figures (`₱120.00`) and timestamps.
+- **Local Git Only Constraint:** Per user directive, **DO NOT PUSH TO GITHUB**. Keep all work committed locally on `main` until explicitly asked to push.
+
 ---
 
 ## PART VII — BUILD PHASES (PATCH ROADMAP)

@@ -1,8 +1,30 @@
 import 'package:flutter/material.dart';
 
-/// Raw colour tokens from DESIGN.md. Screens must not use these directly;
+/// Raw colour tokens from DESIGN_SYSTEM.md. Screens must not use these directly;
 /// read colours from `Theme.of(context).colorScheme` or [ModuleColors].
 abstract final class AppColors {
+  // Lavender Palette (Anti-Slop Primary Accent)
+  static const Color lavender950 = Color(0xFF1E1140);
+  static const Color lavender900 = Color(0xFF2E1065);
+  static const Color lavender800 = Color(0xFF5B21B6);
+  static const Color lavender700 = Color(0xFF6D28D9);
+  static const Color lavender600 = Color(0xFF7C3AED);
+  static const Color lavender500 = Color(0xFF8B5CF6);
+  static const Color lavender400 = Color(0xFFA78BFA);
+  static const Color lavender300 = Color(0xFFC4B5FD);
+  static const Color lavender200 = Color(0xFFDDD6FE);
+  static const Color lavender100 = Color(0xFFEDE9FE);
+  static const Color lavender50 = Color(0xFFF5F3FF);
+  static const Color lavenderMist = Color(0xFFFAF8FF);
+
+  // Hairlines & Surfaces (Anti-Slop High-Craft)
+  static const Color hairlineLight = Color(0xFFE4E0F0);
+  static const Color hairlineDark = Color(0xFF2D2845);
+  static const Color obsidian950 = Color(0xFF0D0C14);
+  static const Color obsidian900 = Color(0xFF151322);
+  static const Color obsidian800 = Color(0xFF1E1B30);
+
+  // Legacy Cyan (kept for backwards compatibility)
   static const Color cyan700 = Color(0xFF0E7490);
   static const Color cyan800 = Color(0xFF155E75);
   static const Color cyan900 = Color(0xFF164E63);
@@ -10,6 +32,7 @@ abstract final class AppColors {
   static const Color cyan300 = Color(0xFF67E8F9);
   static const Color cyan100 = Color(0xFFCFFAFE);
 
+  // Emerald / Sage (Finance Income)
   static const Color emerald700 = Color(0xFF047857);
   static const Color emerald800 = Color(0xFF065F46);
   static const Color emerald900 = Color(0xFF064E3B);
@@ -17,6 +40,7 @@ abstract final class AppColors {
   static const Color emerald300 = Color(0xFF6EE7B7);
   static const Color emerald100 = Color(0xFFD1FAE5);
 
+  // Amber / Honey (Notes)
   static const Color amber700 = Color(0xFFB45309);
   static const Color amber800 = Color(0xFF92400E);
   static const Color amber900 = Color(0xFF78350F);
@@ -24,12 +48,14 @@ abstract final class AppColors {
   static const Color amber300 = Color(0xFFFCD34D);
   static const Color amber100 = Color(0xFFFEF3C7);
 
-  static const Color red700 = Color(0xFFB91C1C);
-  static const Color red900 = Color(0xFF7F1D1D);
-  static const Color red950 = Color(0xFF450A0A);
-  static const Color red300 = Color(0xFFFCA5A5);
-  static const Color red100 = Color(0xFFFEE2E2);
+  // Rose / Coral (Finance Expense & Alerts)
+  static const Color red700 = Color(0xFFE11D48);
+  static const Color red900 = Color(0xFF881337);
+  static const Color red950 = Color(0xFF4C0519);
+  static const Color red300 = Color(0xFFFDA4AF);
+  static const Color red100 = Color(0xFFFFE4E6);
 
+  // Neutrals & Slate
   static const Color white = Color(0xFFFFFFFF);
   static const Color slate50 = Color(0xFFF8FAFC);
   static const Color slate100 = Color(0xFFF1F5F9);
@@ -68,7 +94,7 @@ class ModuleColors extends ThemeExtension<ModuleColors> {
   final Color expense;
 
   static const ModuleColors light = ModuleColors(
-    calendar: AppColors.cyan700,
+    calendar: AppColors.lavender700,
     finance: AppColors.emerald700,
     notes: AppColors.amber700,
     income: AppColors.emerald700,
@@ -76,7 +102,7 @@ class ModuleColors extends ThemeExtension<ModuleColors> {
   );
 
   static const ModuleColors dark = ModuleColors(
-    calendar: AppColors.cyan300,
+    calendar: AppColors.lavender400,
     finance: AppColors.emerald300,
     notes: AppColors.amber300,
     income: AppColors.emerald300,

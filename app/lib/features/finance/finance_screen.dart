@@ -20,6 +20,11 @@ class FinanceScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.menu_rounded),
+          tooltip: 'Open Menu',
+          onPressed: () => Scaffold.of(context).openDrawer(),
+        ),
         title: const Text('Finance Tracker'),
         centerTitle: true,
       ),
@@ -115,6 +120,9 @@ class FinanceScreen extends ConsumerWidget {
                                   currencyFormat.format(summary.balance),
                                   style: textStyles.headlineMedium?.copyWith(
                                     fontWeight: FontWeight.bold,
+                                    fontFeatures: const <FontFeature>[
+                                      FontFeature.tabularFigures(),
+                                    ],
                                     color: summary.balance >= 0
                                         ? colors.primary
                                         : colors.error,
@@ -155,6 +163,9 @@ class FinanceScreen extends ConsumerWidget {
                                               ),
                                               style: textStyles.titleSmall?.copyWith(
                                                 fontWeight: FontWeight.bold,
+                                                fontFeatures: const <FontFeature>[
+                                                  FontFeature.tabularFigures(),
+                                                ],
                                                 color: Colors.green[700],
                                               ),
                                             ),
@@ -195,6 +206,9 @@ class FinanceScreen extends ConsumerWidget {
                                               ),
                                               style: textStyles.titleSmall?.copyWith(
                                                 fontWeight: FontWeight.bold,
+                                                fontFeatures: const <FontFeature>[
+                                                  FontFeature.tabularFigures(),
+                                                ],
                                                 color: colors.error,
                                               ),
                                             ),

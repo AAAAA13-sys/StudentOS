@@ -25,6 +25,11 @@ class ProfileScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.menu_rounded),
+          tooltip: 'Open Menu',
+          onPressed: () => Scaffold.of(context).openDrawer(),
+        ),
         title: const Text('Profile'),
         centerTitle: true,
       ),
