@@ -423,11 +423,9 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
 
                         ref.read(notesControllerProvider.notifier).updateNote(
                           note.id,
-                          <String, dynamic>{
-                            'title': titleController.text.trim(),
-                            'body': bodyController.text,
-                            'tags': tags,
-                          },
+                          title: titleController.text.trim(),
+                          body: bodyController.text,
+                          tags: tags,
                         );
                         Navigator.pop(ctx);
                       },

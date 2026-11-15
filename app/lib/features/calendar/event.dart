@@ -21,30 +21,69 @@ class CalendarEvent {
   final String? recurrenceUntil;
   final int? reminderMinutes;
 
-  factory CalendarEvent.fromJson(Map<String, dynamic> json) {
-    return CalendarEvent(
-      id: json['id'] as int,
-      title: json['title'] as String,
-      startsAt: DateTime.parse(json['starts_at'] as String),
-      durationMinutes: json['duration_minutes'] as int? ?? 60,
-      location: json['location'] as String?,
-      notes: json['notes'] as String?,
-      recurrence: json['recurrence'] as String? ?? 'none',
-      recurrenceUntil: json['recurrence_until'] as String?,
-      reminderMinutes: json['reminder_minutes'] as int?,
-    );
-  }
+  /// The first time this event starts at or after [now], following its
+  /// recurrence, or null when it is over.
+  DateTime? nextOccurrence(DateTime now) {
+    final DateTime start = startsAt.toLocal();
+    if (!start.isBefore(now)) {
+      return start;
+    }
+    if (recurrence == 'none') {
+      return null;
+    }
 
-  Map<String, dynamic> toJson() {
-    return <String, dynamic>{
-      'title': title,
-      'starts_at': startsAt.toUtc().toIso8601String(),
-      'duration_minutes': durationMinutes,
-      if (location != null) 'location': location,
-      if (notes != null) 'notes': notes,
-      'recurrence': recurrence,
-      if (recurrenceUntil != null) 'recurrence_until': recurrenceUntil,
-      if (reminderMinutes != null) 'reminder_minutes': reminderMinutes,
+    DateTime at(int step) {
+      switch (recurrence) {
+        case 'daily':
+          return DateTime(
+            start.year,
+            start.month,
+            start.day + step,
+            start.hour,
+            start.minute,
+          );
+        case 'weekly':
+          return DateTime(
+            start.year,
+            start.month,
+            start.day + 7 * step,
+            start.hour,
+            start.minute,
+          );
+        default:
+          // Monthly, clamped to the month's last day (Jan 31 -> Feb 28/29).
+          final DateTime first = DateTime(start.year, start.month + step);
+          final int lastDay = DateTime(first.year, first.month + 1, 0).day;
+          return DateTime(
+            first.year,
+            first.month,
+            start.day > lastDay ? lastDay : start.day,
+            start.hour,
+            start.minute,
+          );
+      }
+    }
+
+    final int elapsedDays = now.difference(start).inDays;
+    int step = switch (recurrence) {
+      'daily' => elapsedDays - 1,
+      'weekly' => elapsedDays ~/ 7 - 1,
+      _ => (now.year - start.year) * 12 + now.month - start.month - 1,
     };
+    if (step < 1) {
+      step = 1;
+    }
+    while (at(step).isBefore(now)) {
+      step++;
+    }
+    final DateTime next = at(step);
+
+    final DateTime? until =
+        recurrenceUntil == null ? null : DateTime.tryParse(recurrenceUntil!);
+    if (until != null &&
+        !next.isBefore(DateTime(until.year, until.month, until.day + 1))) {
+      return null;
+    }
+    return next;
   }
 }

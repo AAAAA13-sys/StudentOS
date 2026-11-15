@@ -192,3 +192,15 @@ Entries are appended, never edited. Corrections are new entries that reference t
 **Decisions:**
 - Claude is authorized to push to `origin main` after verifying patches.
 - Gemini is on standby to take over next sprint upon Claude's credit exhaustion.
+
+
+## Phase 14: Local-only personal app
+**Date:** 2026-11-15  
+**Verified by:** lead-pm  
+**Evidence:** `flutter analyze` 0 issues; `flutter test` 9 passed; release APK on `emulator-5554` opens on Calendar with no login; an event created in the app was still listed after force-stop and relaunch in airplane mode; installed package holds no INTERNET permission.  
+**Decisions:**
+- Owner directive: the app is a single-user, on-device app with no login and no server. This supersedes the auth/gateway requirements for the app.
+- Data store is Drift SQLite (`events`, `transactions`, `notes`); money is stored in centavos.
+- Bottom bar is back to three destinations; the Profile tab is removed.
+- Backend services remain in the repository, unused by the app.
+**Open items:** Data previously stored on the server is not migrated. Push to `origin` awaits the owner's confirmation.

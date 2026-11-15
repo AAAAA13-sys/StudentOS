@@ -30,7 +30,6 @@ class FinanceController extends AsyncNotifier<FinanceState> {
   }
 
   Future<FinanceState> _loadMonth(String month) async {
-    final List<String> categories = await _repo.getCategories();
     final List<Transaction> transactions =
         await _repo.getTransactions(month: month);
     final FinanceSummary summary = await _repo.getSummary(month: month);
@@ -39,7 +38,7 @@ class FinanceController extends AsyncNotifier<FinanceState> {
       month: month,
       transactions: transactions,
       summary: summary,
-      categories: categories,
+      categories: FinanceRepository.categories,
     );
   }
 

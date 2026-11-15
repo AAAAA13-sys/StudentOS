@@ -785,10 +785,9 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                             );
 
                             if (existingEvent != null) {
-                              ref.read(calendarControllerProvider.notifier).updateEvent(
-                                    existingEvent.id,
-                                    newEvent.toJson(),
-                                  );
+                              ref
+                                  .read(calendarControllerProvider.notifier)
+                                  .updateEvent(newEvent);
                             } else {
                               ref.read(calendarControllerProvider.notifier).addEvent(newEvent);
                             }

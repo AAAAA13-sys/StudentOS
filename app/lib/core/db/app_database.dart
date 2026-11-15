@@ -4,25 +4,77 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 part 'app_database.g.dart';
 
-/// Generic offline cache: one JSON payload per key.
-///
-/// SQL: `cache_entries(key TEXT PRIMARY KEY, payload TEXT, saved_at INTEGER)`
-/// where `saved_at` is milliseconds since the Unix epoch (UTC).
-class CacheEntries extends Table {
-  TextColumn get key => text()();
-
-  TextColumn get payload => text()();
-
-  IntColumn get savedAt => integer()();
-
+@DataClassName('EventRow')
+class EventRows extends Table {
   @override
-  Set<Column<Object>> get primaryKey => <Column<Object>>{key};
+  String get tableName => 'events';
+
+  IntColumn get id => integer().autoIncrement()();
+
+  TextColumn get title => text()();
+
+  DateTimeColumn get startsAt => dateTime()();
+
+  IntColumn get durationMinutes => integer().withDefault(const Constant(60))();
+
+  TextColumn get location => text().nullable()();
+
+  TextColumn get notes => text().nullable()();
+
+  /// `none`, `daily`, `weekly` or `monthly`.
+  TextColumn get recurrence => text().withDefault(const Constant('none'))();
+
+  /// Last day the event repeats on, as `YYYY-MM-DD` (inclusive).
+  TextColumn get recurrenceUntil => text().nullable()();
+
+  IntColumn get reminderMinutes => integer().nullable()();
 }
 
-@DriftDatabase(tables: <Type>[CacheEntries])
+@DataClassName('TransactionRow')
+class TransactionRows extends Table {
+  @override
+  String get tableName => 'transactions';
+
+  IntColumn get id => integer().autoIncrement()();
+
+  /// `income` or `expense`.
+  TextColumn get type => text()();
+
+  /// Centavos, so sums never accumulate floating-point error.
+  IntColumn get amountCents => integer()();
+
+  TextColumn get category => text()();
+
+  /// `YYYY-MM-DD`; a month is the prefix `YYYY-MM`.
+  TextColumn get occurredOn => text()();
+
+  TextColumn get note => text().nullable()();
+}
+
+@DataClassName('NoteRow')
+class NoteRows extends Table {
+  @override
+  String get tableName => 'notes';
+
+  IntColumn get id => integer().autoIncrement()();
+
+  TextColumn get title => text()();
+
+  TextColumn get body => text()();
+
+  /// JSON array of lower-case tag strings.
+  TextColumn get tags => text()();
+
+  DateTimeColumn get createdAt => dateTime()();
+
+  DateTimeColumn get updatedAt => dateTime()();
+}
+
+/// The app's only data store. Everything lives on this device.
+@DriftDatabase(tables: <Type>[EventRows, TransactionRows, NoteRows])
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor])
-    : super(executor ?? driftDatabase(name: 'studentos_cache'));
+    : super(executor ?? driftDatabase(name: 'studentos'));
 
   @override
   int get schemaVersion => 1;

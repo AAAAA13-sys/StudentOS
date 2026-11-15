@@ -86,8 +86,13 @@ class NotesController extends AsyncNotifier<NotesState> {
     state = await AsyncValue.guard(() => _fetchState(query: q, tag: tag));
   }
 
-  Future<void> updateNote(int id, Map<String, dynamic> data) async {
-    await _repo.updateNote(id, data);
+  Future<void> updateNote(
+    int id, {
+    required String title,
+    required String body,
+    required List<String> tags,
+  }) async {
+    await _repo.updateNote(id, title: title, body: body, tags: tags);
     final String q = state.value?.searchQuery ?? '';
     final String? tag = state.value?.selectedTag;
     state = await AsyncValue.guard(() => _fetchState(query: q, tag: tag));

@@ -32,10 +32,12 @@ class CalendarController extends AsyncNotifier<List<CalendarEvent>> {
     unawaited(syncWidget());
   }
 
-  Future<void> updateEvent(int id, Map<String, dynamic> data) async {
-    final CalendarEvent updated = await _repo.updateEvent(id, data);
+  Future<void> updateEvent(CalendarEvent event) async {
+    final CalendarEvent updated = await _repo.updateEvent(event);
     state = AsyncData(
-      (state.value ?? <CalendarEvent>[]).map((e) => e.id == id ? updated : e).toList(),
+      (state.value ?? <CalendarEvent>[])
+          .map((e) => e.id == updated.id ? updated : e)
+          .toList(),
     );
     unawaited(syncWidget());
   }
@@ -50,17 +52,14 @@ class CalendarController extends AsyncNotifier<List<CalendarEvent>> {
 
   Future<void> syncWidget() async {
     try {
-      final Map<String, dynamic>? nextEvent = await _repo.getWidgetData();
+      final ({String title, DateTime startsAt})? nextEvent =
+          await _repo.getNextEvent();
       if (nextEvent != null) {
-        final String title = nextEvent['title'] as String? ?? 'No upcoming events';
-        final String? startsAtStr = nextEvent['starts_at'] as String?;
-        String timeStr = '';
-        if (startsAtStr != null) {
-          final DateTime dt = DateTime.parse(startsAtStr).toLocal();
-          timeStr = DateFormat('EEE, MMM d • h:mm a').format(dt);
-        }
-        await HomeWidget.saveWidgetData<String>('event_title', title);
-        await HomeWidget.saveWidgetData<String>('event_time', timeStr);
+        await HomeWidget.saveWidgetData<String>('event_title', nextEvent.title);
+        await HomeWidget.saveWidgetData<String>(
+          'event_time',
+          DateFormat('EEE, MMM d • h:mm a').format(nextEvent.startsAt),
+        );
       } else {
         await HomeWidget.saveWidgetData<String>('event_title', 'No upcoming events');
         await HomeWidget.saveWidgetData<String>('event_time', 'Enjoy your free time!');

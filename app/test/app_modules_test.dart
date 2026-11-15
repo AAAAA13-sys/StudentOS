@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:studentos/features/auth/auth_controller.dart';
-import 'package:studentos/features/auth/auth_state.dart';
-import 'package:studentos/features/auth/user.dart';
 import 'package:studentos/features/calendar/calendar_controller.dart';
 import 'package:studentos/features/calendar/calendar_screen.dart';
 import 'package:studentos/features/calendar/event.dart';
@@ -86,29 +83,13 @@ class FakeNotesController extends NotesController {
   }
 }
 
-class FakeAuthController extends AuthController {
-  FakeAuthController(this._user);
-  final User _user;
-
-  @override
-  AuthState build() => Authenticated(_user);
-}
-
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-
-  final User testUser = User(
-    id: 1,
-    name: 'Student Tester',
-    email: 'tester@studentos.test',
-    createdAt: DateTime(2026, 1, 1),
-  );
 
   testWidgets('Calendar screen displays event and floating action button', (WidgetTester tester) async {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          authControllerProvider.overrideWith(() => FakeAuthController(testUser)),
           calendarControllerProvider.overrideWith(FakeCalendarController.new),
         ],
         child: const MaterialApp(
@@ -136,7 +117,6 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          authControllerProvider.overrideWith(() => FakeAuthController(testUser)),
           financeControllerProvider.overrideWith(FakeFinanceController.new),
         ],
         child: const MaterialApp(
@@ -164,7 +144,6 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          authControllerProvider.overrideWith(() => FakeAuthController(testUser)),
           notesControllerProvider.overrideWith(FakeNotesController.new),
         ],
         child: const MaterialApp(

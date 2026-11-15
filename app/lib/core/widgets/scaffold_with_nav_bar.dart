@@ -1,15 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../features/auth/auth_controller.dart';
-import '../../features/auth/auth_state.dart';
-import '../../features/auth/user.dart';
 import '../theme/app_colors.dart';
-import '../theme/app_spacing.dart';
 import '../theme/app_theme.dart';
 
-class ScaffoldWithNavBar extends ConsumerWidget {
+class ScaffoldWithNavBar extends StatelessWidget {
   const ScaffoldWithNavBar({
     required this.navigationShell,
     super.key,
@@ -17,10 +12,15 @@ class ScaffoldWithNavBar extends ConsumerWidget {
 
   final StatefulNavigationShell navigationShell;
 
+  void _goTo(int index) {
+    navigationShell.goBranch(
+      index,
+      initialLocation: index == navigationShell.currentIndex,
+    );
+  }
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final AuthState authState = ref.watch(authControllerProvider);
-    final User? user = authState is Authenticated ? authState.user : null;
+  Widget build(BuildContext context) {
     final ColorScheme colors = context.colors;
     final TextTheme textStyles = context.textStyles;
 
@@ -29,13 +29,9 @@ class ScaffoldWithNavBar extends ConsumerWidget {
         selectedIndex: navigationShell.currentIndex,
         onDestinationSelected: (int index) {
           Navigator.pop(context);
-          navigationShell.goBranch(
-            index,
-            initialLocation: index == navigationShell.currentIndex,
-          );
+          _goTo(index);
         },
         children: <Widget>[
-          // Student Profile Command Header
           Container(
             padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
             margin: const EdgeInsets.only(bottom: 8),
@@ -50,75 +46,17 @@ class ScaffoldWithNavBar extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  Row(
-                    children: <Widget>[
-                      CircleAvatar(
-                        radius: 26,
-                        backgroundColor: colors.primary,
-                        child: Text(
-                          user != null && user.name.isNotEmpty
-                              ? user.name[0].toUpperCase()
-                              : 'S',
-                          style: textStyles.titleLarge?.copyWith(
-                            color: colors.onPrimary,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            Text(
-                              user?.name ?? 'Student',
-                              style: textStyles.titleMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              user?.email ?? 'student@studentos.local',
-                              style: textStyles.bodySmall?.copyWith(
-                                color: colors.onSurfaceVariant,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 14),
-                  // Cache & Microservices Sync Badge
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: colors.surfaceContainerLowest,
-                      borderRadius: AppRadius.pill,
-                      border: Border.all(color: colors.outlineVariant),
+                  Text(
+                    'StudentOS',
+                    style: textStyles.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: <Widget>[
-                        Container(
-                          width: 8,
-                          height: 8,
-                          decoration: const BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: AppColors.emerald700,
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          'Drift SQLite Synced',
-                          style: textStyles.labelSmall?.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: colors.onSurface,
-                          ),
-                        ),
-                      ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Everything is stored on this device.',
+                    style: textStyles.bodySmall?.copyWith(
+                      color: colors.onSurfaceVariant,
                     ),
                   ),
                 ],
@@ -152,77 +90,21 @@ class ScaffoldWithNavBar extends ConsumerWidget {
             selectedIcon: Icon(Icons.article_rounded),
             label: Text('Lecture Notes'),
           ),
-          const NavigationDrawerDestination(
-            icon: Icon(Icons.person_outline_rounded),
-            selectedIcon: Icon(Icons.person_rounded),
-            label: Text('Student Profile'),
-          ),
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Divider(),
           ),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            child: Text(
-              'SYSTEM & GATEWAY',
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 1.2,
-                color: AppColors.slate500,
-              ),
-            ),
+          const ListTile(
+            dense: true,
+            leading: Icon(Icons.phone_android_rounded, size: 20),
+            title: Text('Local only'),
+            subtitle: Text('No account, no internet needed'),
           ),
           const ListTile(
             dense: true,
-            leading: Icon(Icons.cloud_done_outlined, size: 20),
-            title: Text('API Gateway'),
-            subtitle: Text('http://10.0.2.2:8000 (Healthy)'),
-          ),
-          const ListTile(
-            dense: true,
-            leading: Icon(Icons.widgets_outlined, size: 20),
-            title: Text('Android Widget'),
-            subtitle: Text('CalendarWidgetProvider active'),
-          ),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Divider(),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: OutlinedButton.icon(
-              icon: const Icon(Icons.logout_rounded, size: 18),
-              label: const Text('Sign Out'),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: colors.error,
-                side: BorderSide(color: colors.error.withValues(alpha: 0.5)),
-              ),
-              onPressed: () {
-                Navigator.pop(context);
-                showDialog<void>(
-                  context: context,
-                  builder: (BuildContext ctx) => AlertDialog(
-                    title: const Text('Sign Out'),
-                    content: const Text('Are you sure you want to sign out of StudentOS?'),
-                    actions: <Widget>[
-                      TextButton(
-                        onPressed: () => Navigator.pop(ctx),
-                        child: const Text('Cancel'),
-                      ),
-                      FilledButton(
-                        style: FilledButton.styleFrom(backgroundColor: colors.error),
-                        onPressed: () {
-                          Navigator.pop(ctx);
-                          ref.read(authControllerProvider.notifier).logout();
-                        },
-                        child: const Text('Sign Out'),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
+            leading: Icon(Icons.info_outline_rounded, size: 20),
+            title: Text('Version'),
+            subtitle: Text('StudentOS 1.0.0'),
           ),
         ],
       ),
@@ -236,12 +118,7 @@ class ScaffoldWithNavBar extends ConsumerWidget {
         ),
         child: NavigationBar(
           selectedIndex: navigationShell.currentIndex,
-          onDestinationSelected: (int index) {
-            navigationShell.goBranch(
-              index,
-              initialLocation: index == navigationShell.currentIndex,
-            );
-          },
+          onDestinationSelected: _goTo,
           destinations: const <NavigationDestination>[
             NavigationDestination(
               icon: Icon(Icons.calendar_month_outlined),
@@ -257,11 +134,6 @@ class ScaffoldWithNavBar extends ConsumerWidget {
               icon: Icon(Icons.article_outlined),
               selectedIcon: Icon(Icons.article_rounded),
               label: 'Notes',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.person_outline_rounded),
-              selectedIcon: Icon(Icons.person_rounded),
-              label: 'Profile',
             ),
           ],
         ),

@@ -1,9 +1,12 @@
 # PROGRESS
 
 ## Current Phase
-Phase 13: UI Anti-Slop Finish Gate & Forensic APK Size Optimization (Complete — Handover to Claude at 11:00 PM GMT+8)
+Phase 14: Local-only personal app (owner directive 2026-11-15)
 
-> ⚡ **FOUNDER DIRECTIVE (11:00 PM GMT+8 SHIFT): REMOTE PUSH PERMISSION GRANTED.** The founder explicitly authorized Claude to commit and push verified updates to `origin main`. The Android emulator (`emulator-5554`) is live. Gemini is in Standby Mode to relieve Claude when credits expire.
+> **Direction change from the owner:** "I want the app to be local, no user logging in, this is a tailored app for me."
+> The Flutter app no longer talks to the gateway or has accounts. All data lives in the on-device Drift SQLite database (`studentos`).
+> This overrides the microservices/auth parts of `AGENTS.md` and the handover for the app. `services/` and Docker are untouched and unused by the app.
+> Push to `origin` is still unconfirmed by the owner; commits are local.
 
 ## Completed Tasks
 | Task | Agent | Verified By | Evidence |
@@ -38,6 +41,7 @@ Phase 13: UI Anti-Slop Finish Gate & Forensic APK Size Optimization (Complete �
 | Agency-Agents Research Department Dossier | agency-research-synthesist | lead-pm | Created `docs/AGENCY_RESEARCH_DEPARTMENT_DOSSIER.md`: Comprehensive 6-unit dossier spanning UX, Behavioral Nudges, Clinical Psychology, Anthropology, Customer Feedback, and RICE Matrix |
 | Agency-Agents IT Department Technical Dossier | agency-backend-architect | lead-pm | Created `docs/IT_DEPARTMENT_ENGINEERING_DOSSIER.md`: Full-stack engineering audit, 60fps budget, API error contract, PostgreSQL indexing, and STRIDE/OWASP penetration test |
 | UI Anti-Slop Scan & Forensic APK Size Optimization | ui-anti-slop | lead-pm | Created `docs/UNSLOP_AND_APP_SIZE_AUDIT.md`: UI Finish Gate PASS; decompiled 60.3MB APK proving 58.93MB is multi-ABI packaging; authored 5-step playbook dropping size to ~18MB |
+| Local-only conversion (no login, no backend) | lead-pm | lead-pm | Removed auth, API client, token storage, profile; Drift tables `events`, `transactions`, `notes`; INTERNET permission removed from release manifest. `flutter analyze` 0 issues; `flutter test` 9 passed; x86_64 release APK (22.2MB, split-per-abi) on `emulator-5554`: opens on Calendar with no login, event saved and still present after force-stop and relaunch in airplane mode |
 
 ## Blockers
 | Blocker | Since | Owner | Resolution Attempts |
@@ -49,19 +53,8 @@ Phase 13: UI Anti-Slop Finish Gate & Forensic APK Size Optimization (Complete �
 - **Android Emulator Live:** `emulator-5554` (API 37) is running live on this system. `adb devices` confirms connectivity.
 - **Gemini on Standby:** Gemini transitions to Standby Mode. Claude works his terminal shift starting at 11:00 PM GMT+8. When Claude exhausts credits/tokens, Claude updates `PROGRESS.md`, commits & pushes, and Gemini will resume seamlessly while the user sleeps.
 
-## Next Action for Claude (11:00 PM Shift)
-1. Confirm live emulator: Run `adb devices` (confirms `emulator-5554`).
-2. Read `docs/UNSLOP_AND_APP_SIZE_AUDIT.md` for the 5-step APK size reduction playbook (splitting ABIs to ~18MB).
-3. Read `docs/IT_DEPARTMENT_ENGINEERING_DOSSIER.md` for full-stack architecture, indexing, and security audit.
-4. Read `docs/AGENCY_RESEARCH_DEPARTMENT_DOSSIER.md` for the multi-disciplinary research dossier (UX personas, behavioral habit loops, clinical psychology of student avoidance, campus anthropology, and master RICE matrix).
-5. Read `CLAUDE_HANDOVER.md` for the operational handover guide and prioritized blueprints.
-6. Execute P0 features using the worker agents:
-   - **P0 #1:** Implement the **"Safe-to-Spend Today"** Hero Card on `FinanceScreen`.
-   - **P0 #2:** Implement the **2-Tap Fast Expense Logger** Bottom Sheet.
-   - **P1 #3:** Add Cross-Module Note Link (`[ 📝 Open Lecture Note ]`).
-7. Verify on emulator (`flutter analyze` + `flutter test`).
-8. Commit AND push after verified updates: `git commit` and `git push origin main`.
-9. When credits run out: update `PROGRESS.md` with achievements and push; Gemini will wake up to take over.
+## Next Action
+Owner to confirm what comes next. Candidates from the handover, now built on local data: Safe-to-Spend Today card, 2-tap fast expense logger. Finance and Notes were checked by tests only after the conversion, not by hand on the emulator.
 
 ## MVP & Strategic Checklist
 - [x] Calendar: create event → widget shows next event
