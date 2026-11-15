@@ -44,6 +44,7 @@ Phase 18: Toolbar cleanup and team-review fixes
 | Event to note link | flutter-dev | lead-pm | `flutter analyze` 0 issues; `flutter test` 13 passed. On `emulator-5554`: installed over existing data (database upgraded v1 to v2, earlier event kept); "Add note" on the event opened an editor titled after the event and the card then read "Open note" |
 | Class schedule builder | flutter-dev | lead-pm | `flutter analyze` 0 issues; `flutter test` 15 passed. On `emulator-5554`: "Add a class" with Mon and Wed created two weekly events, dots appeared on every Monday and Wednesday from Nov 16, and the shortened "Nov 2026" title fits beside the new toolbar button |
 | Team review (UI designer, UX architect, product manager) and toolbar cleanup | lead-pm | lead-pm | `flutter analyze` 0 issues; `flutter test` 17 passed. Seen on `emulator-5554` after a reboot: Calendar bar (title, Today, More menu), month row above the grid, "This day" list, Notes bar, menu with Back up / Restore. NOT seen: Finance screen and the backup file dialog (emulator screen capture froze) |
+| Edit a transaction; typed amount in quick expense; Finance and backup seen on device | flutter-dev | lead-pm | `flutter analyze` 0 issues; `flutter test` 19 passed. On `emulator-5554` after a second reboot: Finance with the new bar and cards; tapping a transaction opened "Edit Transaction" prefilled; Back up saved `studentos-backup-2026-11-15.json` (1,468 bytes, real rows) to Downloads. Restore and the typed quick amount are covered by tests only |
 
 ## Blockers
 | Blocker | Since | Owner | Resolution Attempts |
@@ -56,8 +57,8 @@ Phase 18: Toolbar cleanup and team-review fixes
 - **Gemini on Standby:** Gemini transitions to Standby Mode. Claude works his terminal shift starting at 11:00 PM GMT+8. When Claude exhausts credits/tokens, Claude updates `PROGRESS.md`, commits & pushes, and Gemini will resume seamlessly while the user sleeps.
 
 ## Next Action
-1. Cold-boot the emulator, then look at Finance and run Back up / Restore by hand.
-2. Remaining review items, in order: tap a transaction to edit it; "Other" amount in quick expense; event reminders as local notifications (`reminder_minutes` is stored but nothing fires); allowance-cycle setting for Safe-to-Spend; widget refresh without opening the app; note title defaulting to the first line.
+1. Run Restore by hand once (tests cover it; the file dialog path was not exercised on device).
+2. Remaining review items, in order: event reminders as local notifications (`reminder_minutes` is stored but nothing fires); allowance-cycle setting for Safe-to-Spend; widget refresh without opening the app; note title defaulting to the first line; create the event note on first save rather than on tap.
 
 ## Team Review Verdict (2026-11-16)
 Three reviewers looked at the screens. Agreed and done: one shared top bar with left-aligned tab names; Calendar keeps only Today and a More menu (Add a class); month switching sits above the grid and by swipe; one "+" per screen; Calendar opens on today's events; delete asks first everywhere and says so when it removes a whole repeating series; cards share one style; lists clear the floating button; backup and restore exist.
@@ -86,5 +87,6 @@ Cut from the backlog on their advice: Pomodoro sprints, streaks, auto-tag sugges
 - [x] Event to note link
 - [x] Class schedule builder
 - [x] Toolbar cleanup from team review
-- [x] Backup and restore to a file (logic tested; file dialog not seen on device)
+- [x] Backup to a file (seen on device) and restore (tested, not run by hand)
+- [x] Edit a transaction; typed amount in quick expense
 - [ ] Widget spending line viewed on a home screen

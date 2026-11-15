@@ -424,6 +424,85 @@ void main() {
     expect(find.text('Quick expense'), findsNothing);
   });
 
+  testWidgets('Quick expense takes a typed amount', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [appDatabaseProvider.overrideWithValue(database)],
+        child: const MaterialApp(home: FinanceScreen()),
+      ),
+    );
+    Future<void> settle() async {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 100)),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    await settle();
+    await tester.tap(find.byType(FloatingActionButton));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Other').first);
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), '37.50');
+    await tester.pump();
+    await tester.tap(find.text('Food'));
+    await settle();
+
+    final List<Transaction>? saved = await tester.runAsync(
+      () => FinanceRepository(database).getTransactions(),
+    );
+    expect(saved!.single.amount, 37.5);
+    expect(saved.single.category, 'Food');
+  });
+
+  testWidgets('Tapping a transaction edits it', (WidgetTester tester) async {
+    await tester.runAsync(
+      () => FinanceRepository(database).createTransaction(
+        Transaction(
+          id: 0,
+          type: 'expense',
+          amount: 500,
+          category: 'Food',
+          occurredOn: DateTime.now(),
+          note: 'Typo',
+        ),
+      ),
+    );
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [appDatabaseProvider.overrideWithValue(database)],
+        child: const MaterialApp(home: FinanceScreen()),
+      ),
+    );
+    Future<void> settle() async {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 100)),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    await settle();
+    await tester.ensureVisible(find.textContaining('Typo'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.textContaining('Typo'));
+    await tester.pumpAndSettle();
+    expect(find.text('Edit Transaction'), findsOneWidget);
+
+    await tester.enterText(find.byType(TextFormField).first, '50');
+    await tester.ensureVisible(find.text('Update Transaction'));
+    await tester.tap(find.text('Update Transaction'));
+    await settle();
+
+    final List<Transaction>? saved = await tester.runAsync(
+      () => FinanceRepository(database).getTransactions(),
+    );
+    expect(saved, hasLength(1));
+    expect(saved!.single.amount, 50);
+    expect(saved.single.note, 'Typo');
+  });
+
   test('Notes: search matches title, body and tags', () async {
     final NotesRepository repo = NotesRepository(database);
     await repo.createNote(

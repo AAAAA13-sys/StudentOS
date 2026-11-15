@@ -66,6 +66,21 @@ class FinanceRepository {
         );
   }
 
+  /// Replaces the stored transaction that has [transaction]'s id.
+  Future<void> updateTransaction(Transaction transaction) {
+    return (_db.update(
+      _db.transactionRows,
+    )..where((t) => t.id.equals(transaction.id))).write(
+      TransactionRowsCompanion(
+        type: Value(transaction.type),
+        amountCents: Value((transaction.amount * 100).round()),
+        category: Value(transaction.category),
+        occurredOn: Value(_dateKey(transaction.occurredOn)),
+        note: Value(transaction.note),
+      ),
+    );
+  }
+
   Future<void> deleteTransaction(int id) {
     return (_db.delete(
       _db.transactionRows,

@@ -252,3 +252,14 @@ Entries are appended, never edited. Corrections are new entries that reference t
 - New dependency: `file_picker` (system save/open dialogs; needs no internet permission).
 - R8 step from the size audit dropped: Flutter release builds already shrink code.
 **Open items:** Finance screen and backup dialog need a look on a healthy emulator.
+
+
+## Phase 19: Finance fixes from the team review
+**Date:** 2026-11-16
+**Verified by:** lead-pm
+**Evidence:** `flutter analyze` 0 issues; `flutter test` 19 passed; on `emulator-5554` the Finance screen, the prefilled "Edit Transaction" sheet and a saved backup file in Downloads (1,468 bytes, real rows) were seen.
+**Decisions:**
+- A transaction is edited by tapping its row; the same form serves add and edit.
+- Quick expense has an "Other" tile with an inline amount field, so non-preset amounts stay two steps.
+- After a quick expense the screen returns to the current month, where the entry is.
+**Open items:** Restore has not been run by hand. The emulator needed two reboots tonight (black window, frozen capture) after the host slept.

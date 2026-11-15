@@ -35,7 +35,11 @@ Future<QuickExpenseResult?> showQuickExpenseSheet(BuildContext context) {
   return showModalBottomSheet<QuickExpenseResult>(
     context: context,
     showDragHandle: true,
-    builder: (BuildContext ctx) => const _QuickExpenseSheet(),
+    isScrollControlled: true,
+    builder: (BuildContext ctx) => Padding(
+      padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
+      child: const _QuickExpenseSheet(),
+    ),
   );
 }
 
@@ -47,7 +51,23 @@ class _QuickExpenseSheet extends StatefulWidget {
 }
 
 class _QuickExpenseSheetState extends State<_QuickExpenseSheet> {
-  int? _amount;
+  /// A preset amount, or null while none is picked or "Other" is in use.
+  int? _preset;
+  bool _custom = false;
+  final TextEditingController _customAmount = TextEditingController();
+
+  /// The amount to log, or null when there is none yet.
+  double? get _amount {
+    if (!_custom) return _preset?.toDouble();
+    final double? typed = double.tryParse(_customAmount.text.trim());
+    return typed != null && typed > 0 ? typed : null;
+  }
+
+  @override
+  void dispose() {
+    _customAmount.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -86,8 +106,11 @@ class _QuickExpenseSheetState extends State<_QuickExpenseSheet> {
                   if (amount != _amounts.first) AppSpacing.gapSm,
                   Expanded(
                     child: _Tile(
-                      selected: _amount == amount,
-                      onTap: () => setState(() => _amount = amount),
+                      selected: !_custom && _preset == amount,
+                      onTap: () => setState(() {
+                        _preset = amount;
+                        _custom = false;
+                      }),
                       child: Text(
                         '₱$amount',
                         style: textStyles.titleMedium?.copyWith(
@@ -100,8 +123,32 @@ class _QuickExpenseSheetState extends State<_QuickExpenseSheet> {
                     ),
                   ),
                 ],
+                AppSpacing.gapSm,
+                Expanded(
+                  child: _Tile(
+                    selected: _custom,
+                    onTap: () => setState(() => _custom = true),
+                    child: Text('Other', style: textStyles.titleSmall),
+                  ),
+                ),
               ],
             ),
+            if (_custom) ...<Widget>[
+              AppSpacing.gapMd,
+              TextField(
+                controller: _customAmount,
+                autofocus: true,
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                decoration: const InputDecoration(
+                  labelText: 'Amount',
+                  prefixText: '₱ ',
+                  border: OutlineInputBorder(borderRadius: AppRadius.medium),
+                ),
+                onChanged: (_) => setState(() {}),
+              ),
+            ],
             AppSpacing.gapMd,
             Row(
               children: <Widget>[
@@ -117,7 +164,7 @@ class _QuickExpenseSheetState extends State<_QuickExpenseSheet> {
                               HapticFeedback.lightImpact();
                               Navigator.pop(
                                 context,
-                                QuickExpense(_amount!.toDouble(), name),
+                                QuickExpense(_amount!, name),
                               );
                             },
                       child: Column(
@@ -141,7 +188,7 @@ class _QuickExpenseSheetState extends State<_QuickExpenseSheet> {
             TextButton(
               onPressed: () =>
                   Navigator.pop(context, const QuickExpenseMoreOptions()),
-              child: const Text('Custom amount, income or another date'),
+              child: const Text('Income or another date'),
             ),
           ],
         ),

@@ -287,7 +287,13 @@ class FinanceScreen extends ConsumerWidget {
 
                         return Card(
                           margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+                          clipBehavior: Clip.antiAlias,
                           child: ListTile(
+                            onTap: () => _showAddTransactionDialog(
+                              context,
+                              ref,
+                              existing: tx,
+                            ),
                             leading: CircleAvatar(
                               backgroundColor: isIncome
                                   ? money.income.withValues(alpha: 0.12)
@@ -389,12 +395,20 @@ class FinanceScreen extends ConsumerWidget {
                 occurredOn: DateTime.now(),
               ),
             );
+        final String thisMonth = DateFormat('yyyy-MM').format(DateTime.now());
+        if (ref.read(financeControllerProvider).value?.month != thisMonth) {
+          await ref
+              .read(financeControllerProvider.notifier)
+              .setMonth(thisMonth);
+        }
         if (!context.mounted) return;
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
           ..showSnackBar(
             SnackBar(
-              content: Text('Logged ₱${amount.toStringAsFixed(0)} · $category'),
+              content: Text(
+                'Logged ${NumberFormat.currency(symbol: '₱', decimalDigits: amount == amount.roundToDouble() ? 0 : 2).format(amount)} · $category',
+              ),
             ),
           );
       case QuickExpenseMoreOptions():
@@ -404,16 +418,26 @@ class FinanceScreen extends ConsumerWidget {
     }
   }
 
+  /// The full transaction form; edits [existing] when one is given.
   Future<void> _showAddTransactionDialog(
     BuildContext context,
-    WidgetRef ref,
-  ) async {
+    WidgetRef ref, {
+    Transaction? existing,
+  }) async {
     final GlobalKey<FormState> formKey = GlobalKey<FormState>();
-    final TextEditingController amountController = TextEditingController();
-    final TextEditingController noteController = TextEditingController();
-    String type = 'expense';
-    String category = 'Food';
-    DateTime occurredOn = DateTime.now();
+    final TextEditingController amountController = TextEditingController(
+      text: existing == null
+          ? ''
+          : existing.amount.toStringAsFixed(
+              existing.amount == existing.amount.roundToDouble() ? 0 : 2,
+            ),
+    );
+    final TextEditingController noteController = TextEditingController(
+      text: existing?.note ?? '',
+    );
+    String type = existing?.type ?? 'expense';
+    String category = existing?.category ?? 'Food';
+    DateTime occurredOn = existing?.occurredOn ?? DateTime.now();
 
     const List<String> categories = FinanceRepository.categories;
 
@@ -438,7 +462,9 @@ class FinanceScreen extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: <Widget>[
                       Text(
-                        'Add Transaction',
+                        existing == null
+                            ? 'Add Transaction'
+                            : 'Edit Transaction',
                         style: ctx.textStyles.titleLarge?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
@@ -555,23 +581,31 @@ class FinanceScreen extends ConsumerWidget {
                               amountController.text.trim(),
                             );
 
-                            ref
-                                .read(financeControllerProvider.notifier)
-                                .addTransaction(
-                                  Transaction(
-                                    id: 0,
-                                    type: type,
-                                    amount: amt,
-                                    category: category,
-                                    occurredOn: occurredOn,
-                                    note: noteController.text.trim().isNotEmpty
-                                        ? noteController.text.trim()
-                                        : null,
-                                  ),
-                                );
+                            final Transaction tx = Transaction(
+                              id: existing?.id ?? 0,
+                              type: type,
+                              amount: amt,
+                              category: category,
+                              occurredOn: occurredOn,
+                              note: noteController.text.trim().isNotEmpty
+                                  ? noteController.text.trim()
+                                  : null,
+                            );
+                            final FinanceController controller = ref.read(
+                              financeControllerProvider.notifier,
+                            );
+                            if (existing == null) {
+                              controller.addTransaction(tx);
+                            } else {
+                              controller.updateTransaction(tx);
+                            }
                             Navigator.pop(ctx);
                           },
-                          child: const Text('Save Transaction'),
+                          child: Text(
+                            existing == null
+                                ? 'Save Transaction'
+                                : 'Update Transaction',
+                          ),
                         ),
                       ),
                       AppSpacing.gapLg,
