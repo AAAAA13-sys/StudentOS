@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="vendor/autoload.php"
+         colors="true"
+>
+    <testsuites>
+        <testsuite name="Feature">
+            <directory>tests/Feature</directory>
+        </testsuite>
+    </testsuites>
+    <source>
+        <include>
+            <directory>app</directory>
+        </include>
+    </source>
+    <php>
+        <env name="APP_ENV" value="testing" force="true"/>
+        <env name="APP_DEBUG" value="false" force="true"/>
+        <env name="APP_MAINTENANCE_DRIVER" value="file" force="true"/>
+        <env name="CACHE_STORE" value="array" force="true"/>
+        <env name="LOG_CHANNEL" value="null" force="true"/>
+        <env name="JWT_SECRET" value="testing-secret-testing-secret-0123456789" force="true"/>
+        <env name="AUTH_SERVICE_URL" value="http://auth.test" force="true"/>
+        <env name="CALENDAR_SERVICE_URL" value="http://calendar.test" force="true"/>
+        <env name="FINANCE_SERVICE_URL" value="http://finance.test" force="true"/>
+        <env name="NOTES_SERVICE_URL" value="http://notes.test" force="true"/>
+    </php>
+</phpunit>
