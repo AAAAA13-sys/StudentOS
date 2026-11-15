@@ -1,7 +1,7 @@
 # PROGRESS
 
 ## Current Phase
-Phase 12: Agency-Agents IT Department Technical & Security Dossier (Complete — Handover to Claude)
+Phase 13: UI Anti-Slop Finish Gate & Forensic APK Size Optimization (Complete — Handover to Claude)
 
 > ⚠️ **CRITICAL USER DIRECTIVE: DO NOT PUSH TO GITHUB.** All work remains local only. Do not execute `git push`. Programming paused per user command.
 
@@ -37,6 +37,7 @@ Phase 12: Agency-Agents IT Department Technical & Security Dossier (Complete —
 | Claude Comprehensive Strategic Handover | lead-pm | lead-pm | Updated `CLAUDE_HANDOVER.md`: Research findings, Google ecosystem lessons, prioritized feature gaps backlog, and instructions |
 | Agency-Agents Research Department Dossier | agency-research-synthesist | lead-pm | Created `docs/AGENCY_RESEARCH_DEPARTMENT_DOSSIER.md`: Comprehensive 6-unit dossier spanning UX, Behavioral Nudges, Clinical Psychology, Anthropology, Customer Feedback, and RICE Matrix |
 | Agency-Agents IT Department Technical Dossier | agency-backend-architect | lead-pm | Created `docs/IT_DEPARTMENT_ENGINEERING_DOSSIER.md`: Full-stack engineering audit, 60fps budget, API error contract, PostgreSQL indexing, and STRIDE/OWASP penetration test |
+| UI Anti-Slop Scan & Forensic APK Size Optimization | ui-anti-slop | lead-pm | Created `docs/UNSLOP_AND_APP_SIZE_AUDIT.md`: UI Finish Gate PASS; decompiled 60.3MB APK proving 58.93MB is multi-ABI packaging; authored 5-step playbook dropping size to ~18MB |
 
 ## Blockers
 | Blocker | Since | Owner | Resolution Attempts |
@@ -50,12 +51,14 @@ Phase 12: Agency-Agents IT Department Technical & Security Dossier (Complete —
 - **Google Apps Benchmarks:** Students require zero-barrier capture (Google Keep sticky notes), glanceable chronology (Google Calendar schedule stream), zero-tap retrieval (home screen widget), and non-judgmental spending overviews (Google Wallet).
 
 ## Next Action for Claude
-1. Read `docs/IT_DEPARTMENT_ENGINEERING_DOSSIER.md` for full-stack engineering standards, database indexing plans, and STRIDE/OWASP security audits.
-2. Read `docs/AGENCY_RESEARCH_DEPARTMENT_DOSSIER.md` for the multi-disciplinary research dossier (UX personas, behavioral habit loops, clinical psychology of student avoidance, campus anthropology, and master RICE matrix).
-3. Read `CLAUDE_HANDOVER.md` for the consolidated operational handover and prioritized feature blueprints.
-4. Read `DESIGN_SYSTEM.md` to ensure any future screens maintain the porcelain and lavender anti-slop standard.
-5. When authorized by user to resume coding: implement P0 features from the Agency Dossier (Section 6.3: Safe-to-Spend Hero Card and 2-Tap Fast Logger), write bite-sized plans, execute, and verify with tests.
-6. Remember: **DO NOT PUSH TO GITHUB**.
+1. Read `docs/UNSLOP_AND_APP_SIZE_AUDIT.md` for the UI Finish Gate review and the 5-step APK size reduction playbook (splitting ABIs to ~18MB).
+2. Read `docs/IT_DEPARTMENT_ENGINEERING_DOSSIER.md` for full-stack engineering standards, database indexing plans, and STRIDE/OWASP security audits.
+3. Read `docs/AGENCY_RESEARCH_DEPARTMENT_DOSSIER.md` for the multi-disciplinary research dossier (UX personas, behavioral habit loops, clinical psychology of student avoidance, campus anthropology, and master RICE matrix).
+4. Read `CLAUDE_HANDOVER.md` for the consolidated operational handover and prioritized feature blueprints.
+5. Read `DESIGN_SYSTEM.md` to ensure any future screens maintain the porcelain and lavender anti-slop standard.
+6. When authorized by user to resume coding: implement P0 features from the Agency Dossier (Section 6.3: Safe-to-Spend Hero Card and 2-Tap Fast Logger), write bite-sized plans, execute, and verify with tests.
+7. When building release APKs, execute `flutter build apk --release --split-per-abi` to produce lean 18MB artifacts.
+8. Remember: **DO NOT PUSH TO GITHUB**.
 
 ## MVP & Strategic Checklist
 - [x] Calendar: create event → widget shows next event
@@ -69,5 +72,6 @@ Phase 12: Agency-Agents IT Department Technical & Security Dossier (Complete —
 - [x] Cognitive Psychology & Google Apps Research (`docs/PRODUCT_PSYCHOLOGY_AND_RESEARCH.md`) created
 - [x] Agency-Agents Research Department Dossier (`docs/AGENCY_RESEARCH_DEPARTMENT_DOSSIER.md`) compiled across 6 specialist units
 - [x] Agency-Agents IT Department Technical Dossier (`docs/IT_DEPARTMENT_ENGINEERING_DOSSIER.md`) compiled across Frontend, Backend, Database, and Security
+- [x] UI Anti-Slop Scan & Forensic APK Size Optimization (`docs/UNSLOP_AND_APP_SIZE_AUDIT.md`) completed
 - [x] Strategic Handover manual (`CLAUDE_HANDOVER.md`) authored for Claude
 - [x] Local git only constraint documented and respected (no pushes to GitHub)

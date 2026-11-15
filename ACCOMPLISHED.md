@@ -157,3 +157,22 @@ Entries are appended, never edited. Corrections are new entries that reference t
 **Decisions:**
 - Programming remains paused until the user explicitly requests next feature implementation.
 - All git commits remain strictly local on `main`; `git push` remains prohibited.
+
+
+## Phase 13 Gate: UI Anti-Slop Finish Gate & Forensic APK Size Optimization
+**Date:** 2026-11-15  
+**Verified by:** lead-pm  
+**Evidence:**  
+- Contracted the UI Anti-Slop Team (`ui-anti-slop`, `agency-ui-finish-gate-reviewer`) and the Dart Code Reduction Team (`agency-frontend-developer`, `alishan`).
+- Performed forensic binary extraction and decompilation of `app-release.apk` (63,269,438 bytes / 60.3 MB):
+  - Proved that 58.93 MB (97.7%) of the APK consists of uncompressed C++ native engine binaries (`libflutter.so`, `libapp.so`) duplicated across three CPU architectures: `x86_64` (21.40 MB), `arm64-v8a` (19.93 MB), and `armeabi-v7a` (17.60 MB).
+  - Confirmed that actual Dart code, assets, and Android DEX files represent less than 2.2 MB total.
+  - Authored the 5-step size reduction playbook for Claude: `--split-per-abi` immediately drops APK size to ~18 MB (70% reduction); R8 minification and resource shrinking in `build.gradle.kts`; Dart AOT symbol stripping via `--obfuscate`; and Google Play App Bundle (`.aab`) distribution serving ~11–13 MB installs to student devices.
+- Performed UI Anti-Slop code and visual scan across all mobile screens:
+  - Verified zero purple-gradient syndrome, zero gratuitous glassmorphism, zero cliché hero trios, and zero sluggish micro-interactions.
+  - Returned formal UI Finish Gate decision: **PASS (MVP Craftsmanship Approved)** with polish advisories for empty state action buttons and skeleton shimmer loading.
+- Created `docs/UNSLOP_AND_APP_SIZE_AUDIT.md`.
+- Updated `CLAUDE_HANDOVER.md` and `PROGRESS.md` with forensic findings and size reduction instructions.
+**Decisions:**
+- Future production release builds must use `flutter build apk --release --split-per-abi` or `flutter build appbundle`.
+- All git commits remain strictly local on `main`; `git push` remains prohibited.
