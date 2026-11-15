@@ -28,6 +28,10 @@ class EventRows extends Table {
   TextColumn get recurrenceUntil => text().nullable()();
 
   IntColumn get reminderMinutes => integer().nullable()();
+
+  /// The note attached to this event, if any. The note may have been
+  /// deleted since; readers must cope with a missing note.
+  IntColumn get noteId => integer().nullable()();
 }
 
 @DataClassName('TransactionRow')
@@ -77,7 +81,16 @@ class AppDatabase extends _$AppDatabase {
     : super(executor ?? driftDatabase(name: 'studentos'));
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+    onUpgrade: (Migrator m, int from, int to) async {
+      if (from < 2) {
+        await m.addColumn(eventRows, eventRows.noteId);
+      }
+    },
+  );
 }
 
 final Provider<AppDatabase> appDatabaseProvider = Provider<AppDatabase>((ref) {

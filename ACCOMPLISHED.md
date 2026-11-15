@@ -217,3 +217,14 @@ Entries are appended, never edited. Corrections are new entries that reference t
 - The widget shows the spending figure as last computed by the app; no background refresh.
 - Docs updated for the local-only direction: `AGENTS.md` Part 0, `CLAUDE_HANDOVER.md` section 0, `docs/CONTRACT.md` note, `DESIGN_SYSTEM.md` drawer, `app/README.md`.
 **Open items:** Widget spending line not viewed on a home screen. Push to `origin` awaits the owner's confirmation.
+
+
+## Phase 16: Event to note link
+**Date:** 2026-11-15
+**Verified by:** lead-pm
+**Evidence:** `flutter analyze` 0 issues; `flutter test` 13 passed; on `emulator-5554` the build installed over existing data, the earlier event survived the v1 to v2 database upgrade, "Add note" opened an editor titled after the event, and the card then showed "Open note".
+**Decisions:**
+- `events.note_id` is a plain nullable reference. If the note was deleted, the next tap creates a fresh one.
+- The note editor sheet lives in `notes/note_editor_sheet.dart` so Calendar and Notes share it.
+- Editing an event keeps fields the form does not show (end date, reminder, note link).
+**Open items:** None.

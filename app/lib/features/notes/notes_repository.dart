@@ -32,7 +32,15 @@ class NotesRepository {
     }).toList();
   }
 
-  Future<void> createNote(Note note) {
+  Future<Note?> getNote(int id) async {
+    final NoteRow? row = await (_db.select(
+      _db.noteRows,
+    )..where((t) => t.id.equals(id))).getSingleOrNull();
+    return row == null ? null : _fromRow(row);
+  }
+
+  /// Returns the new note's id.
+  Future<int> createNote(Note note) {
     final DateTime now = DateTime.now();
     return _db
         .into(_db.noteRows)

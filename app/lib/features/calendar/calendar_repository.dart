@@ -18,7 +18,7 @@ class CalendarRepository {
 
   Future<CalendarEvent> createEvent(CalendarEvent event) async {
     final int id = await _db.into(_db.eventRows).insert(_toCompanion(event));
-    return _withId(event, id);
+    return event.withIds(id: id, noteId: event.noteId);
   }
 
   /// Replaces the stored event that has [event]'s id.
@@ -56,6 +56,7 @@ class CalendarRepository {
       recurrence: Value(event.recurrence),
       recurrenceUntil: Value(event.recurrenceUntil),
       reminderMinutes: Value(event.reminderMinutes),
+      noteId: Value(event.noteId),
     );
   }
 
@@ -70,20 +71,7 @@ class CalendarRepository {
       recurrence: row.recurrence,
       recurrenceUntil: row.recurrenceUntil,
       reminderMinutes: row.reminderMinutes,
-    );
-  }
-
-  CalendarEvent _withId(CalendarEvent event, int id) {
-    return CalendarEvent(
-      id: id,
-      title: event.title,
-      startsAt: event.startsAt,
-      durationMinutes: event.durationMinutes,
-      location: event.location,
-      notes: event.notes,
-      recurrence: event.recurrence,
-      recurrenceUntil: event.recurrenceUntil,
-      reminderMinutes: event.reminderMinutes,
+      noteId: row.noteId,
     );
   }
 }

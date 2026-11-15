@@ -9,6 +9,7 @@ class CalendarEvent {
     this.recurrence = 'none',
     this.recurrenceUntil,
     this.reminderMinutes,
+    this.noteId,
   });
 
   final int id;
@@ -20,6 +21,24 @@ class CalendarEvent {
   final String recurrence;
   final String? recurrenceUntil;
   final int? reminderMinutes;
+
+  /// Id of the attached note, if any.
+  final int? noteId;
+
+  CalendarEvent withIds({required int id, required int? noteId}) {
+    return CalendarEvent(
+      id: id,
+      title: title,
+      startsAt: startsAt,
+      durationMinutes: durationMinutes,
+      location: location,
+      notes: notes,
+      recurrence: recurrence,
+      recurrenceUntil: recurrenceUntil,
+      reminderMinutes: reminderMinutes,
+      noteId: noteId,
+    );
+  }
 
   /// The first time this event starts at or after [now], following its
   /// recurrence, or null when it is over.

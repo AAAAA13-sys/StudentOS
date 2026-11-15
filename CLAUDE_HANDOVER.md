@@ -17,6 +17,7 @@ Done and verified this shift (details in `PROGRESS.md`):
 - Safe-to-Spend Today card on Finance.
 - Two-tap quick expense sheet (the Finance `+` button).
 - Home-screen widget shows a "safe to spend today" line under the next event.
+- Event to note link: each calendar card has "Add note" / "Open note". The first tap creates a note titled after the event and attaches it (`events.note_id`, database schema v2).
 - Release builds are split per CPU type (about 18-22 MB each).
 
 How Safe-to-Spend is calculated (differs from the dossier blueprint): money on hand at the start of today (all income minus all expenses dated up to today, earlier months included) divided by the days left in the month, minus what was already spent today, never below zero. There is no "fixed bills" or allowance-cycle input yet.
@@ -24,10 +25,9 @@ How Safe-to-Spend is calculated (differs from the dossier blueprint): money on h
 Quick expense categories are `Food`, `Transport`, `School`, `Other`, taken from the existing category list. Icons are Material icons, not emoji, per `DESIGN_SYSTEM.md`.
 
 Still open, in suggested order:
-1. Event to note link on calendar cards (now a plain local reference; no cross-service concern).
-2. Semester timetable builder.
-3. R8 minification in `app/android/app/build.gradle.kts`.
-4. Notes checklists, pinning and tints; exam countdown pills.
+1. Semester timetable builder.
+2. R8 minification in `app/android/app/build.gradle.kts`.
+3. Notes checklists, pinning and tints; exam countdown pills.
 
 Not verified: the widget's new spending line was not looked at on a home screen. It refreshes only when the app runs, so it can be a day old.
 

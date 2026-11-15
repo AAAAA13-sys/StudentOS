@@ -5,6 +5,10 @@ import 'package:intl/intl.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_theme.dart';
 import 'calendar_controller.dart';
+import '../notes/note.dart';
+import '../notes/note_editor_sheet.dart';
+import '../notes/notes_controller.dart';
+import '../notes/notes_repository.dart';
 import 'event.dart';
 
 class CalendarScreen extends ConsumerStatefulWidget {
@@ -422,6 +426,21 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                                           ),
                                         ),
                                       ],
+                                      Align(
+                                        alignment: Alignment.centerLeft,
+                                        child: TextButton.icon(
+                                          onPressed: () => _openNote(event),
+                                          icon: const Icon(
+                                            Icons.article_outlined,
+                                            size: 18,
+                                          ),
+                                          label: Text(
+                                            event.noteId != null
+                                                ? 'Open note'
+                                                : 'Add note',
+                                          ),
+                                        ),
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -444,6 +463,27 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
         child: const Icon(Icons.add_rounded),
       ),
     );
+  }
+
+  /// Opens the note attached to [event], creating and attaching one titled
+  /// after the event when there is none (or it was deleted).
+  Future<void> _openNote(CalendarEvent event) async {
+    final NotesRepository notes = ref.read(notesRepositoryProvider);
+    Note? note = event.noteId == null
+        ? null
+        : await notes.getNote(event.noteId!);
+    if (note == null) {
+      final int noteId = await notes.createNote(
+        Note(id: 0, title: event.title, body: '', tags: const <String>[]),
+      );
+      await ref
+          .read(calendarControllerProvider.notifier)
+          .updateEvent(event.withIds(id: event.id, noteId: noteId));
+      ref.invalidate(notesControllerProvider);
+      note = await notes.getNote(noteId);
+    }
+    if (note == null || !mounted) return;
+    await showNoteEditor(context, ref, note);
   }
 
   /// Builds the 7-column interactive digital month calendar grid.
@@ -782,6 +822,9 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                                   ? notesController.text.trim()
                                   : null,
                               recurrence: recurrence,
+                              recurrenceUntil: existingEvent?.recurrenceUntil,
+                              reminderMinutes: existingEvent?.reminderMinutes,
+                              noteId: existingEvent?.noteId,
                             );
 
                             if (existingEvent != null) {

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:studentos/core/db/app_database.dart';
 import 'package:studentos/features/calendar/calendar_repository.dart';
+import 'package:studentos/features/calendar/calendar_screen.dart';
 import 'package:studentos/features/calendar/event.dart';
 import 'package:studentos/features/finance/finance_repository.dart';
 import 'package:studentos/features/finance/finance_screen.dart';
@@ -207,6 +208,45 @@ void main() {
 
     await repo.deleteTransaction(november.first.id);
     expect((await repo.getSummary(month: '2026-11')).totalExpenses, 200.30);
+  });
+
+  testWidgets('Add note on an event creates, attaches and opens a note', (
+    WidgetTester tester,
+  ) async {
+    await tester.runAsync(
+      () => CalendarRepository(database).createEvent(
+        CalendarEvent(
+          id: 0,
+          title: 'Physics 201',
+          startsAt: DateTime.now().add(const Duration(minutes: 5)),
+        ),
+      ),
+    );
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [appDatabaseProvider.overrideWithValue(database)],
+        child: const MaterialApp(home: CalendarScreen()),
+      ),
+    );
+    Future<void> settle() async {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 150)),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    await settle();
+    await tester.tap(find.text('Add note'));
+    await settle();
+
+    expect(find.text('Edit Note'), findsOneWidget);
+    final CalendarEvent? event = await tester.runAsync(
+      () async => (await CalendarRepository(database).getEvents()).single,
+    );
+    final Note? note = await tester.runAsync<Note?>(
+      () => NotesRepository(database).getNote(event!.noteId!),
+    );
+    expect(note!.title, 'Physics 201');
   });
 
   test('Safe to spend spreads the balance over the days left', () {
