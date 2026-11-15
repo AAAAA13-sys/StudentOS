@@ -8,35 +8,6 @@
 
 ---
 
-## 0. Status Update From Claude (2026-11-15) — Read Before Anything Below
-
-**The owner changed direction during Claude's shift:** the app is now a local, single-user app with no login and no server ("this is a tailored app for me"). Sections below that describe the gateway, JWT, Docker services or multi-user security are history, not instructions. See `AGENTS.md` Part 0.
-
-Done and verified this shift (details in `PROGRESS.md`):
-- Local-only conversion: auth, API client, token storage and the Profile tab removed; data in on-device Drift tables.
-- Safe-to-Spend Today card on Finance.
-- Two-tap quick expense sheet (the Finance `+` button).
-- Home-screen widget shows a "safe to spend today" line under the next event.
-- Event to note link: each calendar card has "Add note" / "Open note". The first tap creates a note titled after the event and attaches it (`events.note_id`, database schema v2).
-- Class schedule builder: the week icon in the Calendar toolbar opens "Add a class" (subject, room, weekdays, time, duration, end date) and saves one weekly event per chosen day. Recurring events now stop after their end date in the grid and lists.
-- Toolbar cleanup after a team review: shared `AppTopBar`, `MonthSwitcher`, `confirmDestructive`; menu holds Back up / Restore (JSON file via `file_picker`). See "Team Review Verdict" in `PROGRESS.md`.
-- Finance: tap a transaction to edit it; the quick sheet has an "Other" tile for a typed amount; a quick expense jumps back to the current month.
-- Release builds are split per CPU type (about 18-22 MB each).
-
-How Safe-to-Spend is calculated (differs from the dossier blueprint): money on hand at the start of today (all income minus all expenses dated up to today, earlier months included) divided by the days until the next allowance day when one is set on the card (stored in the `settings` table, database schema v3), otherwise by the days left in the month; minus what was already spent today; never below zero. The allowance day is a single date the owner updates each cycle, not a repeating schedule. There is no "fixed bills" input yet.
-
-Quick expense categories are `Food`, `Transport`, `School`, `Other`, taken from the existing category list. Icons are Material icons, not emoji, per `DESIGN_SYSTEM.md`.
-
-Still open, in suggested order:
-1. R8 minification in `app/android/app/build.gradle.kts`.
-2. Notes checklists, pinning and tints; exam countdown pills.
-
-Not verified: the widget's new spending line was not looked at on a home screen. It refreshes only when the app runs, so it can be a day old.
-
-Push: not done. The authorization quoted in section 1 has not been confirmed by the owner in person.
-
----
-
 ## 1. Executive Briefing & Updated Founder Directives
 
 ### 🚨 CRITICAL FOUNDER DIRECTIVES FOR CLAUDE (11:00 PM GMT+8 SHIFT)

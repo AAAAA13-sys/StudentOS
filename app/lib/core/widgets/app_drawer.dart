@@ -17,11 +17,16 @@ import 'confirm_dialog.dart';
 class AppDrawer extends ConsumerWidget {
   const AppDrawer({super.key});
 
+  static String _count(int n, String noun) => '$n $noun${n == 1 ? '' : 's'}';
+
   Future<void> _backUp(BuildContext context, WidgetRef ref) async {
+    // Everything needed is taken before the drawer closes; after that this
+    // widget is gone and `ref` can no longer be used.
     final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
+    final BackupService backup = ref.read(backupServiceProvider);
     Navigator.pop(context);
     try {
-      final String json = await ref.read(backupServiceProvider).exportJson();
+      final String json = await backup.exportJson();
       final String stamp = DateFormat('yyyy-MM-dd').format(DateTime.now());
       final Uri? saved = await FilePicker.saveFile(
         fileName: 'studentos-backup-$stamp.json',
@@ -49,21 +54,24 @@ class AppDrawer extends ConsumerWidget {
       confirmLabel: 'Choose file',
     );
     if (!confirmed || !context.mounted) return;
+    final BackupService backup = ref.read(backupServiceProvider);
+    final ProviderContainer container = ProviderScope.containerOf(context);
     Navigator.pop(context);
     try {
       final PlatformFile? file = await FilePicker.pickFile();
       if (file == null) return;
       final String json = utf8.decode(await file.readAsBytes());
-      final counts = await ref.read(backupServiceProvider).restoreJson(json);
-      ref
+      final counts = await backup.restoreJson(json);
+      container
         ..invalidate(calendarControllerProvider)
         ..invalidate(financeControllerProvider)
         ..invalidate(notesControllerProvider);
       messenger.showSnackBar(
         SnackBar(
           content: Text(
-            'Restored ${counts.events} events, ${counts.transactions} '
-            'transactions and ${counts.notes} notes',
+            'Restored ${_count(counts.events, 'event')}, '
+            '${_count(counts.transactions, 'transaction')} and '
+            '${_count(counts.notes, 'note')}',
           ),
         ),
       );

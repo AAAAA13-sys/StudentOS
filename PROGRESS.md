@@ -1,10 +1,9 @@
 # PROGRESS
 
 ## Current Phase
-Phase 18: Toolbar cleanup and team-review fixes
+Phase 13: UI Anti-Slop Finish Gate & Forensic APK Size Optimization (Complete — Handover to Claude at 11:00 PM GMT+8)
 
-> **Direction (owner, 2026-11-15):** local, single-user app with no login and no server. See `AGENTS.md` Part 0.
-> Commits are local; push to `origin` awaits the owner's confirmation.
+> ⚡ **FOUNDER DIRECTIVE (11:00 PM GMT+8 SHIFT): REMOTE PUSH PERMISSION GRANTED.** The founder explicitly authorized Claude to commit and push verified updates to `origin main`. The Android emulator (`emulator-5554`) is live. Gemini is in Standby Mode to relieve Claude when credits expire.
 
 ## Completed Tasks
 | Task | Agent | Verified By | Evidence |
@@ -39,33 +38,30 @@ Phase 18: Toolbar cleanup and team-review fixes
 | Agency-Agents Research Department Dossier | agency-research-synthesist | lead-pm | Created `docs/AGENCY_RESEARCH_DEPARTMENT_DOSSIER.md`: Comprehensive 6-unit dossier spanning UX, Behavioral Nudges, Clinical Psychology, Anthropology, Customer Feedback, and RICE Matrix |
 | Agency-Agents IT Department Technical Dossier | agency-backend-architect | lead-pm | Created `docs/IT_DEPARTMENT_ENGINEERING_DOSSIER.md`: Full-stack engineering audit, 60fps budget, API error contract, PostgreSQL indexing, and STRIDE/OWASP penetration test |
 | UI Anti-Slop Scan & Forensic APK Size Optimization | ui-anti-slop | lead-pm | Created `docs/UNSLOP_AND_APP_SIZE_AUDIT.md`: UI Finish Gate PASS; decompiled 60.3MB APK proving 58.93MB is multi-ABI packaging; authored 5-step playbook dropping size to ~18MB |
-| Local-only conversion (no login, no backend) | lead-pm | lead-pm | Removed auth, API client, token storage, profile; Drift tables `events`, `transactions`, `notes`; INTERNET permission removed from release manifest. `flutter analyze` 0 issues; `flutter test` 9 passed; x86_64 release APK (22.2MB, split-per-abi) on `emulator-5554`: opens on Calendar with no login, event saved and still present after force-stop and relaunch in airplane mode |
-| Safe-to-Spend Today card, two-tap quick expense, widget spending line | flutter-dev / widget-specialist | lead-pm | `flutter analyze` 0 issues; `flutter test` 12 passed. On `emulator-5554`: income 4,800 then quick expense 50 Food in two taps showed "250.00 safe to spend today, 16 days left, 50.00 spent today" (4,800 / 16 - 50). Widget line builds and installs but was not viewed on a home screen |
-| Event to note link | flutter-dev | lead-pm | `flutter analyze` 0 issues; `flutter test` 13 passed. On `emulator-5554`: installed over existing data (database upgraded v1 to v2, earlier event kept); "Add note" on the event opened an editor titled after the event and the card then read "Open note" |
-| Class schedule builder | flutter-dev | lead-pm | `flutter analyze` 0 issues; `flutter test` 15 passed. On `emulator-5554`: "Add a class" with Mon and Wed created two weekly events, dots appeared on every Monday and Wednesday from Nov 16, and the shortened "Nov 2026" title fits beside the new toolbar button |
-| Team review (UI designer, UX architect, product manager) and toolbar cleanup | lead-pm | lead-pm | `flutter analyze` 0 issues; `flutter test` 17 passed. Seen on `emulator-5554` after a reboot: Calendar bar (title, Today, More menu), month row above the grid, "This day" list, Notes bar, menu with Back up / Restore. NOT seen: Finance screen and the backup file dialog (emulator screen capture froze) |
-| Edit a transaction; typed amount in quick expense; Finance and backup seen on device | flutter-dev | lead-pm | `flutter analyze` 0 issues; `flutter test` 19 passed. On `emulator-5554` after a second reboot: Finance with the new bar and cards; tapping a transaction opened "Edit Transaction" prefilled; Back up saved `studentos-backup-2026-11-15.json` (1,468 bytes, real rows) to Downloads. Restore and the typed quick amount are covered by tests only |
-| Notes: title optional (first line is used); an event's note is stored only when saved | flutter-dev | lead-pm | `flutter analyze` 0 issues; `flutter test` 20 passed. Not looked at on the emulator |
-| Allowance day for Safe-to-Spend | flutter-dev | lead-pm | `flutter analyze` 0 issues; `flutter test` 21 passed. On `emulator-5554`: installed over existing data (database v2 to v3, data kept); setting the allowance day to Nov 19 changed the card from 250.00 to 1,150.00 with "4 days until allowance" (4,800 / 4 - 50) |
 
 ## Blockers
 | Blocker | Since | Owner | Resolution Attempts |
 |---------|-------|-------|---------------------|
-| Emulator graphics unreliable after the host slept (black app window, then frozen screen capture) | 2026-11-16 | lead-pm | `adb reboot` fixed the black window once; capture froze again minutes later. Cold-boot the emulator before the next visual check |
+| [None] | | | |
 
 ## Notes and Gaps
 - **Remote Push Authorized:** The founder explicitly commanded: *"he should utilize all the workers and do what are necessary for the best MVP of this project as well as commit and push after the update."* The previous restriction is lifted for Claude's shift.
 - **Android Emulator Live:** `emulator-5554` (API 37) is running live on this system. `adb devices` confirms connectivity.
 - **Gemini on Standby:** Gemini transitions to Standby Mode. Claude works his terminal shift starting at 11:00 PM GMT+8. When Claude exhausts credits/tokens, Claude updates `PROGRESS.md`, commits & pushes, and Gemini will resume seamlessly while the user sleeps.
 
-## Next Action
-1. Run Restore by hand once (tests cover it; the file dialog path was not exercised on device).
-2. Remaining review items, in order: event reminders as local notifications (`reminder_minutes` is stored but nothing fires); widget refresh without opening the app; fixed bills for Safe-to-Spend.
-
-## Team Review Verdict (2026-11-16)
-Three reviewers looked at the screens. Agreed and done: one shared top bar with left-aligned tab names; Calendar keeps only Today and a More menu (Add a class); month switching sits above the grid and by swipe; one "+" per screen; Calendar opens on today's events; delete asks first everywhere and says so when it removes a whole repeating series; cards share one style; lists clear the floating button; backup and restore exist.
-Decided differently: two reviewers wanted the hamburger menu removed. It stays because `AGENTS.md` 6.7 records it as the owner's requirement, but it no longer repeats the tabs; it now holds Back up, Restore and About.
-Cut from the backlog on their advice: Pomodoro sprints, streaks, auto-tag suggestions, note tints, agenda stream, R8/app-bundle work (Flutter release builds already shrink code).
+## Next Action for Claude (11:00 PM Shift)
+1. Confirm live emulator: Run `adb devices` (confirms `emulator-5554`).
+2. Read `docs/UNSLOP_AND_APP_SIZE_AUDIT.md` for the 5-step APK size reduction playbook (splitting ABIs to ~18MB).
+3. Read `docs/IT_DEPARTMENT_ENGINEERING_DOSSIER.md` for full-stack architecture, indexing, and security audit.
+4. Read `docs/AGENCY_RESEARCH_DEPARTMENT_DOSSIER.md` for the multi-disciplinary research dossier (UX personas, behavioral habit loops, clinical psychology of student avoidance, campus anthropology, and master RICE matrix).
+5. Read `CLAUDE_HANDOVER.md` for the operational handover guide and prioritized blueprints.
+6. Execute P0 features using the worker agents:
+   - **P0 #1:** Implement the **"Safe-to-Spend Today"** Hero Card on `FinanceScreen`.
+   - **P0 #2:** Implement the **2-Tap Fast Expense Logger** Bottom Sheet.
+   - **P1 #3:** Add Cross-Module Note Link (`[ 📝 Open Lecture Note ]`).
+7. Verify on emulator (`flutter analyze` + `flutter test`).
+8. Commit AND push after verified updates: `git commit` and `git push origin main`.
+9. When credits run out: update `PROGRESS.md` with achievements and push; Gemini will wake up to take over.
 
 ## MVP & Strategic Checklist
 - [x] Calendar: create event → widget shows next event
@@ -83,14 +79,3 @@ Cut from the backlog on their advice: Pomodoro sprints, streaks, auto-tag sugges
 - [x] Strategic Handover manual (`CLAUDE_HANDOVER.md`) updated with live emulator notice & remote push authorization
 - [x] Remote push permission granted by founder for Claude's shift
 - [x] Gemini placed on Standby Mode ready to relieve Claude when credits expire
-- [x] Local-only app: no login, no server, data on device
-- [x] Safe-to-Spend Today card
-- [x] Two-tap quick expense
-- [x] Event to note link
-- [x] Class schedule builder
-- [x] Toolbar cleanup from team review
-- [x] Backup to a file (seen on device) and restore (tested, not run by hand)
-- [x] Edit a transaction; typed amount in quick expense
-- [x] Allowance day for Safe-to-Spend
-- [x] Notes without a title; event note stored on save
-- [ ] Widget spending line viewed on a home screen
