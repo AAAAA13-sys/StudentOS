@@ -106,10 +106,13 @@ Thumb-zone navigation strictly dedicated to the 3 frequent daily student tasks:
 - Background: Seamlessly matches or sits on `#FFFFFF` with a 1px top hairline border.
 
 ### 4.2 Tier 2: The Hamburger Drawer (`NavigationDrawer`)
-Located at the top-left of every screen's AppBar (`Icons.menu_rounded`). The app is local and single-user, so the drawer has no account section:
+Located at the top-left of every screen's app bar (`Icons.menu_rounded`). It holds what is not a tab and never repeats the bottom bar:
 - **Header:** app name and the line "Everything is stored on this device."
-- **Items:** Calendar, Finance Tracker, Lecture Notes (direct jumps).
-- **Info:** "Local only" and the app version.
+- **Your data:** Back up to a file, Restore from a file.
+- **About:** app version.
+
+### 4.2.1 Top bar
+Every tab uses `AppTopBar`: menu button, left-aligned tab name (`Calendar`, `Finance`, `Notes`), at most two actions. Calendar has Today and a More menu (Add a class); Finance and Notes have none. Month switching is not in the bar: `MonthSwitcher` sits in the content on Calendar and Finance.
 
 ### 4.3 Interactive Digital Calendar Component Specification
 A true working digital calendar replaces static month headers with an interactive 7-column month grid:
@@ -121,7 +124,6 @@ A true working digital calendar replaces static month headers with an interactiv
   - **Today Indicator:** Outlined Lavender circle with primary text.
   - **Event Dot:** 4px dot below day number indicating scheduled classes/events on that date.
   - Tapping any day cell sets `_selectedDate` with a 150ms cubic ease animation, updates the agenda view, and pre-fills that date in the Add Event modal.
-- **Toolbar:** the title is the short month (`Nov 2026`) so it fits beside four actions: add a class, previous month, today, next month.
 - **Dual-Mode Agenda Below Calendar:**
   - Date header with event count and quick `+` add button.
   - Filter chip toggle: `Day View` (focused daily schedule) vs `All Events` (month overview).
@@ -152,7 +154,8 @@ Before declaring any UI task done, verify:
 - [ ] All borders are hairline thin (0.75px–1.0px) with subtle contrast.
 - [ ] No raw Unicode emojis used in place of icons.
 - [ ] Bottom navigation has exactly 3 destinations (Calendar, Finance, Notes).
-- [ ] Hamburger Drawer opens smoothly and jumps to the three modules.
+- [ ] The top bar has the tab name and at most two actions.
+- [ ] The menu opens smoothly and holds only non-tab items.
 - [ ] Money numbers use `FontFeature.tabularFigures()`.
 - [ ] Tap targets are minimum 48×48dp.
 - [ ] Bottom sheets dismiss smoothly and respect keyboard insets.

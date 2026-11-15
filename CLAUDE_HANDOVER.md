@@ -19,6 +19,7 @@ Done and verified this shift (details in `PROGRESS.md`):
 - Home-screen widget shows a "safe to spend today" line under the next event.
 - Event to note link: each calendar card has "Add note" / "Open note". The first tap creates a note titled after the event and attaches it (`events.note_id`, database schema v2).
 - Class schedule builder: the week icon in the Calendar toolbar opens "Add a class" (subject, room, weekdays, time, duration, end date) and saves one weekly event per chosen day. Recurring events now stop after their end date in the grid and lists.
+- Toolbar cleanup after a team review: shared `AppTopBar`, `MonthSwitcher`, `confirmDestructive`; menu holds Back up / Restore (JSON file via `file_picker`). See "Team Review Verdict" in `PROGRESS.md`.
 - Release builds are split per CPU type (about 18-22 MB each).
 
 How Safe-to-Spend is calculated (differs from the dossier blueprint): money on hand at the start of today (all income minus all expenses dated up to today, earlier months included) divided by the days left in the month, minus what was already spent today, never below zero. There is no "fixed bills" or allowance-cycle input yet.

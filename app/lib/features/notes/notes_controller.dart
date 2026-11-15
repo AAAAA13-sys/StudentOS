@@ -42,10 +42,7 @@ class NotesController extends AsyncNotifier<NotesState> {
     return _fetchState();
   }
 
-  Future<NotesState> _fetchState({
-    String? query,
-    String? tag,
-  }) async {
+  Future<NotesState> _fetchState({String? query, String? tag}) async {
     final List<String> tags = await _repo.getTags();
     final List<Note> notes = await _repo.getNotes(q: query, tag: tag);
 
@@ -61,10 +58,8 @@ class NotesController extends AsyncNotifier<NotesState> {
     final String currentTag = state.value?.selectedTag ?? '';
     state = const AsyncLoading();
     state = await AsyncValue.guard(
-      () => _fetchState(
-        query: q,
-        tag: currentTag.isNotEmpty ? currentTag : null,
-      ),
+      () =>
+          _fetchState(query: q, tag: currentTag.isNotEmpty ? currentTag : null),
     );
   }
 
@@ -113,7 +108,7 @@ class NotesController extends AsyncNotifier<NotesState> {
   }
 }
 
-final AsyncNotifierProvider<NotesController, NotesState> notesControllerProvider =
-    AsyncNotifierProvider<NotesController, NotesState>(
+final AsyncNotifierProvider<NotesController, NotesState>
+notesControllerProvider = AsyncNotifierProvider<NotesController, NotesState>(
   NotesController.new,
 );

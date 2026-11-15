@@ -56,7 +56,11 @@ class FakeFinanceController extends FinanceController {
         totalExpenses: 150.0,
         balance: 4850.0,
         byCategory: <CategoryBreakdown>[
-          CategoryBreakdown(category: 'Allowance', type: 'income', total: 5000.0),
+          CategoryBreakdown(
+            category: 'Allowance',
+            type: 'income',
+            total: 5000.0,
+          ),
           CategoryBreakdown(category: 'Food', type: 'expense', total: 150.0),
         ],
       ),
@@ -86,15 +90,15 @@ class FakeNotesController extends NotesController {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets('Calendar screen displays event and floating action button', (WidgetTester tester) async {
+  testWidgets('Calendar screen displays event and floating action button', (
+    WidgetTester tester,
+  ) async {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
           calendarControllerProvider.overrideWith(FakeCalendarController.new),
         ],
-        child: const MaterialApp(
-          home: CalendarScreen(),
-        ),
+        child: const MaterialApp(home: CalendarScreen()),
       ),
     );
 
@@ -113,15 +117,15 @@ void main() {
     expect(find.text('Title'), findsOneWidget);
   });
 
-  testWidgets('Finance screen displays balance summary and transactions', (WidgetTester tester) async {
+  testWidgets('Finance screen displays balance summary and transactions', (
+    WidgetTester tester,
+  ) async {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
           financeControllerProvider.overrideWith(FakeFinanceController.new),
         ],
-        child: const MaterialApp(
-          home: FinanceScreen(),
-        ),
+        child: const MaterialApp(home: FinanceScreen()),
       ),
     );
 
@@ -146,15 +150,15 @@ void main() {
     expect(find.text('Add Transaction'), findsOneWidget);
   });
 
-  testWidgets('Notes screen displays notes list, search bar, and tags', (WidgetTester tester) async {
+  testWidgets('Notes screen displays notes list, search bar, and tags', (
+    WidgetTester tester,
+  ) async {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
           notesControllerProvider.overrideWith(FakeNotesController.new),
         ],
-        child: const MaterialApp(
-          home: NotesScreen(),
-        ),
+        child: const MaterialApp(home: NotesScreen()),
       ),
     );
 
@@ -162,7 +166,10 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Physics Formula Sheet'), findsOneWidget);
-    expect(find.text('Newtonian mechanics formulas and constants.'), findsOneWidget);
+    expect(
+      find.text('Newtonian mechanics formulas and constants.'),
+      findsOneWidget,
+    );
     expect(find.text('#physics'), findsWidgets);
     expect(find.byType(FloatingActionButton), findsOneWidget);
 

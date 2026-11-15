@@ -36,8 +36,9 @@ class FinanceController extends AsyncNotifier<FinanceState> {
   }
 
   Future<FinanceState> _loadMonth(String month) async {
-    final List<Transaction> transactions =
-        await _repo.getTransactions(month: month);
+    final List<Transaction> transactions = await _repo.getTransactions(
+      month: month,
+    );
     final FinanceSummary summary = await _repo.getSummary(month: month);
     final DateTime today = DateTime.now();
     final SafeToSpend? safeToSpend =
@@ -83,25 +84,28 @@ class FinanceController extends AsyncNotifier<FinanceState> {
 
   Future<void> addTransaction(Transaction tx) async {
     await _repo.createTransaction(tx);
-    final String month = state.value?.month ?? DateFormat('yyyy-MM').format(DateTime.now());
+    final String month =
+        state.value?.month ?? DateFormat('yyyy-MM').format(DateTime.now());
     state = await AsyncValue.guard(() => _loadMonth(month));
   }
 
   Future<void> deleteTransaction(int id) async {
     await _repo.deleteTransaction(id);
-    final String month = state.value?.month ?? DateFormat('yyyy-MM').format(DateTime.now());
+    final String month =
+        state.value?.month ?? DateFormat('yyyy-MM').format(DateTime.now());
     state = await AsyncValue.guard(() => _loadMonth(month));
   }
 
   Future<void> refresh() async {
-    final String month = state.value?.month ?? DateFormat('yyyy-MM').format(DateTime.now());
+    final String month =
+        state.value?.month ?? DateFormat('yyyy-MM').format(DateTime.now());
     state = const AsyncLoading();
     state = await AsyncValue.guard(() => _loadMonth(month));
   }
 }
 
 final AsyncNotifierProvider<FinanceController, FinanceState>
-    financeControllerProvider =
+financeControllerProvider =
     AsyncNotifierProvider<FinanceController, FinanceState>(
-  FinanceController.new,
-);
+      FinanceController.new,
+    );

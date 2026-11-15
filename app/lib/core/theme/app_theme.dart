@@ -144,9 +144,7 @@ abstract final class AppTheme {
           final bool selected = states.contains(WidgetState.selected);
           return IconThemeData(
             size: AppSizes.iconMd,
-            color: selected
-                ? scheme.primary
-                : scheme.onSurfaceVariant,
+            color: selected ? scheme.primary : scheme.onSurfaceVariant,
           );
         }),
       ),
@@ -249,9 +247,7 @@ abstract final class AppTheme {
       dialogTheme: DialogThemeData(
         backgroundColor: scheme.surfaceContainerLowest,
         elevation: 3,
-        shape: const RoundedRectangleBorder(
-          borderRadius: AppRadius.extraLarge,
-        ),
+        shape: const RoundedRectangleBorder(borderRadius: AppRadius.extraLarge),
         titleTextStyle: textTheme.titleLarge,
         contentTextStyle: textTheme.bodyLarge?.copyWith(
           color: scheme.onSurfaceVariant,

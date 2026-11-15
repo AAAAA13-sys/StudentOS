@@ -239,3 +239,16 @@ Entries are appended, never edited. Corrections are new entries that reference t
 - Whether an event falls on a day is decided by `CalendarEvent.occursOn`, which respects the end date.
 - Calendar title uses the short month so the toolbar fits.
 **Open items:** Test data remains on the emulator.
+
+
+## Phase 18: Team review and toolbar cleanup
+**Date:** 2026-11-16
+**Verified by:** lead-pm
+**Evidence:** `flutter analyze` 0 issues; `flutter test` 17 passed (includes backup round trip and rejection of bad files). On `emulator-5554` after a reboot: new Calendar bar, month row, "This day" list, Notes bar and the menu with Back up / Restore were seen. Finance and the backup file dialog were not seen because the emulator's screen capture froze.
+**Decisions:**
+- Reviewers: agency-ui-designer, agency-ux-architect, agency-product-manager. Their verdict is summarised in `PROGRESS.md`.
+- The hamburger menu stays (owner requirement in `AGENTS.md` 6.7) but holds Back up, Restore and About instead of repeating the tabs.
+- Backup is one JSON file of all three tables; restore replaces everything and refuses files it cannot read.
+- New dependency: `file_picker` (system save/open dialogs; needs no internet permission).
+- R8 step from the size audit dropped: Flutter release builds already shrink code.
+**Open items:** Finance screen and backup dialog need a look on a healthy emulator.

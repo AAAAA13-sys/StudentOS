@@ -49,8 +49,9 @@ class CalendarEvent {
     if (day == startDay) return true;
     if (day.isBefore(startDay) || recurrence == 'none') return false;
 
-    final DateTime? until =
-        recurrenceUntil == null ? null : DateTime.tryParse(recurrenceUntil!);
+    final DateTime? until = recurrenceUntil == null
+        ? null
+        : DateTime.tryParse(recurrenceUntil!);
     if (until != null &&
         day.isAfter(DateTime(until.year, until.month, until.day))) {
       return false;
@@ -121,8 +122,9 @@ class CalendarEvent {
     }
     final DateTime next = at(step);
 
-    final DateTime? until =
-        recurrenceUntil == null ? null : DateTime.tryParse(recurrenceUntil!);
+    final DateTime? until = recurrenceUntil == null
+        ? null
+        : DateTime.tryParse(recurrenceUntil!);
     if (until != null &&
         !next.isBefore(DateTime(until.year, until.month, until.day + 1))) {
       return null;

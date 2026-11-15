@@ -4,6 +4,8 @@ import 'package:intl/intl.dart';
 
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/app_top_bar.dart';
+import '../../core/widgets/confirm_dialog.dart';
 import 'note.dart';
 import 'note_editor_sheet.dart';
 import 'notes_controller.dart';
@@ -26,28 +28,25 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final AsyncValue<NotesState> notesState = ref.watch(notesControllerProvider);
+    final AsyncValue<NotesState> notesState = ref.watch(
+      notesControllerProvider,
+    );
     final ColorScheme colors = context.colors;
     final TextTheme textStyles = context.textStyles;
 
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.menu_rounded),
-          tooltip: 'Open Menu',
-          onPressed: () => Scaffold.of(context).openDrawer(),
-        ),
-        title: const Text('Lecture Notes'),
-        centerTitle: true,
-      ),
+      appBar: const AppTopBar(title: 'Notes'),
       body: Column(
         children: <Widget>[
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.lg,
+              vertical: AppSpacing.sm,
+            ),
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
-                hintText: 'Search notes, bodies, or tags...',
+                hintText: 'Search notes',
                 prefixIcon: const Icon(Icons.search_rounded),
                 suffixIcon: _searchController.text.isNotEmpty
                     ? IconButton(
@@ -58,8 +57,13 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
                         },
                       )
                     : null,
-                border: const OutlineInputBorder(borderRadius: AppRadius.medium),
-                contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: AppSpacing.md),
+                border: const OutlineInputBorder(
+                  borderRadius: AppRadius.medium,
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  vertical: 0,
+                  horizontal: AppSpacing.md,
+                ),
               ),
               onChanged: (String val) {
                 ref.read(notesControllerProvider.notifier).search(val.trim());
@@ -67,18 +71,25 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
             ),
           ),
           notesState.when(
-            loading: () => const Expanded(child: Center(child: CircularProgressIndicator())),
+            loading: () => const Expanded(
+              child: Center(child: CircularProgressIndicator()),
+            ),
             error: (Object err, _) => Expanded(
               child: Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
-                    Icon(Icons.error_outline_rounded, size: 48, color: colors.error),
+                    Icon(
+                      Icons.error_outline_rounded,
+                      size: 48,
+                      color: colors.error,
+                    ),
                     AppSpacing.gapMd,
                     Text('Failed to load notes: $err'),
                     AppSpacing.gapLg,
                     FilledButton(
-                      onPressed: () => ref.read(notesControllerProvider.notifier).refresh(),
+                      onPressed: () =>
+                          ref.read(notesControllerProvider.notifier).refresh(),
                       child: const Text('Retry'),
                     ),
                   ],
@@ -93,7 +104,9 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
                       SizedBox(
                         height: 48,
                         child: ListView.separated(
-                          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.lg,
+                          ),
                           scrollDirection: Axis.horizontal,
                           itemCount: state.tags.length + 1,
                           separatorBuilder: (_, _) => AppSpacing.gapSm,
@@ -104,7 +117,9 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
                                 label: const Text('All'),
                                 selected: isSelected,
                                 onSelected: (_) {
-                                  ref.read(notesControllerProvider.notifier).selectTag(null);
+                                  ref
+                                      .read(notesControllerProvider.notifier)
+                                      .selectTag(null);
                                 },
                               );
                             }
@@ -146,64 +161,91 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
                               ),
                             )
                           : RefreshIndicator(
-                              onRefresh: () =>
-                                  ref.read(notesControllerProvider.notifier).refresh(),
+                              onRefresh: () => ref
+                                  .read(notesControllerProvider.notifier)
+                                  .refresh(),
                               child: ListView.separated(
-                                padding: AppSpacing.screen,
+                                padding: const EdgeInsets.fromLTRB(
+                                  AppSpacing.lg,
+                                  AppSpacing.sm,
+                                  AppSpacing.lg,
+                                  96,
+                                ),
                                 itemCount: state.notes.length,
                                 separatorBuilder: (_, _) => AppSpacing.gapMd,
                                 itemBuilder: (BuildContext context, int index) {
                                   final Note note = state.notes[index];
-                                  final DateTime? updated = note.updatedAt?.toLocal();
+                                  final DateTime? updated = note.updatedAt
+                                      ?.toLocal();
 
                                   return Card(
-                                    elevation: 0,
-                                    color: colors.surfaceContainerLow,
-                                    shape: const RoundedRectangleBorder(
-                                      borderRadius: AppRadius.large,
-                                    ),
                                     child: InkWell(
                                       borderRadius: AppRadius.large,
-                                      onTap: () => showNoteEditor(context, ref, note),
+                                      onTap: () =>
+                                          showNoteEditor(context, ref, note),
                                       child: Padding(
                                         padding: AppSpacing.card,
                                         child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: <Widget>[
                                             Row(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
                                               children: <Widget>[
                                                 Expanded(
                                                   child: Text(
                                                     note.title,
-                                                    style: textStyles.titleMedium?.copyWith(
-                                                      fontWeight: FontWeight.bold,
-                                                    ),
+                                                    style: textStyles
+                                                        .titleMedium
+                                                        ?.copyWith(
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                        ),
                                                   ),
                                                 ),
                                                 IconButton(
                                                   icon: Icon(
-                                                    Icons.delete_outline_rounded,
+                                                    Icons
+                                                        .delete_outline_rounded,
                                                     size: 20,
-                                                    color: colors.outline,
+                                                    color:
+                                                        colors.onSurfaceVariant,
                                                   ),
-                                                  onPressed: () {
-                                                    ref
-                                                        .read(notesControllerProvider.notifier)
-                                                        .deleteNote(note.id);
+                                                  tooltip: 'Delete',
+                                                  onPressed: () async {
+                                                    final bool confirmed =
+                                                        await confirmDestructive(
+                                                          context,
+                                                          title: 'Delete note?',
+                                                          message:
+                                                              '"${note.title}" will be removed.',
+                                                        );
+                                                    if (confirmed) {
+                                                      await ref
+                                                          .read(
+                                                            notesControllerProvider
+                                                                .notifier,
+                                                          )
+                                                          .deleteNote(note.id);
+                                                    }
                                                   },
                                                 ),
                                               ],
                                             ),
-                                            if (note.body.isNotEmpty) ...<Widget>[
+                                            if (note
+                                                .body
+                                                .isNotEmpty) ...<Widget>[
                                               AppSpacing.gapSm,
                                               Text(
                                                 note.body,
                                                 maxLines: 3,
                                                 overflow: TextOverflow.ellipsis,
-                                                style: textStyles.bodyMedium?.copyWith(
-                                                  color: colors.onSurfaceVariant,
-                                                ),
+                                                style: textStyles.bodyMedium
+                                                    ?.copyWith(
+                                                      color: colors
+                                                          .onSurfaceVariant,
+                                                    ),
                                               ),
                                             ],
                                             AppSpacing.gapMd,
@@ -211,30 +253,40 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
                                               children: <Widget>[
                                                 if (updated != null)
                                                   Text(
-                                                    DateFormat('MMM d, h:mm a').format(updated),
-                                                    style: textStyles.labelSmall?.copyWith(
-                                                      color: colors.outline,
-                                                    ),
+                                                    DateFormat('MMM d, h:mm a')
+                                                        .format(updated),
+                                                    style: textStyles.labelSmall
+                                                        ?.copyWith(
+                                                          color: colors.outline,
+                                                        ),
                                                   ),
                                                 const Spacer(),
                                                 if (note.tags.isNotEmpty)
                                                   Wrap(
                                                     spacing: 4,
-                                                    children: note.tags.map((String t) {
+                                                    children: note.tags.map((
+                                                      String t,
+                                                    ) {
                                                       return Container(
-                                                        padding: const EdgeInsets.symmetric(
-                                                          horizontal: 6,
-                                                          vertical: 2,
-                                                        ),
+                                                        padding:
+                                                            const EdgeInsets.symmetric(
+                                                              horizontal: 6,
+                                                              vertical: 2,
+                                                            ),
                                                         decoration: BoxDecoration(
-                                                          color: colors.secondaryContainer,
-                                                          borderRadius: AppRadius.small,
+                                                          color: colors
+                                                              .secondaryContainer,
+                                                          borderRadius:
+                                                              AppRadius.small,
                                                         ),
                                                         child: Text(
                                                           '#$t',
-                                                          style: textStyles.labelSmall?.copyWith(
-                                                            color: colors.onSecondaryContainer,
-                                                          ),
+                                                          style: textStyles
+                                                              .labelSmall
+                                                              ?.copyWith(
+                                                                color: colors
+                                                                    .onSecondaryContainer,
+                                                              ),
                                                         ),
                                                       );
                                                     }).toList(),
@@ -290,17 +342,23 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
                 children: <Widget>[
                   Text(
                     'New Note',
-                    style: ctx.textStyles.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                    style: ctx.textStyles.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   AppSpacing.gapLg,
                   TextFormField(
                     controller: titleController,
                     decoration: const InputDecoration(
                       labelText: 'Title',
-                      border: OutlineInputBorder(borderRadius: AppRadius.medium),
+                      border: OutlineInputBorder(
+                        borderRadius: AppRadius.medium,
+                      ),
                     ),
                     validator: (String? val) =>
-                        val == null || val.trim().isEmpty ? 'Title required' : null,
+                        val == null || val.trim().isEmpty
+                        ? 'Title required'
+                        : null,
                   ),
                   AppSpacing.gapMd,
                   TextFormField(
@@ -308,7 +366,9 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
                     maxLines: 5,
                     decoration: const InputDecoration(
                       labelText: 'Note content (plain text)',
-                      border: OutlineInputBorder(borderRadius: AppRadius.medium),
+                      border: OutlineInputBorder(
+                        borderRadius: AppRadius.medium,
+                      ),
                     ),
                   ),
                   AppSpacing.gapMd,
@@ -316,7 +376,9 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
                     controller: tagsController,
                     decoration: const InputDecoration(
                       labelText: 'Tags (comma separated, e.g. math, lecture)',
-                      border: OutlineInputBorder(borderRadius: AppRadius.medium),
+                      border: OutlineInputBorder(
+                        borderRadius: AppRadius.medium,
+                      ),
                     ),
                   ),
                   AppSpacing.gapXl,
@@ -331,7 +393,9 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
                             .where((String s) => s.isNotEmpty)
                             .toList();
 
-                        ref.read(notesControllerProvider.notifier).addNote(
+                        ref
+                            .read(notesControllerProvider.notifier)
+                            .addNote(
                               Note(
                                 id: 0,
                                 title: titleController.text.trim(),

@@ -4,6 +4,9 @@ import 'package:intl/intl.dart';
 
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/app_top_bar.dart';
+import '../../core/widgets/confirm_dialog.dart';
+import '../../core/widgets/month_switcher.dart';
 import 'calendar_controller.dart';
 import 'class_schedule_sheet.dart';
 import '../notes/note.dart';
@@ -22,7 +25,7 @@ class CalendarScreen extends ConsumerStatefulWidget {
 class _CalendarScreenState extends ConsumerState<CalendarScreen> {
   late DateTime _selectedDate;
   late DateTime _viewMonth;
-  bool _filterByDay = false;
+  bool _filterByDay = true;
 
   @override
   void initState() {
@@ -45,57 +48,31 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final AsyncValue<List<CalendarEvent>> eventsState =
-        ref.watch(calendarControllerProvider);
+    final AsyncValue<List<CalendarEvent>> eventsState = ref.watch(
+      calendarControllerProvider,
+    );
     final ColorScheme colors = context.colors;
     final TextTheme textStyles = context.textStyles;
     final DateTime today = DateTime.now();
 
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.menu_rounded),
-          tooltip: 'Open Menu',
-          onPressed: () => Scaffold.of(context).openDrawer(),
-        ),
-        title: Text(
-          DateFormat('MMM yyyy').format(_viewMonth),
-          style: textStyles.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-        ),
+      appBar: AppTopBar(
+        title: 'Calendar',
         actions: <Widget>[
           IconButton(
-            icon: const Icon(Icons.view_week_outlined),
-            tooltip: 'Add a class',
-            onPressed: _addClass,
-          ),
-          IconButton(
-            icon: const Icon(Icons.chevron_left_rounded),
-            tooltip: 'Previous Month',
-            onPressed: () {
-              setState(() {
-                _viewMonth = DateTime(_viewMonth.year, _viewMonth.month - 1, 1);
-              });
-            },
-          ),
-          IconButton(
             icon: const Icon(Icons.today_rounded),
-            tooltip: 'Jump to Today',
-            onPressed: () {
-              setState(() {
-                final DateTime now = DateTime.now();
-                _selectedDate = DateTime(now.year, now.month, now.day);
-                _viewMonth = DateTime(now.year, now.month, 1);
-              });
-            },
+            tooltip: 'Today',
+            onPressed: () => _showMonth(DateTime.now()),
           ),
-          IconButton(
-            icon: const Icon(Icons.chevron_right_rounded),
-            tooltip: 'Next Month',
-            onPressed: () {
-              setState(() {
-                _viewMonth = DateTime(_viewMonth.year, _viewMonth.month + 1, 1);
-              });
-            },
+          PopupMenuButton<void>(
+            icon: const Icon(Icons.more_vert_rounded),
+            tooltip: 'More',
+            itemBuilder: (BuildContext context) => <PopupMenuEntry<void>>[
+              PopupMenuItem<void>(
+                onTap: _addClass,
+                child: const Text('Add a class'),
+              ),
+            ],
           ),
         ],
       ),
@@ -118,59 +95,79 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
           ),
         ),
         data: (List<CalendarEvent> allEvents) {
-          final List<CalendarEvent> dayEvents =
-              _eventsForDate(allEvents, _selectedDate)
-                ..sort((a, b) => a.startsAt.compareTo(b.startsAt));
+          final List<CalendarEvent> dayEvents = _eventsForDate(
+            allEvents,
+            _selectedDate,
+          )..sort((a, b) => a.startsAt.compareTo(b.startsAt));
 
           final List<CalendarEvent> displayedEvents = _filterByDay
               ? dayEvents
               : (List<CalendarEvent>.from(allEvents)
-                ..sort((a, b) => a.startsAt.compareTo(b.startsAt)));
+                  ..sort((a, b) => a.startsAt.compareTo(b.startsAt)));
 
           return Column(
             children: <Widget>[
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+                child: MonthSwitcher(month: _viewMonth, onChanged: _showMonth),
+              ),
               // Interactive Digital Month Calendar Card
               Padding(
                 padding: const EdgeInsets.fromLTRB(
                   AppSpacing.lg,
-                  AppSpacing.xs,
+                  0,
                   AppSpacing.lg,
                   AppSpacing.xs,
                 ),
-                child: Card(
-                  elevation: 0,
-                  color: colors.surfaceContainerLowest,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: AppRadius.large,
-                    side: BorderSide(color: colors.outlineVariant, width: 1.0),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.md,
-                      vertical: AppSpacing.sm,
+                child: GestureDetector(
+                  onHorizontalDragEnd: (DragEndDetails details) {
+                    final double velocity = details.primaryVelocity ?? 0;
+                    if (velocity.abs() < 200) return;
+                    _showMonth(
+                      DateTime(
+                        _viewMonth.year,
+                        _viewMonth.month + (velocity < 0 ? 1 : -1),
+                      ),
+                    );
+                  },
+                  child: Card(
+                    elevation: 0,
+                    color: colors.surfaceContainerLowest,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: AppRadius.large,
+                      side: BorderSide(
+                        color: colors.outlineVariant,
+                        width: 1.0,
+                      ),
                     ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: <Widget>[
-                        // Weekday labels
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: const <Widget>[
-                            _WeekdayHeader('S'),
-                            _WeekdayHeader('M'),
-                            _WeekdayHeader('T'),
-                            _WeekdayHeader('W'),
-                            _WeekdayHeader('T'),
-                            _WeekdayHeader('F'),
-                            _WeekdayHeader('S'),
-                          ],
-                        ),
-                        const SizedBox(height: 6),
-                        const Divider(height: 1),
-                        const SizedBox(height: 6),
-                        // Days grid
-                        _buildMonthGrid(allEvents, today, colors, textStyles),
-                      ],
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.md,
+                        vertical: AppSpacing.sm,
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                          // Weekday labels
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: const <Widget>[
+                              _WeekdayHeader('S'),
+                              _WeekdayHeader('M'),
+                              _WeekdayHeader('T'),
+                              _WeekdayHeader('W'),
+                              _WeekdayHeader('T'),
+                              _WeekdayHeader('F'),
+                              _WeekdayHeader('S'),
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          const Divider(height: 1),
+                          const SizedBox(height: 6),
+                          // Days grid
+                          _buildMonthGrid(allEvents, today, colors, textStyles),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -189,34 +186,19 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                       child: Text(
                         _filterByDay
                             ? DateFormat('EEEE, MMM d').format(_selectedDate)
-                            : 'All Events (${displayedEvents.length})',
+                            : 'All events (${displayedEvents.length})',
                         style: textStyles.titleMedium?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
-                    Row(
-                      children: <Widget>[
-                        FilterChip(
-                          label: Text(_filterByDay ? 'Day View' : 'All Events'),
-                          selected: _filterByDay,
-                          visualDensity: VisualDensity.compact,
-                          onSelected: (bool selected) {
-                            setState(() {
-                              _filterByDay = !selected ? false : true;
-                            });
-                          },
-                        ),
-                        const SizedBox(width: 8),
-                        IconButton.filledTonal(
-                          icon: const Icon(Icons.add_rounded, size: 20),
-                          tooltip: 'Add event for this day',
-                          onPressed: () => _showAddEventDialog(
-                            context,
-                            prefilledDate: _selectedDate,
-                          ),
-                        ),
-                      ],
+                    FilterChip(
+                      label: const Text('This day'),
+                      selected: _filterByDay,
+                      visualDensity: VisualDensity.compact,
+                      onSelected: (bool selected) {
+                        setState(() => _filterByDay = selected);
+                      },
                     ),
                   ],
                 ),
@@ -246,7 +228,9 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                             AppSpacing.gapSm,
                             FilledButton.tonalIcon(
                               icon: const Icon(Icons.add_rounded),
-                              label: Text('Add Event for ${DateFormat('MMM d').format(_selectedDate)}'),
+                              label: Text(
+                                'Add Event for ${DateFormat('MMM d').format(_selectedDate)}',
+                              ),
                               onPressed: () => _showAddEventDialog(
                                 context,
                                 prefilledDate: _selectedDate,
@@ -256,18 +240,30 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                         ),
                       )
                     : RefreshIndicator(
-                        onRefresh: () =>
-                            ref.read(calendarControllerProvider.notifier).refresh(),
+                        onRefresh: () => ref
+                            .read(calendarControllerProvider.notifier)
+                            .refresh(),
                         child: ListView.separated(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: AppSpacing.lg,
-                            vertical: AppSpacing.sm,
+                          padding: const EdgeInsets.fromLTRB(
+                            AppSpacing.lg,
+                            AppSpacing.sm,
+                            AppSpacing.lg,
+                            96,
                           ),
                           itemCount: displayedEvents.length,
                           separatorBuilder: (_, _) => AppSpacing.gapMd,
                           itemBuilder: (BuildContext context, int index) {
                             final CalendarEvent event = displayedEvents[index];
-                            final DateTime localStart = event.startsAt.toLocal();
+                            final DateTime start = event.startsAt.toLocal();
+                            final DateTime localStart = _filterByDay
+                                ? DateTime(
+                                    _selectedDate.year,
+                                    _selectedDate.month,
+                                    _selectedDate.day,
+                                    start.hour,
+                                    start.minute,
+                                  )
+                                : start;
 
                             return Card(
                               elevation: 0,
@@ -286,12 +282,19 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                                   existingEvent: event,
                                 ),
                                 child: Padding(
-                                  padding: AppSpacing.card,
+                                  padding: const EdgeInsets.fromLTRB(
+                                    AppSpacing.lg,
+                                    AppSpacing.lg,
+                                    AppSpacing.sm,
+                                    AppSpacing.xs,
+                                  ),
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: <Widget>[
                                       Row(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: <Widget>[
                                           // Lavender Date Pill
                                           Container(
@@ -306,18 +309,27 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                                             child: Column(
                                               children: <Widget>[
                                                 Text(
-                                                  DateFormat('MMM').format(localStart).toUpperCase(),
-                                                  style: textStyles.labelSmall?.copyWith(
-                                                    color: colors.onPrimaryContainer,
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
+                                                  DateFormat('MMM')
+                                                      .format(localStart)
+                                                      .toUpperCase(),
+                                                  style: textStyles.labelSmall
+                                                      ?.copyWith(
+                                                        color: colors
+                                                            .onPrimaryContainer,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                      ),
                                                 ),
                                                 Text(
-                                                  DateFormat('d').format(localStart),
-                                                  style: textStyles.titleMedium?.copyWith(
-                                                    color: colors.onPrimaryContainer,
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
+                                                  DateFormat('d')
+                                                      .format(localStart),
+                                                  style: textStyles.titleMedium
+                                                      ?.copyWith(
+                                                        color: colors
+                                                            .onPrimaryContainer,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                      ),
                                                 ),
                                               ],
                                             ),
@@ -325,13 +337,16 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                                           AppSpacing.gapMd,
                                           Expanded(
                                             child: Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
                                               children: <Widget>[
                                                 Text(
                                                   event.title,
-                                                  style: textStyles.titleMedium?.copyWith(
-                                                    fontWeight: FontWeight.w700,
-                                                  ),
+                                                  style: textStyles.titleMedium
+                                                      ?.copyWith(
+                                                        fontWeight:
+                                                            FontWeight.w700,
+                                                      ),
                                                 ),
                                                 AppSpacing.gapXs,
                                                 Row(
@@ -339,34 +354,47 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                                                     Icon(
                                                       Icons.access_time_rounded,
                                                       size: 15,
-                                                      color: colors.onSurfaceVariant,
+                                                      color: colors
+                                                          .onSurfaceVariant,
                                                     ),
                                                     const SizedBox(width: 4),
                                                     Text(
                                                       '${DateFormat('h:mm a').format(localStart)} (${event.durationMinutes}m)',
-                                                      style: textStyles.bodySmall?.copyWith(
-                                                        color: colors.onSurfaceVariant,
-                                                      ),
+                                                      style: textStyles
+                                                          .bodySmall
+                                                          ?.copyWith(
+                                                            color: colors
+                                                                .onSurfaceVariant,
+                                                          ),
                                                     ),
                                                   ],
                                                 ),
                                                 if (event.location != null &&
-                                                    event.location!.isNotEmpty) ...<Widget>[
+                                                    event
+                                                        .location!
+                                                        .isNotEmpty) ...<
+                                                  Widget
+                                                >[
                                                   AppSpacing.gapXs,
                                                   Row(
                                                     children: <Widget>[
                                                       Icon(
-                                                        Icons.location_on_outlined,
+                                                        Icons
+                                                            .location_on_outlined,
                                                         size: 15,
-                                                        color: colors.onSurfaceVariant,
+                                                        color: colors
+                                                            .onSurfaceVariant,
                                                       ),
                                                       const SizedBox(width: 4),
                                                       Expanded(
                                                         child: Text(
                                                           event.location!,
-                                                          style: textStyles.bodySmall?.copyWith(
-                                                            color: colors.onSurfaceVariant,
-                                                          ),
+                                                          style: textStyles
+                                                              .bodySmall
+                                                              ?.copyWith(
+                                                                color: colors
+                                                                    .onSurfaceVariant,
+                                                              ),
                                                         ),
                                                       ),
                                                     ],
@@ -378,62 +406,72 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                                           IconButton(
                                             icon: Icon(
                                               Icons.delete_outline_rounded,
-                                              color: colors.error,
+                                              size: 20,
+                                              color: colors.onSurfaceVariant,
                                             ),
-                                            tooltip: 'Delete Event',
+                                            tooltip: 'Delete',
                                             onPressed: () =>
-                                                _confirmDelete(context, event.id),
+                                                _confirmDelete(event),
                                           ),
                                         ],
                                       ),
-                                      if (event.recurrence != 'none') ...<Widget>[
-                                        AppSpacing.gapSm,
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 8,
-                                            vertical: 2,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: colors.surfaceContainerLow,
-                                            borderRadius: AppRadius.pill,
-                                            border: Border.all(
-                                              color: colors.outlineVariant,
-                                            ),
-                                          ),
-                                          child: Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: <Widget>[
-                                              Icon(
-                                                Icons.repeat_rounded,
-                                                size: 13,
-                                                color: colors.primary,
+                                      Row(
+                                        children: <Widget>[
+                                          if (event.recurrence != 'none')
+                                            Container(
+                                              margin: const EdgeInsets.only(
+                                                right: AppSpacing.sm,
                                               ),
-                                              const SizedBox(width: 4),
-                                              Text(
-                                                'Repeats ${event.recurrence}',
-                                                style: textStyles.labelSmall?.copyWith(
-                                                  color: colors.primary,
-                                                  fontWeight: FontWeight.w600,
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 8,
+                                                    vertical: 2,
+                                                  ),
+                                              decoration: BoxDecoration(
+                                                borderRadius: AppRadius.pill,
+                                                border: Border.all(
+                                                  color: colors.outlineVariant,
                                                 ),
                                               ),
-                                            ],
+                                              child: Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: <Widget>[
+                                                  Icon(
+                                                    Icons.repeat_rounded,
+                                                    size: 13,
+                                                    color: colors.primary,
+                                                  ),
+                                                  const SizedBox(width: 4),
+                                                  Text(
+                                                    'Repeats ${event.recurrence}',
+                                                    style: textStyles.labelSmall
+                                                        ?.copyWith(
+                                                          color: colors.primary,
+                                                          fontWeight:
+                                                              FontWeight.w600,
+                                                        ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          const Spacer(),
+                                          TextButton.icon(
+                                            style: TextButton.styleFrom(
+                                              visualDensity:
+                                                  VisualDensity.compact,
+                                            ),
+                                            onPressed: () => _openNote(event),
+                                            icon: const Icon(
+                                              Icons.article_outlined,
+                                              size: 18,
+                                            ),
+                                            label: Text(
+                                              event.noteId != null
+                                                  ? 'Open note'
+                                                  : 'Add note',
+                                            ),
                                           ),
-                                        ),
-                                      ],
-                                      Align(
-                                        alignment: Alignment.centerLeft,
-                                        child: TextButton.icon(
-                                          onPressed: () => _openNote(event),
-                                          icon: const Icon(
-                                            Icons.article_outlined,
-                                            size: 18,
-                                          ),
-                                          label: Text(
-                                            event.noteId != null
-                                                ? 'Open note'
-                                                : 'Add note',
-                                          ),
-                                        ),
+                                        ],
                                       ),
                                     ],
                                   ),
@@ -450,10 +488,8 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         tooltip: 'Add Event',
-        onPressed: () => _showAddEventDialog(
-          context,
-          prefilledDate: _selectedDate,
-        ),
+        onPressed: () =>
+            _showAddEventDialog(context, prefilledDate: _selectedDate),
         child: const Icon(Icons.add_rounded),
       ),
     );
@@ -504,8 +540,16 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     ColorScheme colors,
     TextTheme textStyles,
   ) {
-    final DateTime firstDayOfMonth = DateTime(_viewMonth.year, _viewMonth.month, 1);
-    final int daysInMonth = DateTime(_viewMonth.year, _viewMonth.month + 1, 0).day;
+    final DateTime firstDayOfMonth = DateTime(
+      _viewMonth.year,
+      _viewMonth.month,
+      1,
+    );
+    final int daysInMonth = DateTime(
+      _viewMonth.year,
+      _viewMonth.month + 1,
+      0,
+    ).day;
     final int startingDayOfWeek = firstDayOfMonth.weekday % 7; // Sunday = 0
     final int totalCells = ((startingDayOfWeek + daysInMonth + 6) ~/ 7) * 7;
     final int rowCount = totalCells ~/ 7;
@@ -520,16 +564,22 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
             children: List<Widget>.generate(7, (int colIndex) {
               final int cellIndex = rowIndex * 7 + colIndex;
               final int dayOffset = cellIndex - startingDayOfWeek + 1;
-              final DateTime cellDate =
-                  DateTime(_viewMonth.year, _viewMonth.month, dayOffset);
+              final DateTime cellDate = DateTime(
+                _viewMonth.year,
+                _viewMonth.month,
+                dayOffset,
+              );
               final bool isCurrentMonth = cellDate.month == _viewMonth.month;
               final bool isSelected = _isSameDay(cellDate, _selectedDate);
               final bool isToday = _isSameDay(cellDate, today);
-              final bool hasEvents = _eventsForDate(allEvents, cellDate).isNotEmpty;
+              final bool hasEvents = _eventsForDate(
+                allEvents,
+                cellDate,
+              ).isNotEmpty;
 
               return SizedBox(
-                width: 38,
-                height: 34,
+                width: 40,
+                height: 40,
                 child: InkWell(
                   borderRadius: AppRadius.pill,
                   onTap: () {
@@ -549,8 +599,8 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                       color: isSelected
                           ? colors.primary
                           : (isToday
-                              ? colors.primaryContainer.withValues(alpha: 0.5)
-                              : Colors.transparent),
+                                ? colors.primaryContainer.withValues(alpha: 0.5)
+                                : Colors.transparent),
                       border: isToday && !isSelected
                           ? Border.all(color: colors.primary, width: 1.5)
                           : null,
@@ -563,12 +613,16 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                           style: textStyles.bodySmall?.copyWith(
                             fontWeight: isSelected || isToday
                                 ? FontWeight.bold
-                                : (isCurrentMonth ? FontWeight.w600 : FontWeight.w400),
+                                : (isCurrentMonth
+                                      ? FontWeight.w600
+                                      : FontWeight.w400),
                             color: isSelected
                                 ? colors.onPrimary
                                 : (isCurrentMonth
-                                    ? (isToday ? colors.primary : colors.onSurface)
-                                    : colors.outlineVariant),
+                                      ? (isToday
+                                            ? colors.primary
+                                            : colors.onSurface)
+                                      : colors.outlineVariant),
                           ),
                         ),
                         if (hasEvents)
@@ -597,28 +651,30 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     );
   }
 
-  Future<void> _confirmDelete(BuildContext context, int id) async {
-    final bool? confirm = await showDialog<bool>(
-      context: context,
-      builder: (BuildContext ctx) => AlertDialog(
-        title: const Text('Delete Event'),
-        content: const Text('Are you sure you want to delete this event?'),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style: FilledButton.styleFrom(backgroundColor: context.colors.error),
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
-    );
+  /// Shows [month]; the selected day follows so "add" never targets a day
+  /// that is off screen.
+  void _showMonth(DateTime month) {
+    final DateTime now = DateTime.now();
+    setState(() {
+      _viewMonth = DateTime(month.year, month.month);
+      _selectedDate = month.year == now.year && month.month == now.month
+          ? DateTime(now.year, now.month, now.day)
+          : _viewMonth;
+    });
+  }
 
-    if (confirm == true) {
-      ref.read(calendarControllerProvider.notifier).deleteEvent(id);
+  Future<void> _confirmDelete(CalendarEvent event) async {
+    final bool repeats = event.recurrence != 'none';
+    final bool confirmed = await confirmDestructive(
+      context,
+      title: repeats ? 'Delete every "${event.title}"?' : 'Delete event?',
+      message: repeats
+          ? 'This repeats ${event.recurrence}. Every occurrence will be '
+                'removed, past and future.'
+          : '"${event.title}" will be removed.',
+    );
+    if (confirmed) {
+      await ref.read(calendarControllerProvider.notifier).deleteEvent(event.id);
     }
   }
 
@@ -628,21 +684,23 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     CalendarEvent? existingEvent,
   }) async {
     final GlobalKey<FormState> formKey = GlobalKey<FormState>();
-    final TextEditingController titleController =
-        TextEditingController(text: existingEvent?.title ?? '');
-    final TextEditingController locationController =
-        TextEditingController(text: existingEvent?.location ?? '');
-    final TextEditingController notesController =
-        TextEditingController(text: existingEvent?.notes ?? '');
+    final TextEditingController titleController = TextEditingController(
+      text: existingEvent?.title ?? '',
+    );
+    final TextEditingController locationController = TextEditingController(
+      text: existingEvent?.location ?? '',
+    );
+    final TextEditingController notesController = TextEditingController(
+      text: existingEvent?.notes ?? '',
+    );
 
-    final DateTime baseDate = existingEvent?.startsAt.toLocal() ??
-        prefilledDate ??
-        _selectedDate;
+    final DateTime baseDate =
+        existingEvent?.startsAt.toLocal() ?? prefilledDate ?? _selectedDate;
 
     DateTime eventDate = DateTime(baseDate.year, baseDate.month, baseDate.day);
     TimeOfDay eventTime = existingEvent != null
         ? TimeOfDay.fromDateTime(existingEvent.startsAt.toLocal())
-        : TimeOfDay.now();
+        : TimeOfDay(hour: (TimeOfDay.now().hour + 1) % 24, minute: 0);
 
     int durationMinutes = existingEvent?.durationMinutes ?? 60;
     String recurrence = existingEvent?.recurrence ?? 'none';
@@ -702,10 +760,14 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                         decoration: const InputDecoration(
                           labelText: 'Title',
                           hintText: 'e.g. Physics Lecture, Math Quiz',
-                          border: OutlineInputBorder(borderRadius: AppRadius.medium),
+                          border: OutlineInputBorder(
+                            borderRadius: AppRadius.medium,
+                          ),
                         ),
                         validator: (String? val) =>
-                            val == null || val.trim().isEmpty ? 'Title required' : null,
+                            val == null || val.trim().isEmpty
+                            ? 'Title required'
+                            : null,
                       ),
                       AppSpacing.gapMd,
                       Row(
@@ -723,8 +785,13 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                                   setModalState(() => eventDate = picked);
                                 }
                               },
-                              icon: const Icon(Icons.calendar_today_rounded, size: 18),
-                              label: Text(DateFormat('MMM d, yyyy').format(eventDate)),
+                              icon: const Icon(
+                                Icons.calendar_today_rounded,
+                                size: 18,
+                              ),
+                              label: Text(
+                                DateFormat('MMM d, yyyy').format(eventDate),
+                              ),
                             ),
                           ),
                           AppSpacing.gapSm,
@@ -739,7 +806,10 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                                   setModalState(() => eventTime = picked);
                                 }
                               },
-                              icon: const Icon(Icons.access_time_rounded, size: 18),
+                              icon: const Icon(
+                                Icons.access_time_rounded,
+                                size: 18,
+                              ),
                               label: Text(eventTime.format(ctx)),
                             ),
                           ),
@@ -753,17 +823,36 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                               initialValue: durationMinutes,
                               decoration: const InputDecoration(
                                 labelText: 'Duration',
-                                border: OutlineInputBorder(borderRadius: AppRadius.medium),
+                                border: OutlineInputBorder(
+                                  borderRadius: AppRadius.medium,
+                                ),
                               ),
                               items: const <DropdownMenuItem<int>>[
-                                DropdownMenuItem<int>(value: 30, child: Text('30 mins')),
-                                DropdownMenuItem<int>(value: 45, child: Text('45 mins')),
-                                DropdownMenuItem<int>(value: 60, child: Text('1 hour')),
-                                DropdownMenuItem<int>(value: 90, child: Text('1.5 hours')),
-                                DropdownMenuItem<int>(value: 120, child: Text('2 hours')),
+                                DropdownMenuItem<int>(
+                                  value: 30,
+                                  child: Text('30 mins'),
+                                ),
+                                DropdownMenuItem<int>(
+                                  value: 45,
+                                  child: Text('45 mins'),
+                                ),
+                                DropdownMenuItem<int>(
+                                  value: 60,
+                                  child: Text('1 hour'),
+                                ),
+                                DropdownMenuItem<int>(
+                                  value: 90,
+                                  child: Text('1.5 hours'),
+                                ),
+                                DropdownMenuItem<int>(
+                                  value: 120,
+                                  child: Text('2 hours'),
+                                ),
                               ],
                               onChanged: (int? val) {
-                                if (val != null) setModalState(() => durationMinutes = val);
+                                if (val != null) {
+                                  setModalState(() => durationMinutes = val);
+                                }
                               },
                             ),
                           ),
@@ -773,16 +862,32 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                               initialValue: recurrence,
                               decoration: const InputDecoration(
                                 labelText: 'Repeat',
-                                border: OutlineInputBorder(borderRadius: AppRadius.medium),
+                                border: OutlineInputBorder(
+                                  borderRadius: AppRadius.medium,
+                                ),
                               ),
                               items: const <DropdownMenuItem<String>>[
-                                DropdownMenuItem<String>(value: 'none', child: Text('Does not repeat')),
-                                DropdownMenuItem<String>(value: 'daily', child: Text('Daily')),
-                                DropdownMenuItem<String>(value: 'weekly', child: Text('Weekly')),
-                                DropdownMenuItem<String>(value: 'monthly', child: Text('Monthly')),
+                                DropdownMenuItem<String>(
+                                  value: 'none',
+                                  child: Text('Does not repeat'),
+                                ),
+                                DropdownMenuItem<String>(
+                                  value: 'daily',
+                                  child: Text('Daily'),
+                                ),
+                                DropdownMenuItem<String>(
+                                  value: 'weekly',
+                                  child: Text('Weekly'),
+                                ),
+                                DropdownMenuItem<String>(
+                                  value: 'monthly',
+                                  child: Text('Monthly'),
+                                ),
                               ],
                               onChanged: (String? val) {
-                                if (val != null) setModalState(() => recurrence = val);
+                                if (val != null) {
+                                  setModalState(() => recurrence = val);
+                                }
                               },
                             ),
                           ),
@@ -794,7 +899,9 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                         decoration: const InputDecoration(
                           labelText: 'Location (optional)',
                           hintText: 'e.g. Room 304, Science Lab',
-                          border: OutlineInputBorder(borderRadius: AppRadius.medium),
+                          border: OutlineInputBorder(
+                            borderRadius: AppRadius.medium,
+                          ),
                         ),
                       ),
                       AppSpacing.gapMd,
@@ -804,7 +911,9 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                         decoration: const InputDecoration(
                           labelText: 'Notes (optional)',
                           hintText: 'e.g. Bring lab coat and calculator',
-                          border: OutlineInputBorder(borderRadius: AppRadius.medium),
+                          border: OutlineInputBorder(
+                            borderRadius: AppRadius.medium,
+                          ),
                         ),
                       ),
                       AppSpacing.gapXl,
@@ -826,7 +935,8 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                               title: titleController.text.trim(),
                               startsAt: combinedStart,
                               durationMinutes: durationMinutes,
-                              location: locationController.text.trim().isNotEmpty
+                              location:
+                                  locationController.text.trim().isNotEmpty
                                   ? locationController.text.trim()
                                   : null,
                               notes: notesController.text.trim().isNotEmpty
@@ -843,12 +953,18 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                                   .read(calendarControllerProvider.notifier)
                                   .updateEvent(newEvent);
                             } else {
-                              ref.read(calendarControllerProvider.notifier).addEvent(newEvent);
+                              ref
+                                  .read(calendarControllerProvider.notifier)
+                                  .addEvent(newEvent);
                             }
 
                             Navigator.pop(ctx);
                           },
-                          child: Text(existingEvent != null ? 'Update Event' : 'Save Event'),
+                          child: Text(
+                            existingEvent != null
+                                ? 'Update Event'
+                                : 'Save Event',
+                          ),
                         ),
                       ),
                     ],

@@ -28,7 +28,10 @@ class CalendarController extends AsyncNotifier<List<CalendarEvent>> {
 
   Future<void> addEvent(CalendarEvent event) async {
     final CalendarEvent created = await _repo.createEvent(event);
-    state = AsyncData(<CalendarEvent>[...state.value ?? <CalendarEvent>[], created]);
+    state = AsyncData(<CalendarEvent>[
+      ...state.value ?? <CalendarEvent>[],
+      created,
+    ]);
     unawaited(syncWidget());
   }
 
@@ -63,8 +66,8 @@ class CalendarController extends AsyncNotifier<List<CalendarEvent>> {
 
   Future<void> syncWidget() async {
     try {
-      final ({String title, DateTime startsAt})? nextEvent =
-          await _repo.getNextEvent();
+      final ({String title, DateTime startsAt})? nextEvent = await _repo
+          .getNextEvent();
       if (nextEvent != null) {
         await HomeWidget.saveWidgetData<String>('event_title', nextEvent.title);
         await HomeWidget.saveWidgetData<String>(
@@ -72,8 +75,14 @@ class CalendarController extends AsyncNotifier<List<CalendarEvent>> {
           DateFormat('EEE, MMM d • h:mm a').format(nextEvent.startsAt),
         );
       } else {
-        await HomeWidget.saveWidgetData<String>('event_title', 'No upcoming events');
-        await HomeWidget.saveWidgetData<String>('event_time', 'Enjoy your free time!');
+        await HomeWidget.saveWidgetData<String>(
+          'event_title',
+          'No upcoming events',
+        );
+        await HomeWidget.saveWidgetData<String>(
+          'event_time',
+          'Enjoy your free time!',
+        );
       }
       await HomeWidget.updateWidget(
         name: 'CalendarWidgetProvider',
@@ -86,7 +95,7 @@ class CalendarController extends AsyncNotifier<List<CalendarEvent>> {
 }
 
 final AsyncNotifierProvider<CalendarController, List<CalendarEvent>>
-    calendarControllerProvider =
+calendarControllerProvider =
     AsyncNotifierProvider<CalendarController, List<CalendarEvent>>(
-  CalendarController.new,
-);
+      CalendarController.new,
+    );

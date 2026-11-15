@@ -255,7 +255,9 @@ void main() {
     }
 
     await settle();
-    await tester.tap(find.byTooltip('Add a class'));
+    await tester.tap(find.byTooltip('More'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Add a class'));
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('Save class'));
@@ -442,11 +444,15 @@ void main() {
     );
 
     expect(await repo.getTags(), <String>['exam', 'physics']);
-    expect((await repo.getNotes(q: 'FORMULA')).single.title,
-        'Physics Formula Sheet');
+    expect(
+      (await repo.getNotes(q: 'FORMULA')).single.title,
+      'Physics Formula Sheet',
+    );
     expect((await repo.getNotes(q: 'eggs')).single.title, 'Groceries');
-    expect((await repo.getNotes(q: 'exam')).single.title,
-        'Physics Formula Sheet');
+    expect(
+      (await repo.getNotes(q: 'exam')).single.title,
+      'Physics Formula Sheet',
+    );
     expect((await repo.getNotes(tag: 'physics')), hasLength(1));
     expect(await repo.getNotes(q: 'nothing'), isEmpty);
 

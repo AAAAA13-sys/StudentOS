@@ -7,8 +7,9 @@ import '../../features/finance/finance_screen.dart';
 import '../../features/notes/notes_screen.dart';
 import '../widgets/scaffold_with_nav_bar.dart';
 
-final GlobalKey<NavigatorState> _rootNavigatorKey =
-    GlobalKey<NavigatorState>(debugLabel: 'root');
+final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>(
+  debugLabel: 'root',
+);
 
 final Provider<GoRouter> routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
@@ -16,13 +17,14 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((ref) {
     initialLocation: '/calendar',
     routes: <RouteBase>[
       StatefulShellRoute.indexedStack(
-        builder: (
-          BuildContext context,
-          GoRouterState state,
-          StatefulNavigationShell navigationShell,
-        ) {
-          return ScaffoldWithNavBar(navigationShell: navigationShell);
-        },
+        builder:
+            (
+              BuildContext context,
+              GoRouterState state,
+              StatefulNavigationShell navigationShell,
+            ) {
+              return ScaffoldWithNavBar(navigationShell: navigationShell);
+            },
         branches: <StatefulShellBranch>[
           StatefulShellBranch(
             routes: <RouteBase>[

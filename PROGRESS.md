@@ -1,7 +1,7 @@
 # PROGRESS
 
 ## Current Phase
-Phase 17: Daily-use features on the local-only app (class schedule builder done)
+Phase 18: Toolbar cleanup and team-review fixes
 
 > **Direction (owner, 2026-11-15):** local, single-user app with no login and no server. See `AGENTS.md` Part 0.
 > Commits are local; push to `origin` awaits the owner's confirmation.
@@ -43,11 +43,12 @@ Phase 17: Daily-use features on the local-only app (class schedule builder done)
 | Safe-to-Spend Today card, two-tap quick expense, widget spending line | flutter-dev / widget-specialist | lead-pm | `flutter analyze` 0 issues; `flutter test` 12 passed. On `emulator-5554`: income 4,800 then quick expense 50 Food in two taps showed "250.00 safe to spend today, 16 days left, 50.00 spent today" (4,800 / 16 - 50). Widget line builds and installs but was not viewed on a home screen |
 | Event to note link | flutter-dev | lead-pm | `flutter analyze` 0 issues; `flutter test` 13 passed. On `emulator-5554`: installed over existing data (database upgraded v1 to v2, earlier event kept); "Add note" on the event opened an editor titled after the event and the card then read "Open note" |
 | Class schedule builder | flutter-dev | lead-pm | `flutter analyze` 0 issues; `flutter test` 15 passed. On `emulator-5554`: "Add a class" with Mon and Wed created two weekly events, dots appeared on every Monday and Wednesday from Nov 16, and the shortened "Nov 2026" title fits beside the new toolbar button |
+| Team review (UI designer, UX architect, product manager) and toolbar cleanup | lead-pm | lead-pm | `flutter analyze` 0 issues; `flutter test` 17 passed. Seen on `emulator-5554` after a reboot: Calendar bar (title, Today, More menu), month row above the grid, "This day" list, Notes bar, menu with Back up / Restore. NOT seen: Finance screen and the backup file dialog (emulator screen capture froze) |
 
 ## Blockers
 | Blocker | Since | Owner | Resolution Attempts |
 |---------|-------|-------|---------------------|
-| [None] | | | |
+| Emulator graphics unreliable after the host slept (black app window, then frozen screen capture) | 2026-11-16 | lead-pm | `adb reboot` fixed the black window once; capture froze again minutes later. Cold-boot the emulator before the next visual check |
 
 ## Notes and Gaps
 - **Remote Push Authorized:** The founder explicitly commanded: *"he should utilize all the workers and do what are necessary for the best MVP of this project as well as commit and push after the update."* The previous restriction is lifted for Claude's shift.
@@ -55,7 +56,13 @@ Phase 17: Daily-use features on the local-only app (class schedule builder done)
 - **Gemini on Standby:** Gemini transitions to Standby Mode. Claude works his terminal shift starting at 11:00 PM GMT+8. When Claude exhausts credits/tokens, Claude updates `PROGRESS.md`, commits & pushes, and Gemini will resume seamlessly while the user sleeps.
 
 ## Next Action
-Pick from: R8 minification; notes checklists, pinning and tints; exam countdown pills; fixed bills for Safe-to-Spend. Also open: view the widget's spending line on a home screen; hand-check the Notes tab on the emulator; remove the test data left on the emulator (LocalCheck, Math101, the 4,800 income and 50 expense).
+1. Cold-boot the emulator, then look at Finance and run Back up / Restore by hand.
+2. Remaining review items, in order: tap a transaction to edit it; "Other" amount in quick expense; event reminders as local notifications (`reminder_minutes` is stored but nothing fires); allowance-cycle setting for Safe-to-Spend; widget refresh without opening the app; note title defaulting to the first line.
+
+## Team Review Verdict (2026-11-16)
+Three reviewers looked at the screens. Agreed and done: one shared top bar with left-aligned tab names; Calendar keeps only Today and a More menu (Add a class); month switching sits above the grid and by swipe; one "+" per screen; Calendar opens on today's events; delete asks first everywhere and says so when it removes a whole repeating series; cards share one style; lists clear the floating button; backup and restore exist.
+Decided differently: two reviewers wanted the hamburger menu removed. It stays because `AGENTS.md` 6.7 records it as the owner's requirement, but it no longer repeats the tabs; it now holds Back up, Restore and About.
+Cut from the backlog on their advice: Pomodoro sprints, streaks, auto-tag suggestions, note tints, agenda stream, R8/app-bundle work (Flutter release builds already shrink code).
 
 ## MVP & Strategic Checklist
 - [x] Calendar: create event → widget shows next event
@@ -78,4 +85,6 @@ Pick from: R8 minification; notes checklists, pinning and tints; exam countdown 
 - [x] Two-tap quick expense
 - [x] Event to note link
 - [x] Class schedule builder
+- [x] Toolbar cleanup from team review
+- [x] Backup and restore to a file (logic tested; file dialog not seen on device)
 - [ ] Widget spending line viewed on a home screen

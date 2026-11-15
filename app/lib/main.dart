@@ -7,11 +7,7 @@ import 'core/theme/app_theme.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(
-    const ProviderScope(
-      child: StudentOSApp(),
-    ),
-  );
+  runApp(const ProviderScope(child: StudentOSApp()));
 }
 
 class StudentOSApp extends ConsumerWidget {
