@@ -399,6 +399,33 @@ void main() {
     expect(value.leftToday, 240);
   });
 
+  test('Safe to spend lasts until the allowance day when one is set', () async {
+    final FinanceRepository repo = FinanceRepository(database);
+    await repo.createTransaction(
+      Transaction(
+        id: 0,
+        type: 'income',
+        amount: 3000,
+        category: 'Allowance',
+        occurredOn: DateTime(2026, 11, 1),
+      ),
+    );
+    final DateTime today = DateTime(2026, 11, 21, 9);
+
+    await repo.setNextAllowance(DateTime(2026, 11, 26));
+    SafeToSpend value = await repo.getSafeToSpend(today);
+    expect(value.untilAllowance, isTrue);
+    expect(value.daysLeft, 5);
+    expect(value.leftToday, 600);
+
+    // An allowance day that has passed falls back to the end of the month.
+    await repo.setNextAllowance(DateTime(2026, 11, 21));
+    value = await repo.getSafeToSpend(today);
+    expect(value.untilAllowance, isFalse);
+    expect(value.daysLeft, 10);
+    expect(value.leftToday, 300);
+  });
+
   testWidgets('Quick expense is logged in two taps', (
     WidgetTester tester,
   ) async {
@@ -494,7 +521,11 @@ void main() {
     }
 
     await settle();
-    await tester.ensureVisible(find.textContaining('Typo'));
+    await tester.scrollUntilVisible(
+      find.textContaining('Typo'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
     await tester.pumpAndSettle();
     await tester.tap(find.textContaining('Typo'));
     await tester.pumpAndSettle();

@@ -29,6 +29,7 @@ class BackupService {
         .select(_db.transactionRows)
         .get();
     final List<NoteRow> notes = await _db.select(_db.noteRows).get();
+    final List<SettingRow> settings = await _db.select(_db.settingRows).get();
 
     return const JsonEncoder.withIndent('  ').convert(<String, Object?>{
       'app': 'studentos',
@@ -39,6 +40,9 @@ class BackupService {
         for (final TransactionRow row in transactions) row.toJson(),
       ],
       'notes': <Object?>[for (final NoteRow row in notes) row.toJson()],
+      'settings': <Object?>[
+        for (final SettingRow row in settings) row.toJson(),
+      ],
     });
   }
 
@@ -50,6 +54,7 @@ class BackupService {
     final List<EventRow> events;
     final List<TransactionRow> transactions;
     final List<NoteRow> notes;
+    final List<SettingRow> settings;
     try {
       final Object? decoded = jsonDecode(json);
       if (decoded is! Map<String, dynamic> || decoded['app'] != 'studentos') {
@@ -66,6 +71,10 @@ class BackupService {
       events = rows('events').map(EventRow.fromJson).toList();
       transactions = rows('transactions').map(TransactionRow.fromJson).toList();
       notes = rows('notes').map(NoteRow.fromJson).toList();
+      // Backups made before settings existed have no such list.
+      settings = decoded['settings'] == null
+          ? <SettingRow>[]
+          : rows('settings').map(SettingRow.fromJson).toList();
     } on BackupFormatException {
       rethrow;
     } catch (_) {
@@ -76,10 +85,12 @@ class BackupService {
       await _db.delete(_db.eventRows).go();
       await _db.delete(_db.transactionRows).go();
       await _db.delete(_db.noteRows).go();
+      await _db.delete(_db.settingRows).go();
       await _db.batch((batch) {
         batch.insertAll(_db.eventRows, events);
         batch.insertAll(_db.transactionRows, transactions);
         batch.insertAll(_db.noteRows, notes);
+        batch.insertAll(_db.settingRows, settings);
       });
     });
     return (

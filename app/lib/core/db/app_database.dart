@@ -74,20 +74,39 @@ class NoteRows extends Table {
   DateTimeColumn get updatedAt => dateTime()();
 }
 
+/// Small named values, such as the next allowance day.
+@DataClassName('SettingRow')
+class SettingRows extends Table {
+  @override
+  String get tableName => 'settings';
+
+  TextColumn get key => text()();
+
+  TextColumn get value => text()();
+
+  @override
+  Set<Column<Object>> get primaryKey => <Column<Object>>{key};
+}
+
 /// The app's only data store. Everything lives on this device.
-@DriftDatabase(tables: <Type>[EventRows, TransactionRows, NoteRows])
+@DriftDatabase(
+  tables: <Type>[EventRows, TransactionRows, NoteRows, SettingRows],
+)
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor])
     : super(executor ?? driftDatabase(name: 'studentos'));
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
     onUpgrade: (Migrator m, int from, int to) async {
       if (from < 2) {
         await m.addColumn(eventRows, eventRows.noteId);
+      }
+      if (from < 3) {
+        await m.createTable(settingRows);
       }
     },
   );

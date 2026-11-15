@@ -79,7 +79,29 @@ class FinanceScreen extends ConsumerWidget {
                         ),
                         AppSpacing.gapMd,
                         if (state.safeToSpend != null) ...<Widget>[
-                          SafeToSpendCard(value: state.safeToSpend!),
+                          SafeToSpendCard(
+                            value: state.safeToSpend!,
+                            onSetAllowanceDay: () async {
+                              final DateTime now = DateTime.now();
+                              final DateTime tomorrow = DateTime(
+                                now.year,
+                                now.month,
+                                now.day + 1,
+                              );
+                              final DateTime? picked = await showDatePicker(
+                                context: context,
+                                helpText: 'Next allowance day',
+                                initialDate: tomorrow,
+                                firstDate: tomorrow,
+                                lastDate: DateTime(now.year + 1, now.month),
+                              );
+                              if (picked != null) {
+                                await ref
+                                    .read(financeControllerProvider.notifier)
+                                    .setNextAllowance(picked);
+                              }
+                            },
+                          ),
                           AppSpacing.gapMd,
                         ],
                         // Balance Summary Card

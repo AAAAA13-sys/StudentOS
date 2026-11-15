@@ -46,6 +46,8 @@ void main() {
       ),
     );
 
+    await FinanceRepository(source).setNextAllowance(DateTime(2026, 11, 26));
+
     // Something already on the target must be replaced, not merged.
     await NotesRepository(
       target,
@@ -70,6 +72,10 @@ void main() {
     ).getTransactions()).single;
     expect(tx.amount, 120.5);
     expect(tx.note, 'Lunch');
+    expect(
+      await FinanceRepository(target).getNextAllowance(),
+      DateTime(2026, 11, 26),
+    );
   });
 
   test('A file that is not a backup changes nothing', () async {

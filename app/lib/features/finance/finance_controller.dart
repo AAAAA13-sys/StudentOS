@@ -82,6 +82,13 @@ class FinanceController extends AsyncNotifier<FinanceState> {
     state = await AsyncValue.guard(() => _loadMonth(month));
   }
 
+  Future<void> setNextAllowance(DateTime day) async {
+    await _repo.setNextAllowance(day);
+    final String month =
+        state.value?.month ?? DateFormat('yyyy-MM').format(DateTime.now());
+    state = await AsyncValue.guard(() => _loadMonth(month));
+  }
+
   Future<void> updateTransaction(Transaction tx) async {
     await _repo.updateTransaction(tx);
     final String month =

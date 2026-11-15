@@ -46,6 +46,7 @@ Phase 18: Toolbar cleanup and team-review fixes
 | Team review (UI designer, UX architect, product manager) and toolbar cleanup | lead-pm | lead-pm | `flutter analyze` 0 issues; `flutter test` 17 passed. Seen on `emulator-5554` after a reboot: Calendar bar (title, Today, More menu), month row above the grid, "This day" list, Notes bar, menu with Back up / Restore. NOT seen: Finance screen and the backup file dialog (emulator screen capture froze) |
 | Edit a transaction; typed amount in quick expense; Finance and backup seen on device | flutter-dev | lead-pm | `flutter analyze` 0 issues; `flutter test` 19 passed. On `emulator-5554` after a second reboot: Finance with the new bar and cards; tapping a transaction opened "Edit Transaction" prefilled; Back up saved `studentos-backup-2026-11-15.json` (1,468 bytes, real rows) to Downloads. Restore and the typed quick amount are covered by tests only |
 | Notes: title optional (first line is used); an event's note is stored only when saved | flutter-dev | lead-pm | `flutter analyze` 0 issues; `flutter test` 20 passed. Not looked at on the emulator |
+| Allowance day for Safe-to-Spend | flutter-dev | lead-pm | `flutter analyze` 0 issues; `flutter test` 21 passed. On `emulator-5554`: installed over existing data (database v2 to v3, data kept); setting the allowance day to Nov 19 changed the card from 250.00 to 1,150.00 with "4 days until allowance" (4,800 / 4 - 50) |
 
 ## Blockers
 | Blocker | Since | Owner | Resolution Attempts |
@@ -59,7 +60,7 @@ Phase 18: Toolbar cleanup and team-review fixes
 
 ## Next Action
 1. Run Restore by hand once (tests cover it; the file dialog path was not exercised on device).
-2. Remaining review items, in order: event reminders as local notifications (`reminder_minutes` is stored but nothing fires); allowance-cycle setting for Safe-to-Spend; widget refresh without opening the app.
+2. Remaining review items, in order: event reminders as local notifications (`reminder_minutes` is stored but nothing fires); widget refresh without opening the app; fixed bills for Safe-to-Spend.
 
 ## Team Review Verdict (2026-11-16)
 Three reviewers looked at the screens. Agreed and done: one shared top bar with left-aligned tab names; Calendar keeps only Today and a More menu (Add a class); month switching sits above the grid and by swipe; one "+" per screen; Calendar opens on today's events; delete asks first everywhere and says so when it removes a whole repeating series; cards share one style; lists clear the floating button; backup and restore exist.
@@ -90,4 +91,6 @@ Cut from the backlog on their advice: Pomodoro sprints, streaks, auto-tag sugges
 - [x] Toolbar cleanup from team review
 - [x] Backup to a file (seen on device) and restore (tested, not run by hand)
 - [x] Edit a transaction; typed amount in quick expense
+- [x] Allowance day for Safe-to-Spend
+- [x] Notes without a title; event note stored on save
 - [ ] Widget spending line viewed on a home screen

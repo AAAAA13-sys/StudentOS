@@ -273,3 +273,13 @@ Entries are appended, never edited. Corrections are new entries that reference t
 - A note needs a title or some text; with no title, the first line (up to 60 characters) becomes the title.
 - "Add note" on an event opens a draft; the note is created and attached only on save, so backing out leaves nothing behind.
 **Open items:** Look at both flows on the emulator.
+
+
+## Phase 21: Allowance day for Safe-to-Spend
+**Date:** 2026-11-16  
+**Verified by:** lead-pm  
+**Evidence:** `flutter analyze` 0 issues; `flutter test` 21 passed; on `emulator-5554` the v2 to v3 upgrade kept existing data and choosing Nov 19 as the allowance day changed the card to "1,150.00, 4 days until allowance" (4,800 / 4 - 50).  
+**Decisions:**
+- The allowance day is one date kept in a new `settings` table; once it passes, the card falls back to the end of the month until a new date is set.
+- Backups include settings; older backups without them still restore.
+**Open items:** No repeating allowance schedule and no fixed bills yet.

@@ -107,12 +107,40 @@ class FinanceRepository {
       }
     }
 
+    final DateTime day = DateTime(today.year, today.month, today.day);
+    final DateTime? allowance = await getNextAllowance();
+    final bool untilAllowance = allowance != null && allowance.isAfter(day);
     final int lastDay = DateTime(today.year, today.month + 1, 0).day;
     return SafeToSpend.calculate(
       balanceCents: balance,
       spentTodayCents: spentToday,
-      daysLeft: lastDay - today.day + 1,
+      // Rounded because a day is 23 or 25 hours long when clocks change.
+      daysLeft: untilAllowance
+          ? (allowance.difference(day).inHours / 24).round()
+          : lastDay - today.day + 1,
+      untilAllowance: untilAllowance,
     );
+  }
+
+  static const String _nextAllowanceKey = 'next_allowance';
+
+  /// The day the next allowance arrives, if the user has set one.
+  Future<DateTime?> getNextAllowance() async {
+    final SettingRow? row = await (_db.select(
+      _db.settingRows,
+    )..where((t) => t.key.equals(_nextAllowanceKey))).getSingleOrNull();
+    return row == null ? null : DateTime.tryParse(row.value);
+  }
+
+  Future<void> setNextAllowance(DateTime day) {
+    return _db
+        .into(_db.settingRows)
+        .insertOnConflictUpdate(
+          SettingRowsCompanion.insert(
+            key: _nextAllowanceKey,
+            value: _dateKey(day),
+          ),
+        );
   }
 
   static String _dateKey(DateTime day) {

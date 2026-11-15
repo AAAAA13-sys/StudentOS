@@ -23,7 +23,7 @@ Done and verified this shift (details in `PROGRESS.md`):
 - Finance: tap a transaction to edit it; the quick sheet has an "Other" tile for a typed amount; a quick expense jumps back to the current month.
 - Release builds are split per CPU type (about 18-22 MB each).
 
-How Safe-to-Spend is calculated (differs from the dossier blueprint): money on hand at the start of today (all income minus all expenses dated up to today, earlier months included) divided by the days left in the month, minus what was already spent today, never below zero. There is no "fixed bills" or allowance-cycle input yet.
+How Safe-to-Spend is calculated (differs from the dossier blueprint): money on hand at the start of today (all income minus all expenses dated up to today, earlier months included) divided by the days until the next allowance day when one is set on the card (stored in the `settings` table, database schema v3), otherwise by the days left in the month; minus what was already spent today; never below zero. The allowance day is a single date the owner updates each cycle, not a repeating schedule. There is no "fixed bills" input yet.
 
 Quick expense categories are `Food`, `Transport`, `School`, `Other`, taken from the existing category list. Icons are Material icons, not emoji, per `DESIGN_SYSTEM.md`.
 

@@ -6,9 +6,16 @@ import '../../../core/theme/app_theme.dart';
 import '../safe_to_spend.dart';
 
 class SafeToSpendCard extends StatelessWidget {
-  const SafeToSpendCard({required this.value, super.key});
+  const SafeToSpendCard({
+    required this.value,
+    required this.onSetAllowanceDay,
+    super.key,
+  });
 
   final SafeToSpend value;
+
+  /// Called when the user wants to pick the next allowance day.
+  final VoidCallback onSetAllowanceDay;
 
   @override
   Widget build(BuildContext context) {
@@ -22,9 +29,13 @@ class SafeToSpendCard extends StatelessWidget {
       FontFeature.tabularFigures(),
     ];
 
-    final String days = value.daysLeft == 1
-        ? 'Last day of the month'
-        : '${value.daysLeft} days left this month';
+    final String days = value.untilAllowance
+        ? (value.daysLeft == 1
+              ? 'Allowance arrives tomorrow'
+              : '${value.daysLeft} days until allowance')
+        : (value.daysLeft == 1
+              ? 'Last day of the month'
+              : '${value.daysLeft} days left this month');
     final String detail = !value.hasFunds
         ? 'Add your allowance to see what is safe to spend.'
         : value.spentToday > 0
@@ -63,6 +74,22 @@ class SafeToSpendCard extends StatelessWidget {
             style: textStyles.bodySmall?.copyWith(
               fontFeatures: tabular,
               color: colors.onPrimaryContainer,
+            ),
+          ),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton(
+              style: TextButton.styleFrom(
+                padding: EdgeInsets.zero,
+                visualDensity: VisualDensity.compact,
+                foregroundColor: colors.primary,
+              ),
+              onPressed: onSetAllowanceDay,
+              child: Text(
+                value.untilAllowance
+                    ? 'Change allowance day'
+                    : 'Set next allowance day',
+              ),
             ),
           ),
         ],
