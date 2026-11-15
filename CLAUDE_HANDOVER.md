@@ -1,20 +1,28 @@
 # CLAUDE_HANDOVER.md — Comprehensive Project Handover & Strategic Manual for Claude
 
-**Date:** November 15, 2026  
-**From:** Antigravity (operating as Lead PM & Lead Engineer)  
-**To:** Claude (Lead Project Manager / Engineer)  
+**Date:** November 15, 2026 (Shift Start: 11:00 PM GMT+8)  
+**From:** Antigravity (operating as Lead PM & Lead Engineer, transitioning to Standby Mode)  
+**To:** Claude (Lead Project Manager / Engineer, running on Terminal)  
 **Repository:** `https://github.com/AAAAA13-sys/StudentOS`  
-**Current Branch:** `main` (Local commits only — **DO NOT PUSH TO GITHUB**)  
+**Current Branch:** `main` (Remote push authorized by founder for Claude's shift)  
 
 ---
 
-## 1. Executive Briefing & The Golden Rule
+## 1. Executive Briefing & Updated Founder Directives
 
-### ⚠️ ABSOLUTE USER DIRECTIVE — NON-NEGOTIABLE
-> **"dont push to the github. update all documentation for claude to do later. emphasis of unslop the ui. tell him to search online (you can do it as well) whats good for a mobile app (i prefere hint of lavander color scheme). i need a better ui for this. proper usage of menus like burger, ease in and out better typography, heirarchy so on and so forth. ... we stop programming. we need to the best we can. we need to research. i need the pyschology behind the app. and tell claude on the handover what do we need, what features, what contents, whats missing to be included. i want you to search from google apps how do they do their thing for a user like me (a student that is kinda busy)."**
+### 🚨 CRITICAL FOUNDER DIRECTIVES FOR CLAUDE (11:00 PM GMT+8 SHIFT)
+The founder left these explicit instructions before sleeping:
+> **"i want you gemini on standby mode. claude will work on 11pm gmt+8. ill be sleeping i want you to work after him after he lost all of the credits available is that okay? claude is running on a terminal. can you tell him on the handover that the emulator is running. and he should utilize all the workers and do what are necessary for the best MVP of this project as well as commit and push after the update."**
 
-1. **NO GIT PUSH:** Do not execute `git push` or push to any remote repository. All commits and branches must remain strictly local on `main`.
-2. **STOP PROGRAMMING FOR NOW:** The application code is working, verified, and complete through Phase 9.1. Your mission when resuming is **research-first, psychology-driven feature refinement and architecture planning**.
+### Key Takeaways for Claude:
+1. **ANDROID EMULATOR IS ALREADY LIVE:**
+   The Android Studio emulator (`emulator-5554`, API 37) is **already up, booted, and running** in the background on this machine. You do not need to launch an emulator. Verify instantly with `adb devices`. The app (`com.studentos.studentos`) is pre-installed.
+2. **REMOTE PUSH PERMISSION IS OFFICIALLY GRANTED:**
+   The previous restriction has been **lifted by the founder**. You are explicitly authorized and expected to **commit and push** to `origin main` (`https://github.com/AAAAA13-sys/StudentOS`) after verifying each update/feature!
+3. **MOBILIZE ALL WORKERS:**
+   You own the outcome. Direct the agent roster in `.claude/agents/` (`flutter-dev`, `laravel-service-dev`, `widget-specialist`, `api-gateway-dev`, `qa-verifier`, `security-reviewer`) along with the specialized Agency & IT units.
+4. **STANDBY & RELIEF PROTOCOL (WHEN CREDITS EXPIRE):**
+   Gemini (Antigravity) is placed in **Standby Mode**. While the founder sleeps, you work your full shift. When your terminal session runs low on credits or tokens, update `PROGRESS.md` and this document with your completed tasks, commit & push, and leave the state clean. Gemini will wake up to relieve you and continue the sprint without missing a beat.
 
 ---
 
@@ -220,21 +228,32 @@ When the user asks you to implement the next phase, here is the exact backlog of
 
 ---
 
-## 9. How Claude Should Operate When Resuming
+## 9. How Claude Should Operate on the 11:00 PM Shift
 
-1. **Verify Shell & Git Status:**
+1. **Verify Shell, Emulator & Git Status:**
    - Run `git status` and `git log -6 --oneline`.
-   - **CONFIRM: NEVER RUN `git push`! Keep all work strictly local.**
-2. **Review Research & Specifications:**
-   - Read [`docs/UNSLOP_AND_APP_SIZE_AUDIT.md`](file:///c:/Users/Ivan/Documents/StudentOS/docs/UNSLOP_AND_APP_SIZE_AUDIT.md) for the UI Finish Gate review and the 5-step APK size reduction playbook (splitting ABIs to ~18MB).
+   - Run `adb devices` — **the Android emulator (`emulator-5554`) is already up and running live!**
+   - **CONFIRM PUSH MANDATE:** You are authorized by the founder to commit and run `git push origin main` after verifying updates.
+2. **Review Research & Technical Specifications:**
+   - Read [`docs/UNSLOP_AND_APP_SIZE_AUDIT.md`](file:///c:/Users/Ivan/Documents/StudentOS/docs/UNSLOP_AND_APP_SIZE_AUDIT.md) for the 5-step APK size reduction playbook (splitting ABIs to ~18MB).
    - Read [`docs/IT_DEPARTMENT_ENGINEERING_DOSSIER.md`](file:///c:/Users/Ivan/Documents/StudentOS/docs/IT_DEPARTMENT_ENGINEERING_DOSSIER.md) for full-stack architecture, indexing, and security audit.
    - Read [`docs/AGENCY_RESEARCH_DEPARTMENT_DOSSIER.md`](file:///c:/Users/Ivan/Documents/StudentOS/docs/AGENCY_RESEARCH_DEPARTMENT_DOSSIER.md) for the complete Agency-Agents research findings, personas, RICE matrix, and blueprints.
    - Read [`docs/PRODUCT_PSYCHOLOGY_AND_RESEARCH.md`](file:///c:/Users/Ivan/Documents/StudentOS/docs/PRODUCT_PSYCHOLOGY_AND_RESEARCH.md) for cognitive load theory and Google Apps benchmarks.
    - Read [`DESIGN_SYSTEM.md`](file:///c:/Users/Ivan/Documents/StudentOS/DESIGN_SYSTEM.md) for anti-slop guidelines and lavender tokens.
-3. **Ask the User / Await Direction:**
-   - If the user asks for design feedback, discuss the psychological trade-offs (e.g., Safe-to-Spend vs. zero-based budgeting).
-   - If the user authorizes coding, pick the highest-priority feature from Section 6.2 of the Agency Dossier (P0: Safe-to-Spend Hero Card or 2-Tap Fast Logger) and follow the Superpowers pipeline (brainstorm, write plan, execute, verify).
-4. **Verification Protocol:**
-   - Run `cd app; flutter analyze` (must remain 0 issues).
-   - Run `flutter test` (must remain 6/6 passed).
-   - When building release APK, use `flutter build apk --release --split-per-abi` to ensure lean per-architecture APKs (~18MB).
+3. **Execution Roadmap for Best MVP (Priority Order):**
+   - **P0 Priority 1:** Implement the **"Safe-to-Spend Today"** Hero Card on `FinanceScreen` (formula in Section 6.3 of Agency Dossier).
+   - **P0 Priority 2:** Implement the **2-Tap Fast Expense Logger** Bottom Sheet with preset quick amounts (`₱20`, `₱50`, `₱100`, `₱200`) and 1-tap category icons.
+   - **P1 Priority 3:** Add the **Cross-Module Link** (`[ 📝 Open Lecture Note ]` pill button on calendar event cards).
+   - **P1 Priority 4:** Build the **Semester Timetable Generator** modal for recurring class batches.
+   - **P1 Priority 5:** Update `app/android/app/build.gradle.kts` with `isMinifyEnabled = true` & `isShrinkResources = true`, and build with `flutter build apk --release --split-per-abi` to produce lean 18MB APKs.
+4. **Verification & Push Protocol:**
+   - Run `cd app; flutter analyze` (must maintain 0 issues).
+   - Run `flutter test` (must maintain 100% pass rate).
+   - Test on live emulator: `flutter install` or `adb install -r ...`.
+   - After each verified feature: `git add .`, `git commit -m "..."`, and `git push origin main`.
+5. **Relief & Standby Handover Protocol:**
+   - When your terminal session runs low on credits or tokens:
+     - Update `PROGRESS.md` and append accomplishments.
+     - Leave the next immediate task specified in `PROGRESS.md`.
+     - Commit and push to `origin main`.
+     - Gemini (Antigravity) on standby will wake up and resume the sprint seamlessly while the user sleeps.

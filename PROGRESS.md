@@ -1,9 +1,9 @@
 # PROGRESS
 
 ## Current Phase
-Phase 13: UI Anti-Slop Finish Gate & Forensic APK Size Optimization (Complete — Handover to Claude)
+Phase 13: UI Anti-Slop Finish Gate & Forensic APK Size Optimization (Complete — Handover to Claude at 11:00 PM GMT+8)
 
-> ⚠️ **CRITICAL USER DIRECTIVE: DO NOT PUSH TO GITHUB.** All work remains local only. Do not execute `git push`. Programming paused per user command.
+> ⚡ **FOUNDER DIRECTIVE (11:00 PM GMT+8 SHIFT): REMOTE PUSH PERMISSION GRANTED.** The founder explicitly authorized Claude to commit and push verified updates to `origin main`. The Android emulator (`emulator-5554`) is live. Gemini is in Standby Mode to relieve Claude when credits expire.
 
 ## Completed Tasks
 | Task | Agent | Verified By | Evidence |
@@ -45,20 +45,23 @@ Phase 13: UI Anti-Slop Finish Gate & Forensic APK Size Optimization (Complete �
 | [None] | | | |
 
 ## Notes and Gaps
-- **DO NOT PUSH TO GITHUB:** User explicitly commanded not to push to remote. All commits remain strictly local.
-- **Programming Paused:** No further code edits performed. Full focus directed to cognitive psychology, behavioral design, and strategic handover documentation.
-- **Psychology of Busy Students:** Students suffer from cognitive load and decision fatigue. Features must answer single primary questions (*"What class is next?"*, *"How much can I safely spend today?"*). Avoidance occurs when apps display guilt-inducing red alerts.
-- **Google Apps Benchmarks:** Students require zero-barrier capture (Google Keep sticky notes), glanceable chronology (Google Calendar schedule stream), zero-tap retrieval (home screen widget), and non-judgmental spending overviews (Google Wallet).
+- **Remote Push Authorized:** The founder explicitly commanded: *"he should utilize all the workers and do what are necessary for the best MVP of this project as well as commit and push after the update."* The previous restriction is lifted for Claude's shift.
+- **Android Emulator Live:** `emulator-5554` (API 37) is running live on this system. `adb devices` confirms connectivity.
+- **Gemini on Standby:** Gemini transitions to Standby Mode. Claude works his terminal shift starting at 11:00 PM GMT+8. When Claude exhausts credits/tokens, Claude updates `PROGRESS.md`, commits & pushes, and Gemini will resume seamlessly while the user sleeps.
 
-## Next Action for Claude
-1. Read `docs/UNSLOP_AND_APP_SIZE_AUDIT.md` for the UI Finish Gate review and the 5-step APK size reduction playbook (splitting ABIs to ~18MB).
-2. Read `docs/IT_DEPARTMENT_ENGINEERING_DOSSIER.md` for full-stack engineering standards, database indexing plans, and STRIDE/OWASP security audits.
-3. Read `docs/AGENCY_RESEARCH_DEPARTMENT_DOSSIER.md` for the multi-disciplinary research dossier (UX personas, behavioral habit loops, clinical psychology of student avoidance, campus anthropology, and master RICE matrix).
-4. Read `CLAUDE_HANDOVER.md` for the consolidated operational handover and prioritized feature blueprints.
-5. Read `DESIGN_SYSTEM.md` to ensure any future screens maintain the porcelain and lavender anti-slop standard.
-6. When authorized by user to resume coding: implement P0 features from the Agency Dossier (Section 6.3: Safe-to-Spend Hero Card and 2-Tap Fast Logger), write bite-sized plans, execute, and verify with tests.
-7. When building release APKs, execute `flutter build apk --release --split-per-abi` to produce lean 18MB artifacts.
-8. Remember: **DO NOT PUSH TO GITHUB**.
+## Next Action for Claude (11:00 PM Shift)
+1. Confirm live emulator: Run `adb devices` (confirms `emulator-5554`).
+2. Read `docs/UNSLOP_AND_APP_SIZE_AUDIT.md` for the 5-step APK size reduction playbook (splitting ABIs to ~18MB).
+3. Read `docs/IT_DEPARTMENT_ENGINEERING_DOSSIER.md` for full-stack architecture, indexing, and security audit.
+4. Read `docs/AGENCY_RESEARCH_DEPARTMENT_DOSSIER.md` for the multi-disciplinary research dossier (UX personas, behavioral habit loops, clinical psychology of student avoidance, campus anthropology, and master RICE matrix).
+5. Read `CLAUDE_HANDOVER.md` for the operational handover guide and prioritized blueprints.
+6. Execute P0 features using the worker agents:
+   - **P0 #1:** Implement the **"Safe-to-Spend Today"** Hero Card on `FinanceScreen`.
+   - **P0 #2:** Implement the **2-Tap Fast Expense Logger** Bottom Sheet.
+   - **P1 #3:** Add Cross-Module Note Link (`[ 📝 Open Lecture Note ]`).
+7. Verify on emulator (`flutter analyze` + `flutter test`).
+8. Commit AND push after verified updates: `git commit` and `git push origin main`.
+9. When credits run out: update `PROGRESS.md` with achievements and push; Gemini will wake up to take over.
 
 ## MVP & Strategic Checklist
 - [x] Calendar: create event → widget shows next event
@@ -73,5 +76,6 @@ Phase 13: UI Anti-Slop Finish Gate & Forensic APK Size Optimization (Complete �
 - [x] Agency-Agents Research Department Dossier (`docs/AGENCY_RESEARCH_DEPARTMENT_DOSSIER.md`) compiled across 6 specialist units
 - [x] Agency-Agents IT Department Technical Dossier (`docs/IT_DEPARTMENT_ENGINEERING_DOSSIER.md`) compiled across Frontend, Backend, Database, and Security
 - [x] UI Anti-Slop Scan & Forensic APK Size Optimization (`docs/UNSLOP_AND_APP_SIZE_AUDIT.md`) completed
-- [x] Strategic Handover manual (`CLAUDE_HANDOVER.md`) authored for Claude
-- [x] Local git only constraint documented and respected (no pushes to GitHub)
+- [x] Strategic Handover manual (`CLAUDE_HANDOVER.md`) updated with live emulator notice & remote push authorization
+- [x] Remote push permission granted by founder for Claude's shift
+- [x] Gemini placed on Standby Mode ready to relieve Claude when credits expire
