@@ -1,0 +1,138 @@
+name: studentos
+
+x-service-env: &service-env
+  APP_ENV: production
+  APP_DEBUG: "false"
+  APP_KEY: ${APP_KEY}
+  JWT_SECRET: ${JWT_SECRET}
+  LOG_CHANNEL: stderr
+  SESSION_DRIVER: array
+  CACHE_STORE: file
+  QUEUE_CONNECTION: sync
+  DB_CONNECTION: pgsql
+  DB_HOST: postgres
+  DB_PORT: "5432"
+
+x-service-health: &service-health
+  interval: 5s
+  timeout: 3s
+  retries: 20
+  start_period: 10s
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      AUTH_DB_PASSWORD: ${AUTH_DB_PASSWORD}
+      CALENDAR_DB_PASSWORD: ${CALENDAR_DB_PASSWORD}
+      FINANCE_DB_PASSWORD: ${FINANCE_DB_PASSWORD}
+      NOTES_DB_PASSWORD: ${NOTES_DB_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./docker/postgres/init-dbs.sh:/docker-entrypoint-initdb.d/init-dbs.sh:ro
+    ports:
+      - "127.0.0.1:54329:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d notes_db"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+
+  auth:
+    build:
+      context: ./services/auth
+      dockerfile: ../../docker/php/Dockerfile
+    environment:
+      <<: *service-env
+      APP_NAME: studentos-auth
+      DB_DATABASE: auth_db
+      DB_USERNAME: auth_user
+      DB_PASSWORD: ${AUTH_DB_PASSWORD}
+    depends_on:
+      postgres: { condition: service_healthy }
+    healthcheck:
+      <<: *service-health
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8000/api/auth/health || exit 1"]
+
+  calendar:
+    build:
+      context: ./services/calendar
+      dockerfile: ../../docker/php/Dockerfile
+    environment:
+      <<: *service-env
+      APP_NAME: studentos-calendar
+      DB_DATABASE: calendar_db
+      DB_USERNAME: calendar_user
+      DB_PASSWORD: ${CALENDAR_DB_PASSWORD}
+    depends_on:
+      postgres: { condition: service_healthy }
+    healthcheck:
+      <<: *service-health
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8000/api/calendar/health || exit 1"]
+
+  finance:
+    build:
+      context: ./services/finance
+      dockerfile: ../../docker/php/Dockerfile
+    environment:
+      <<: *service-env
+      APP_NAME: studentos-finance
+      DB_DATABASE: finance_db
+      DB_USERNAME: finance_user
+      DB_PASSWORD: ${FINANCE_DB_PASSWORD}
+    depends_on:
+      postgres: { condition: service_healthy }
+    healthcheck:
+      <<: *service-health
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8000/api/finance/health || exit 1"]
+
+  notes:
+    build:
+      context: ./services/notes
+      dockerfile: ../../docker/php/Dockerfile
+    environment:
+      <<: *service-env
+      APP_NAME: studentos-notes
+      DB_DATABASE: notes_db
+      DB_USERNAME: notes_user
+      DB_PASSWORD: ${NOTES_DB_PASSWORD}
+    depends_on:
+      postgres: { condition: service_healthy }
+    healthcheck:
+      <<: *service-health
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8000/api/notes/health || exit 1"]
+
+  gateway:
+    build:
+      context: ./services/gateway
+      dockerfile: ../../docker/php/Dockerfile
+    command: ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
+    environment:
+      APP_NAME: studentos-gateway
+      APP_ENV: production
+      APP_DEBUG: "false"
+      APP_KEY: ${APP_KEY}
+      JWT_SECRET: ${JWT_SECRET}
+      LOG_CHANNEL: stderr
+      SESSION_DRIVER: array
+      CACHE_STORE: file
+      QUEUE_CONNECTION: sync
+      AUTH_SERVICE_URL: http://auth:8000
+      CALENDAR_SERVICE_URL: http://calendar:8000
+      FINANCE_SERVICE_URL: http://finance:8000
+      NOTES_SERVICE_URL: http://notes:8000
+    ports:
+      - "8000:8000"
+    depends_on:
+      auth: { condition: service_healthy }
+      calendar: { condition: service_healthy }
+      finance: { condition: service_healthy }
+      notes: { condition: service_healthy }
+    healthcheck:
+      <<: *service-health
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8000/api/health || exit 1"]
+
+volumes:
+  pgdata:
