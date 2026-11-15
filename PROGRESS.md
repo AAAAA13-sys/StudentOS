@@ -1,7 +1,7 @@
 # PROGRESS
 
 ## Current Phase
-Phase 11: Agency-Agents Research Department Multi-Disciplinary Dossier (Complete — Handover to Claude)
+Phase 12: Agency-Agents IT Department Technical & Security Dossier (Complete — Handover to Claude)
 
 > ⚠️ **CRITICAL USER DIRECTIVE: DO NOT PUSH TO GITHUB.** All work remains local only. Do not execute `git push`. Programming paused per user command.
 
@@ -36,6 +36,7 @@ Phase 11: Agency-Agents Research Department Multi-Disciplinary Dossier (Complete
 | Cognitive Psychology & Google Apps Deep Dive | lead-pm | lead-pm | Created `docs/PRODUCT_PSYCHOLOGY_AND_RESEARCH.md`: Sweller cognitive load, Hick's law, YNAB student dropout vs "Safe-to-Spend", Google Calendar/Keep glanceability benchmarks |
 | Claude Comprehensive Strategic Handover | lead-pm | lead-pm | Updated `CLAUDE_HANDOVER.md`: Research findings, Google ecosystem lessons, prioritized feature gaps backlog, and instructions |
 | Agency-Agents Research Department Dossier | agency-research-synthesist | lead-pm | Created `docs/AGENCY_RESEARCH_DEPARTMENT_DOSSIER.md`: Comprehensive 6-unit dossier spanning UX, Behavioral Nudges, Clinical Psychology, Anthropology, Customer Feedback, and RICE Matrix |
+| Agency-Agents IT Department Technical Dossier | agency-backend-architect | lead-pm | Created `docs/IT_DEPARTMENT_ENGINEERING_DOSSIER.md`: Full-stack engineering audit, 60fps budget, API error contract, PostgreSQL indexing, and STRIDE/OWASP penetration test |
 
 ## Blockers
 | Blocker | Since | Owner | Resolution Attempts |
@@ -49,11 +50,12 @@ Phase 11: Agency-Agents Research Department Multi-Disciplinary Dossier (Complete
 - **Google Apps Benchmarks:** Students require zero-barrier capture (Google Keep sticky notes), glanceable chronology (Google Calendar schedule stream), zero-tap retrieval (home screen widget), and non-judgmental spending overviews (Google Wallet).
 
 ## Next Action for Claude
-1. Read `docs/AGENCY_RESEARCH_DEPARTMENT_DOSSIER.md` for the multi-disciplinary research dossier (UX personas, behavioral habit loops, clinical psychology of student avoidance, campus anthropology, and master RICE matrix).
-2. Read `CLAUDE_HANDOVER.md` for the strategic handover and prioritized feature blueprints.
-3. Read `DESIGN_SYSTEM.md` to ensure any future screens maintain the porcelain and lavender anti-slop standard.
-4. When authorized by user to resume coding: implement P0 features from the Agency Dossier (Section 6.3: Safe-to-Spend Hero Card and 2-Tap Fast Logger), write bite-sized plans, execute, and verify with tests.
-5. Remember: **DO NOT PUSH TO GITHUB**.
+1. Read `docs/IT_DEPARTMENT_ENGINEERING_DOSSIER.md` for full-stack engineering standards, database indexing plans, and STRIDE/OWASP security audits.
+2. Read `docs/AGENCY_RESEARCH_DEPARTMENT_DOSSIER.md` for the multi-disciplinary research dossier (UX personas, behavioral habit loops, clinical psychology of student avoidance, campus anthropology, and master RICE matrix).
+3. Read `CLAUDE_HANDOVER.md` for the consolidated operational handover and prioritized feature blueprints.
+4. Read `DESIGN_SYSTEM.md` to ensure any future screens maintain the porcelain and lavender anti-slop standard.
+5. When authorized by user to resume coding: implement P0 features from the Agency Dossier (Section 6.3: Safe-to-Spend Hero Card and 2-Tap Fast Logger), write bite-sized plans, execute, and verify with tests.
+6. Remember: **DO NOT PUSH TO GITHUB**.
 
 ## MVP & Strategic Checklist
 - [x] Calendar: create event → widget shows next event
@@ -66,5 +68,6 @@ Phase 11: Agency-Agents Research Department Multi-Disciplinary Dossier (Complete
 - [x] NavigationDrawer (Hamburger Menu) added for profile, sync status, and system utilities
 - [x] Cognitive Psychology & Google Apps Research (`docs/PRODUCT_PSYCHOLOGY_AND_RESEARCH.md`) created
 - [x] Agency-Agents Research Department Dossier (`docs/AGENCY_RESEARCH_DEPARTMENT_DOSSIER.md`) compiled across 6 specialist units
+- [x] Agency-Agents IT Department Technical Dossier (`docs/IT_DEPARTMENT_ENGINEERING_DOSSIER.md`) compiled across Frontend, Backend, Database, and Security
 - [x] Strategic Handover manual (`CLAUDE_HANDOVER.md`) authored for Claude
 - [x] Local git only constraint documented and respected (no pushes to GitHub)
