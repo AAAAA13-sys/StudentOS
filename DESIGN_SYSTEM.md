@@ -123,6 +123,21 @@ Located at the top-left of every screen's AppBar (`Icons.menu_rounded`). Tapping
 - **Footer:**
   - Logout action with confirmation dialog.
 
+### 4.3 Interactive Digital Calendar Component Specification
+A true working digital calendar replaces static month headers with an interactive 7-column month grid:
+- **Month Grid Architecture:**
+  - 7-column header: `S M T W T F S` in `onSurfaceVariant` (medium 11sp).
+  - 5 to 6 row grid dynamically calculating weekday offset for the active month.
+  - Cell size: 38×34dp with circular touch targets.
+  - **Selected Day:** Solid Lavender (`#7C3AED`) circle with bold white text.
+  - **Today Indicator:** Outlined Lavender circle with primary text.
+  - **Event Dot:** 4px dot below day number indicating scheduled classes/events on that date.
+  - Tapping any day cell sets `_selectedDate` with a 150ms cubic ease animation, updates the agenda view, and pre-fills that date in the Add Event modal.
+- **Dual-Mode Agenda Below Calendar:**
+  - Date header with event count and quick `+` add button.
+  - Filter chip toggle: `Day View` (focused daily schedule) vs `All Events` (month overview).
+  - Cards feature Lavender date badge (`NOV 15`), time & duration (`2:45 PM (60m)`), location, recurrence pill (`Repeats daily`), and delete action.
+
 ---
 
 ## 5. Motion, Curves & Micro-Interactions
