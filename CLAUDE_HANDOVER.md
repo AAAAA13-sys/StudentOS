@@ -33,12 +33,51 @@ Before this handover, Antigravity took StudentOS from scratch to a fully verifie
 | **Tabular Numbers & Typography** | Implemented | `FontFeature.tabularFigures()` on all monetary amounts (`₱120.00`) and timestamps. |
 | **Quality Assurance** | 100% Pass | `flutter analyze` (0 issues, 0 warnings); `flutter test` (6 passed, 0 failed). |
 | **Release APK** | Deployed | Built `app-release.apk` (60.3 MB), installed and tested live on Android Studio emulator `emulator-5554` (API 37). |
+| **Agency Research Dossier** | Complete & Certified | [`docs/AGENCY_RESEARCH_DEPARTMENT_DOSSIER.md`](file:///c:/Users/Ivan/Documents/StudentOS/docs/AGENCY_RESEARCH_DEPARTMENT_DOSSIER.md) compiled across UX, Behavioral Nudge, Clinical Psychology, Anthropology, Trends, Feedback, and Synthesis. |
 
 ---
 
-## 3. The Psychology Behind the App: Why Busy Students Use (or Abandon) Productivity Apps
+## 3. The Agency-Agents Research Department Master Dossier
 
-Deep cognitive and behavioral psychology research has been compiled into [`docs/PRODUCT_PSYCHOLOGY_AND_RESEARCH.md`](file:///c:/Users/Ivan/Documents/StudentOS/docs/PRODUCT_PSYCHOLOGY_AND_RESEARCH.md). Here is what you need to understand as Lead PM:
+Per user directive, the **Agency-Agents Research Department** was contracted to analyze StudentOS from every cognitive, psychological, and behavioral angle. Their full report is located at [`docs/AGENCY_RESEARCH_DEPARTMENT_DOSSIER.md`](file:///c:/Users/Ivan/Documents/StudentOS/docs/AGENCY_RESEARCH_DEPARTMENT_DOSSIER.md).
+
+Here is the executive synthesis of their findings for Claude:
+
+### 3.1 UX Research Unit (`agency-ux-researcher`)
+- **Primary Persona:** Maya, "The Overwhelmed Academic Hustler" (20yo, STEM/Business, tight allowance, fragmented attention, constant cognitive fatigue).
+- **The "2-Tap / 3-Second" Velocity Threshold:** Any primary task (logging transit fare, checking next lecture room, jotting an exam topic) exceeding 2 taps or 3 seconds results in immediate postponement and 80%+ churn.
+- **Context of Use:** Phone operated one-handed while walking between campus buildings or standing on transit.
+
+### 3.2 Behavioral Psychology & Nudge Unit (`agency-behavioral-nudge-engine`)
+- **Self-Healing Financial Engine:** Replace static zero-based budgets and guilt-inducing red alerts with the **"Safe-to-Spend Today"** dynamic runway formula:
+  $$\text{Safe-to-Spend Today} = \frac{\text{Liquid Balance} - \text{Fixed Bills}}{\text{Days Remaining in Cycle}}$$
+  If overspent today, tomorrow's daily allowance simply recalibrates downward. Zero scolding; pure forward-looking reality.
+- **Micro-Sprint Architecture:** Break down academic paralysis with opt-out 20-minute Pomodoro study sprints during campus gaps.
+
+### 3.3 Clinical & Research Psychology Unit (`agency-psychologist`)
+- **Academic Imposter Syndrome & Executive Dysfunction:** Students procrastinate not out of laziness, but as a defense mechanism against ego-threat (Beck's cognitive distortions). Complicated tools exacerbate this.
+- **The Neuro-Aesthetics of Lavender & Porcelain:** Porcelain canvas (`#FAF8FF`) reduces eye fatigue; restrained lavender (`#7C3AED` / `#EDE9FE`) activates parasympathetic calming responses; hairline borders (`0.75px–1.0px`) provide subconscious spatial containment and reduce anxiety.
+
+### 3.4 Trend Research & Anthropology Unit (`agency-trend-researcher` & `agency-anthropologist`)
+- **Campus Rites & Social Currencies:** High-stress liminal periods (midterms/finals weeks) require radical UI simplification.
+- **Competitive Flaws Exploited:**
+  - *Notion:* Suffers from "The Setup Trap" (endless tinkering, zero actual work).
+  - *Google Suite:* Powerful but fragmented; zero cross-module intelligence.
+  - *StudentOS Advantage:* The Unified Triad (Calendar ↔ Notes ↔ Finance) ready in 5 seconds out of the box.
+
+### 3.5 Customer Feedback & Synthesis Unit (`agency-feedback-synthesizer` & `agency-research-synthesist`)
+- **The RICE Priority Ranking for Claude:**
+  1. **P0 (RICE: 150.0):** Safe-to-Spend Today Hero Card on Finance Screen.
+  2. **P0 (RICE: 135.0):** 2-Tap Fast Expense Logger Bottom Sheet.
+  3. **P1 (RICE: 108.0):** Semester Class Timetable Multi-Day Generator.
+  4. **P1 (RICE: 106.8):** Dual-Metric Android Home-Screen Widget (Next Event + Safe-to-Spend).
+  5. **P1 (RICE: 105.0):** Cross-Module Context Link (`[ 📝 Open Lecture Note ]` directly on Calendar event cards).
+
+---
+
+## 4. The Psychology Behind the App: Why Busy Students Use (or Abandon) Productivity Apps
+
+Deep cognitive and behavioral psychology research has also been preserved in [`docs/PRODUCT_PSYCHOLOGY_AND_RESEARCH.md`](file:///c:/Users/Ivan/Documents/StudentOS/docs/PRODUCT_PSYCHOLOGY_AND_RESEARCH.md).
 
 ### 3.1 Cognitive Load Theory (Sweller)
 - **The Core Rule:** A student's working memory is overwhelmed by coursework (intrinsic load). **Extraneous cognitive load** (navigating complex menus, typing 8 form fields, or figuring out confusing icons) causes immediate app abandonment.
@@ -121,17 +160,18 @@ When the user asks you to implement the next phase, here is the exact backlog of
 
 ---
 
-## 6. How Claude Should Operate When Resuming
+## 7. How Claude Should Operate When Resuming
 
 1. **Verify Shell & Git Status:**
-   - Run `git status` and `git log -3 --oneline`.
+   - Run `git status` and `git log -4 --oneline`.
    - **CONFIRM: NEVER RUN `git push`! Keep all work strictly local.**
 2. **Review Research & Specifications:**
-   - Read [`docs/PRODUCT_PSYCHOLOGY_AND_RESEARCH.md`](file:///c:/Users/Ivan/Documents/StudentOS/docs/PRODUCT_PSYCHOLOGY_AND_RESEARCH.md).
-   - Read [`DESIGN_SYSTEM.md`](file:///c:/Users/Ivan/Documents/StudentOS/DESIGN_SYSTEM.md).
+   - Read [`docs/AGENCY_RESEARCH_DEPARTMENT_DOSSIER.md`](file:///c:/Users/Ivan/Documents/StudentOS/docs/AGENCY_RESEARCH_DEPARTMENT_DOSSIER.md) for the complete Agency-Agents research findings, personas, RICE matrix, and blueprints.
+   - Read [`docs/PRODUCT_PSYCHOLOGY_AND_RESEARCH.md`](file:///c:/Users/Ivan/Documents/StudentOS/docs/PRODUCT_PSYCHOLOGY_AND_RESEARCH.md) for cognitive load theory and Google Apps benchmarks.
+   - Read [`DESIGN_SYSTEM.md`](file:///c:/Users/Ivan/Documents/StudentOS/DESIGN_SYSTEM.md) for anti-slop guidelines and lavender tokens.
 3. **Ask the User / Await Direction:**
    - If the user asks for design feedback, discuss the psychological trade-offs (e.g., Safe-to-Spend vs. zero-based budgeting).
-   - If the user authorizes coding, pick the highest-priority feature from Section 5 (e.g., Safe-to-Spend Daily Allowance or 2-Tap Fast Logger) and follow the Superpowers pipeline (brainstorm, write plan, execute, verify).
+   - If the user authorizes coding, pick the highest-priority feature from Section 6.2 of the Agency Dossier (P0: Safe-to-Spend Hero Card or 2-Tap Fast Logger) and follow the Superpowers pipeline (brainstorm, write plan, execute, verify).
 4. **Verification Protocol:**
    - Run `cd app; flutter analyze` (must remain 0 issues).
    - Run `flutter test` (must remain 6/6 passed).

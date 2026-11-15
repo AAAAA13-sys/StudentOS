@@ -1,7 +1,7 @@
 # PROGRESS
 
 ## Current Phase
-Phase 10: Product Psychology Research & Strategic Handover (Complete — Handover to Claude)
+Phase 11: Agency-Agents Research Department Multi-Disciplinary Dossier (Complete — Handover to Claude)
 
 > ⚠️ **CRITICAL USER DIRECTIVE: DO NOT PUSH TO GITHUB.** All work remains local only. Do not execute `git push`. Programming paused per user command.
 
@@ -35,6 +35,7 @@ Phase 10: Product Psychology Research & Strategic Handover (Complete — Handove
 | Interactive Digital Month Calendar Grid | flutter-dev | lead-pm | Created 7-column month grid (`S M T W T F S`), day selection with cubic ease animation, event dots, today highlight, dual-mode agenda view, and date-prefilled quick add modals |
 | Cognitive Psychology & Google Apps Deep Dive | lead-pm | lead-pm | Created `docs/PRODUCT_PSYCHOLOGY_AND_RESEARCH.md`: Sweller cognitive load, Hick's law, YNAB student dropout vs "Safe-to-Spend", Google Calendar/Keep glanceability benchmarks |
 | Claude Comprehensive Strategic Handover | lead-pm | lead-pm | Updated `CLAUDE_HANDOVER.md`: Research findings, Google ecosystem lessons, prioritized feature gaps backlog, and instructions |
+| Agency-Agents Research Department Dossier | agency-research-synthesist | lead-pm | Created `docs/AGENCY_RESEARCH_DEPARTMENT_DOSSIER.md`: Comprehensive 6-unit dossier spanning UX, Behavioral Nudges, Clinical Psychology, Anthropology, Customer Feedback, and RICE Matrix |
 
 ## Blockers
 | Blocker | Since | Owner | Resolution Attempts |
@@ -48,10 +49,10 @@ Phase 10: Product Psychology Research & Strategic Handover (Complete — Handove
 - **Google Apps Benchmarks:** Students require zero-barrier capture (Google Keep sticky notes), glanceable chronology (Google Calendar schedule stream), zero-tap retrieval (home screen widget), and non-judgmental spending overviews (Google Wallet).
 
 ## Next Action for Claude
-1. Read `docs/PRODUCT_PSYCHOLOGY_AND_RESEARCH.md` for the behavioral and cognitive psychology foundation.
-2. Read `CLAUDE_HANDOVER.md` for the prioritized feature backlog (Safe-to-Spend counter, 2-tap fast expense logger, semester timetable builder, interactive checklists, cross-module note linking).
+1. Read `docs/AGENCY_RESEARCH_DEPARTMENT_DOSSIER.md` for the multi-disciplinary research dossier (UX personas, behavioral habit loops, clinical psychology of student avoidance, campus anthropology, and master RICE matrix).
+2. Read `CLAUDE_HANDOVER.md` for the strategic handover and prioritized feature blueprints.
 3. Read `DESIGN_SYSTEM.md` to ensure any future screens maintain the porcelain and lavender anti-slop standard.
-4. When authorized by user to resume coding: pick the top-priority feature from Section 5 of `CLAUDE_HANDOVER.md`, write a bite-sized plan, execute, and verify with tests.
+4. When authorized by user to resume coding: implement P0 features from the Agency Dossier (Section 6.3: Safe-to-Spend Hero Card and 2-Tap Fast Logger), write bite-sized plans, execute, and verify with tests.
 5. Remember: **DO NOT PUSH TO GITHUB**.
 
 ## MVP & Strategic Checklist
@@ -64,5 +65,6 @@ Phase 10: Product Psychology Research & Strategic Handover (Complete — Handove
 - [x] Master Design System (`DESIGN_SYSTEM.md`) created with lavender tokens
 - [x] NavigationDrawer (Hamburger Menu) added for profile, sync status, and system utilities
 - [x] Cognitive Psychology & Google Apps Research (`docs/PRODUCT_PSYCHOLOGY_AND_RESEARCH.md`) created
+- [x] Agency-Agents Research Department Dossier (`docs/AGENCY_RESEARCH_DEPARTMENT_DOSSIER.md`) compiled across 6 specialist units
 - [x] Strategic Handover manual (`CLAUDE_HANDOVER.md`) authored for Claude
 - [x] Local git only constraint documented and respected (no pushes to GitHub)
