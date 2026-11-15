@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_theme.dart';
 import 'calendar_controller.dart';
+import 'class_schedule_sheet.dart';
 import '../notes/note.dart';
 import '../notes/note_editor_sheet.dart';
 import '../notes/notes_controller.dart';
@@ -35,23 +36,11 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     return a.year == b.year && a.month == b.month && a.day == b.day;
   }
 
-  bool _isEventOnDate(CalendarEvent event, DateTime date) {
-    final DateTime start = event.startsAt.toLocal();
-    final DateTime startDate = DateTime(start.year, start.month, start.day);
-    final DateTime targetDate = DateTime(date.year, date.month, date.day);
-
-    if (_isSameDay(startDate, targetDate)) return true;
-    if (targetDate.isBefore(startDate)) return false;
-
-    if (event.recurrence == 'daily') return true;
-    if (event.recurrence == 'weekly' && start.weekday == date.weekday) return true;
-    if (event.recurrence == 'monthly' && start.day == date.day) return true;
-
-    return false;
-  }
-
-  List<CalendarEvent> _eventsForDate(List<CalendarEvent> allEvents, DateTime date) {
-    return allEvents.where((CalendarEvent e) => _isEventOnDate(e, date)).toList();
+  List<CalendarEvent> _eventsForDate(
+    List<CalendarEvent> allEvents,
+    DateTime date,
+  ) {
+    return allEvents.where((CalendarEvent e) => e.occursOn(date)).toList();
   }
 
   @override
@@ -70,10 +59,15 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
           onPressed: () => Scaffold.of(context).openDrawer(),
         ),
         title: Text(
-          DateFormat('MMMM yyyy').format(_viewMonth),
+          DateFormat('MMM yyyy').format(_viewMonth),
           style: textStyles.titleLarge?.copyWith(fontWeight: FontWeight.bold),
         ),
         actions: <Widget>[
+          IconButton(
+            icon: const Icon(Icons.view_week_outlined),
+            tooltip: 'Add a class',
+            onPressed: _addClass,
+          ),
           IconButton(
             icon: const Icon(Icons.chevron_left_rounded),
             tooltip: 'Previous Month',
@@ -463,6 +457,23 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
         child: const Icon(Icons.add_rounded),
       ),
     );
+  }
+
+  Future<void> _addClass() async {
+    final List<CalendarEvent>? events = await showClassScheduleSheet(context);
+    if (events == null || events.isEmpty || !mounted) return;
+    await ref.read(calendarControllerProvider.notifier).addEvents(events);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(
+            'Added ${events.first.title} on ${events.length} '
+            '${events.length == 1 ? 'day' : 'days'} a week',
+          ),
+        ),
+      );
   }
 
   /// Opens the note attached to [event], creating and attaching one titled

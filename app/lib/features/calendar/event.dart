@@ -40,6 +40,30 @@ class CalendarEvent {
     );
   }
 
+  /// Whether an occurrence of this event falls on the calendar day [date].
+  bool occursOn(DateTime date) {
+    final DateTime start = startsAt.toLocal();
+    final DateTime startDay = DateTime(start.year, start.month, start.day);
+    final DateTime day = DateTime(date.year, date.month, date.day);
+
+    if (day == startDay) return true;
+    if (day.isBefore(startDay) || recurrence == 'none') return false;
+
+    final DateTime? until =
+        recurrenceUntil == null ? null : DateTime.tryParse(recurrenceUntil!);
+    if (until != null &&
+        day.isAfter(DateTime(until.year, until.month, until.day))) {
+      return false;
+    }
+
+    return switch (recurrence) {
+      'daily' => true,
+      'weekly' => start.weekday == day.weekday,
+      'monthly' => start.day == day.day,
+      _ => false,
+    };
+  }
+
   /// The first time this event starts at or after [now], following its
   /// recurrence, or null when it is over.
   DateTime? nextOccurrence(DateTime now) {

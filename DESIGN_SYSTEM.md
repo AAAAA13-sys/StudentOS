@@ -121,6 +121,7 @@ A true working digital calendar replaces static month headers with an interactiv
   - **Today Indicator:** Outlined Lavender circle with primary text.
   - **Event Dot:** 4px dot below day number indicating scheduled classes/events on that date.
   - Tapping any day cell sets `_selectedDate` with a 150ms cubic ease animation, updates the agenda view, and pre-fills that date in the Add Event modal.
+- **Toolbar:** the title is the short month (`Nov 2026`) so it fits beside four actions: add a class, previous month, today, next month.
 - **Dual-Mode Agenda Below Calendar:**
   - Date header with event count and quick `+` add button.
   - Filter chip toggle: `Day View` (focused daily schedule) vs `All Events` (month overview).

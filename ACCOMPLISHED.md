@@ -228,3 +228,14 @@ Entries are appended, never edited. Corrections are new entries that reference t
 - The note editor sheet lives in `notes/note_editor_sheet.dart` so Calendar and Notes share it.
 - Editing an event keeps fields the form does not show (end date, reminder, note link).
 **Open items:** None.
+
+
+## Phase 17: Class schedule builder
+**Date:** 2026-11-15
+**Verified by:** lead-pm
+**Evidence:** `flutter analyze` 0 issues; `flutter test` 15 passed; on `emulator-5554` adding "Math101" for Mon and Wed created two weekly events with dots on every Monday and Wednesday from Nov 16.
+**Decisions:**
+- A class is stored as one weekly event per chosen weekday, each with an end date (default four months out). There is no separate "class" record, so editing or deleting is per weekday.
+- Whether an event falls on a day is decided by `CalendarEvent.occursOn`, which respects the end date.
+- Calendar title uses the short month so the toolbar fits.
+**Open items:** Test data remains on the emulator.

@@ -1,7 +1,7 @@
 # PROGRESS
 
 ## Current Phase
-Phase 15: Finance for daily use, on the local-only app
+Phase 17: Daily-use features on the local-only app (class schedule builder done)
 
 > **Direction (owner, 2026-11-15):** local, single-user app with no login and no server. See `AGENTS.md` Part 0.
 > Commits are local; push to `origin` awaits the owner's confirmation.
@@ -42,6 +42,7 @@ Phase 15: Finance for daily use, on the local-only app
 | Local-only conversion (no login, no backend) | lead-pm | lead-pm | Removed auth, API client, token storage, profile; Drift tables `events`, `transactions`, `notes`; INTERNET permission removed from release manifest. `flutter analyze` 0 issues; `flutter test` 9 passed; x86_64 release APK (22.2MB, split-per-abi) on `emulator-5554`: opens on Calendar with no login, event saved and still present after force-stop and relaunch in airplane mode |
 | Safe-to-Spend Today card, two-tap quick expense, widget spending line | flutter-dev / widget-specialist | lead-pm | `flutter analyze` 0 issues; `flutter test` 12 passed. On `emulator-5554`: income 4,800 then quick expense 50 Food in two taps showed "250.00 safe to spend today, 16 days left, 50.00 spent today" (4,800 / 16 - 50). Widget line builds and installs but was not viewed on a home screen |
 | Event to note link | flutter-dev | lead-pm | `flutter analyze` 0 issues; `flutter test` 13 passed. On `emulator-5554`: installed over existing data (database upgraded v1 to v2, earlier event kept); "Add note" on the event opened an editor titled after the event and the card then read "Open note" |
+| Class schedule builder | flutter-dev | lead-pm | `flutter analyze` 0 issues; `flutter test` 15 passed. On `emulator-5554`: "Add a class" with Mon and Wed created two weekly events, dots appeared on every Monday and Wednesday from Nov 16, and the shortened "Nov 2026" title fits beside the new toolbar button |
 
 ## Blockers
 | Blocker | Since | Owner | Resolution Attempts |
@@ -54,7 +55,7 @@ Phase 15: Finance for daily use, on the local-only app
 - **Gemini on Standby:** Gemini transitions to Standby Mode. Claude works his terminal shift starting at 11:00 PM GMT+8. When Claude exhausts credits/tokens, Claude updates `PROGRESS.md`, commits & pushes, and Gemini will resume seamlessly while the user sleeps.
 
 ## Next Action
-The semester timetable builder. Also open: view the widget's spending line on a home screen; enable R8 minification; hand-check Notes on the emulator (covered by tests only since the local conversion).
+Pick from: R8 minification; notes checklists, pinning and tints; exam countdown pills; fixed bills for Safe-to-Spend. Also open: view the widget's spending line on a home screen; hand-check the Notes tab on the emulator; remove the test data left on the emulator (LocalCheck, Math101, the 4,800 income and 50 expense).
 
 ## MVP & Strategic Checklist
 - [x] Calendar: create event → widget shows next event
@@ -76,4 +77,5 @@ The semester timetable builder. Also open: view the widget's spending line on a 
 - [x] Safe-to-Spend Today card
 - [x] Two-tap quick expense
 - [x] Event to note link
+- [x] Class schedule builder
 - [ ] Widget spending line viewed on a home screen

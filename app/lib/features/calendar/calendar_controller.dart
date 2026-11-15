@@ -32,6 +32,17 @@ class CalendarController extends AsyncNotifier<List<CalendarEvent>> {
     unawaited(syncWidget());
   }
 
+  Future<void> addEvents(List<CalendarEvent> events) async {
+    final List<CalendarEvent> created = <CalendarEvent>[
+      for (final CalendarEvent event in events) await _repo.createEvent(event),
+    ];
+    state = AsyncData(<CalendarEvent>[
+      ...state.value ?? <CalendarEvent>[],
+      ...created,
+    ]);
+    unawaited(syncWidget());
+  }
+
   Future<void> updateEvent(CalendarEvent event) async {
     final CalendarEvent updated = await _repo.updateEvent(event);
     state = AsyncData(

@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:studentos/core/db/app_database.dart';
 import 'package:studentos/features/calendar/calendar_repository.dart';
 import 'package:studentos/features/calendar/calendar_screen.dart';
+import 'package:studentos/features/calendar/class_schedule_sheet.dart';
 import 'package:studentos/features/calendar/event.dart';
 import 'package:studentos/features/finance/finance_repository.dart';
 import 'package:studentos/features/finance/finance_screen.dart';
@@ -208,6 +209,77 @@ void main() {
 
     await repo.deleteTransaction(november.first.id);
     expect((await repo.getSummary(month: '2026-11')).totalExpenses, 200.30);
+  });
+
+  test('Class schedule makes one weekly event per chosen day', () {
+    // Sunday 15 Nov 2026.
+    final List<CalendarEvent> events = buildClassSchedule(
+      title: 'Math 101',
+      location: 'Room 204',
+      weekdays: <int>{DateTime.friday, DateTime.monday, DateTime.sunday},
+      hour: 9,
+      minute: 30,
+      durationMinutes: 90,
+      from: DateTime(2026, 11, 15, 20),
+      until: DateTime(2026, 12, 18),
+    );
+
+    expect(events.map((e) => e.startsAt), <DateTime>[
+      DateTime(2026, 11, 16, 9, 30), // Monday
+      DateTime(2026, 11, 20, 9, 30), // Friday
+      DateTime(2026, 11, 15, 9, 30), // Sunday: today
+    ]);
+    expect(events.every((e) => e.recurrence == 'weekly'), isTrue);
+    expect(events.every((e) => e.recurrenceUntil == '2026-12-18'), isTrue);
+
+    final CalendarEvent friday = events[1];
+    expect(friday.occursOn(DateTime(2026, 11, 13)), isFalse); // before start
+    expect(friday.occursOn(DateTime(2026, 11, 27)), isTrue);
+    expect(friday.occursOn(DateTime(2026, 11, 28)), isFalse); // Saturday
+    expect(friday.occursOn(DateTime(2026, 12, 18)), isTrue); // last day
+    expect(friday.occursOn(DateTime(2026, 12, 25)), isFalse); // term over
+  });
+
+  testWidgets('Add a class saves the chosen days', (WidgetTester tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [appDatabaseProvider.overrideWithValue(database)],
+        child: const MaterialApp(home: CalendarScreen()),
+      ),
+    );
+    Future<void> settle() async {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 150)),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    await settle();
+    await tester.tap(find.byTooltip('Add a class'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Save class'));
+    await tester.pumpAndSettle();
+    expect(find.text('Subject required'), findsOneWidget);
+    expect(find.text('Pick at least one day'), findsOneWidget);
+
+    await tester.enterText(find.byType(TextFormField).first, 'Chem 101');
+    await tester.tap(find.text('Tue'));
+    await tester.tap(find.text('Thu'));
+    await tester.pump();
+    await tester.ensureVisible(find.text('Save class'));
+    await tester.tap(find.text('Save class'));
+    await settle();
+
+    final List<CalendarEvent>? saved = await tester.runAsync(
+      () => CalendarRepository(database).getEvents(),
+    );
+    expect(saved, hasLength(2));
+    expect(saved!.map((e) => e.startsAt.weekday).toSet(), <int>{
+      DateTime.tuesday,
+      DateTime.thursday,
+    });
+    expect(saved.every((e) => e.title == 'Chem 101'), isTrue);
   });
 
   testWidgets('Add note on an event creates, attaches and opens a note', (
