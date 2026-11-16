@@ -23,17 +23,20 @@ Done and verified this shift (details in `PROGRESS.md`):
 - Finance: tap a transaction to edit it; the quick sheet has an "Other" tile for a typed amount; a quick expense jumps back to the current month.
 - Release builds are split per CPU type (about 18-22 MB each).
 
-How Safe-to-Spend is calculated (differs from the dossier blueprint): money on hand at the start of today (all income minus all expenses dated up to today, earlier months included) divided by the days until the next allowance day when one is set on the card (stored in the `settings` table, database schema v3), otherwise by the days left in the month; minus what was already spent today; never below zero. The allowance day is a single date the owner updates each cycle, not a repeating schedule. There is no "fixed bills" input yet.
+How Safe-to-Spend is calculated (differs from the dossier blueprint): money on hand at the start of today (all income minus all expenses dated up to today, earlier months included) divided by the days until the next allowance day when one is set on the card (stored in the `settings` table, database schema v3), otherwise by the days left in the month; minus what was already spent today; never below zero. The allowance day is a single date the owner updates each cycle, not a repeating schedule. Money set aside for bills (one amount, set from the card, `settings` key `fixed_commitments_cents`) is taken off the money on hand first.
 
 Quick expense categories are `Food`, `Transport`, `School`, `Other`, taken from the existing category list. Icons are Material icons, not emoji, per `DESIGN_SYSTEM.md`.
 
 Also done after the team review (2026-11-16): allowance day on the Safe-to-Spend card; notes can be saved without a title; an event's note is stored only when saved; delete asks first everywhere; backup and restore both run on the device.
 
+Done on 2026-11-16 after the shift above: Gemini added the Midnight Lavender palette, exam and assignment countdown pills, checklists inside events and a recall quiz from `Q:` / `A:` lines in notes (commit `0fb3ab5`, tests only). Claude then added money set aside for bills, checked all of it on the emulator and fixed what the check found (see `PROGRESS.md`, last row, and `ACCOMPLISHED.md` Phase 26).
+
 Still open, in suggested order:
-1. Event reminders as local notifications (`reminder_minutes` is stored but nothing fires; needs a notification package and permission).
-2. Widget: the spending line is stamped with its date and hidden once that day is over (the widget re-checks every 30 minutes), so it is never a day old, but it only reappears after the app is opened. Not yet viewed on a home screen. A true background recompute is still open.
-3. Fixed bills for Safe-to-Spend; a repeating allowance schedule.
-4. Notes checklists and pinning; exam countdown pills.
+1. Import a timetable from an `.ics` file (Calendar menu; `file_picker` is already a dependency).
+2. Grade "what-if" calculator (`docs/STUDENT_FEATURE_DEEP_RESEARCH.md`, Feature 4).
+3. Event reminders as local notifications (`reminder_minutes` is stored but nothing fires; needs a notification package and permission).
+4. Widget: the spending line is stamped with its date and hidden once that day is over (the widget re-checks every 30 minutes), but it only reappears after the app is opened. Not yet viewed on a home screen. A true background recompute is still open.
+5. A repeating allowance schedule; notes pinning.
 
 Warning for whoever works next: on 2026-11-16 around 07:25 GMT+8 this file and `PROGRESS.md` were overwritten with their pre-shift text by something other than Claude's session. Re-read both before writing to them, and do not write a stale copy back.
 

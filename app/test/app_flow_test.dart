@@ -426,6 +426,98 @@ void main() {
     expect(value.leftToday, 300);
   });
 
+  test('Safe to spend leaves out money set aside for bills', () async {
+    // 3,000 on hand, 800 set aside: 2,200 over 10 days, minus 20 spent.
+    SafeToSpend value = SafeToSpend.calculate(
+      balanceCents: 298000,
+      spentTodayCents: 2000,
+      daysLeft: 10,
+      reservedCents: 80000,
+    );
+    expect(value.leftToday, 200);
+    expect(value.reserved, 800);
+
+    // More set aside than there is on hand: nothing is safe, never negative.
+    value = SafeToSpend.calculate(
+      balanceCents: 50000,
+      spentTodayCents: 0,
+      daysLeft: 5,
+      reservedCents: 80000,
+    );
+    expect(value.leftToday, 0);
+    expect(value.hasFunds, isTrue);
+
+    final FinanceRepository repo = FinanceRepository(database);
+    await repo.createTransaction(
+      Transaction(
+        id: 0,
+        type: 'income',
+        amount: 3000,
+        category: 'Allowance',
+        occurredOn: DateTime(2026, 11, 1),
+      ),
+    );
+    final DateTime today = DateTime(2026, 11, 21, 9);
+    await repo.setReservedCents(80000);
+    expect((await repo.getSafeToSpend(today)).leftToday, 220);
+
+    await repo.setReservedCents(0);
+    value = await repo.getSafeToSpend(today);
+    expect(value.leftToday, 300);
+    expect(value.reserved, 0);
+  });
+
+  testWidgets('Money can be set aside for bills from the card', (
+    WidgetTester tester,
+  ) async {
+    await tester.runAsync(
+      () => FinanceRepository(database).createTransaction(
+        Transaction(
+          id: 0,
+          type: 'income',
+          amount: 3000,
+          category: 'Allowance',
+          occurredOn: DateTime.now(),
+        ),
+      ),
+    );
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [appDatabaseProvider.overrideWithValue(database)],
+        child: const MaterialApp(home: FinanceScreen()),
+      ),
+    );
+    Future<void> settle() async {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 100)),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    await settle();
+    await tester.tap(find.text('Set aside for bills'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), '800');
+    await tester.tap(find.text('Save'));
+    await settle();
+
+    expect(find.text('₱800.00 set aside for bills'), findsOneWidget);
+    expect(
+      await tester.runAsync(
+        () => FinanceRepository(database).getReservedCents(),
+      ),
+      80000,
+    );
+
+    // Emptying the field stops setting money aside.
+    await tester.tap(find.text('₱800.00 set aside for bills'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), '');
+    await tester.tap(find.text('Save'));
+    await settle();
+    expect(find.text('Set aside for bills'), findsOneWidget);
+  });
+
   testWidgets('Quick expense is logged in two taps', (
     WidgetTester tester,
   ) async {

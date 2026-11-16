@@ -119,7 +119,30 @@ class FinanceRepository {
           ? (allowance.difference(day).inHours / 24).round()
           : lastDay - today.day + 1,
       untilAllowance: untilAllowance,
+      reservedCents: await getReservedCents(),
     );
+  }
+
+  static const String _reservedKey = 'fixed_commitments_cents';
+
+  /// Centavos set aside for fixed bills; zero when none is set.
+  Future<int> getReservedCents() async {
+    final SettingRow? row = await (_db.select(
+      _db.settingRows,
+    )..where((t) => t.key.equals(_reservedKey))).getSingleOrNull();
+    final int cents = row == null ? 0 : int.tryParse(row.value) ?? 0;
+    return cents < 0 ? 0 : cents;
+  }
+
+  Future<void> setReservedCents(int cents) {
+    return _db
+        .into(_db.settingRows)
+        .insertOnConflictUpdate(
+          SettingRowsCompanion.insert(
+            key: _reservedKey,
+            value: (cents < 0 ? 0 : cents).toString(),
+          ),
+        );
   }
 
   static const String _nextAllowanceKey = 'next_allowance';

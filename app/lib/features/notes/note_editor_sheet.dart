@@ -27,6 +27,7 @@ Future<void> showNoteEditor(
   final TextEditingController tagsController = TextEditingController(
     text: note.tags.join(', '),
   );
+  final FocusNode bodyFocus = FocusNode();
 
   await showModalBottomSheet<void>(
     context: context,
@@ -70,10 +71,12 @@ Future<void> showNoteEditor(
                 AppSpacing.gapMd,
                 TextFormField(
                   controller: bodyController,
+                  focusNode: bodyFocus,
                   maxLines: 6,
                   decoration: const InputDecoration(
                     labelText: 'Note content',
-                    hintText: 'Notes or active recall cards (e.g. Q: ... A: ...)',
+                    hintText:
+                        'Notes or active recall cards (e.g. Q: ... A: ...)',
                     border: OutlineInputBorder(borderRadius: AppRadius.medium),
                   ),
                 ),
@@ -83,12 +86,16 @@ Future<void> showNoteEditor(
                   child: TextButton.icon(
                     onPressed: () {
                       final String text = bodyController.text;
-                      final String prefix =
-                          text.isEmpty || text.endsWith('\n') ? '' : '\n\n';
+                      final String prefix = text.isEmpty || text.endsWith('\n')
+                          ? ''
+                          : '\n\n';
                       bodyController.text = '$text${prefix}Q: \nA: ';
                       bodyController.selection = TextSelection.fromPosition(
                         TextPosition(offset: bodyController.text.length - 4),
                       );
+                      // So the question is typed here, not in whichever
+                      // field had the cursor.
+                      bodyFocus.requestFocus();
                     },
                     icon: const Icon(Icons.bolt_rounded, size: 16),
                     label: const Text(
@@ -101,7 +108,7 @@ Future<void> showNoteEditor(
                 TextFormField(
                   controller: tagsController,
                   decoration: const InputDecoration(
-                    labelText: 'Tags (comma separated)',
+                    labelText: 'Tags (comma separated, e.g. math, lecture)',
                     border: OutlineInputBorder(borderRadius: AppRadius.medium),
                   ),
                 ),

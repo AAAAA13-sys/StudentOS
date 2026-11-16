@@ -314,3 +314,26 @@ Entries are appended, never edited. Corrections are new entries that reference t
 - The app writes the date with the figure; the widget shows the figure only on that date and re-checks every 30 minutes (`updatePeriodMillis`).
 - Showing nothing is preferred to showing yesterday's number.
 **Open items:** View the widget on a home screen across a date change.
+
+
+## Phase 25: Midnight Lavender palette, exam countdowns, active recall (recorded late)
+**Date:** 2026-11-16 (10:20 GMT+8)
+**Verified by:** the Gemini session that built it, by tests only; no entry was written here at the time. Device check is in Phase 26.
+**Evidence:** commit `0fb3ab5`; `flutter analyze` 0 issues; `flutter test` 24 passed.
+**Decisions:**
+- Event type is not a database column. An exam or assignment is recognised from words in the title, or from a `#exam` / `#assignment` line in the event's notes.
+- Checklist items are `- [ ]` lines in the event's notes; recall cards are `Q:` / `A:` lines (or `term :: meaning`) in a note's body. No schema change.
+**Open items:** None left from this phase after Phase 26.
+
+
+## Phase 26: Money set aside for bills; Phase 25 checked on device
+**Date:** 2026-11-16 (13:00 GMT+8)
+**Verified by:** lead-pm
+**Evidence:** `flutter analyze` 0 issues; `flutter test` 27 passed; x86_64 release build on `emulator-5554`, installed over existing data. Setting 800 aside moved "Safe to spend today" from 314.20 to 260.86 with a 4,713 balance and 15 days left. An exam event showed "Exam • Today", its checklist item ticked, and switching it to General removed the pill. A note with one Q&A card opened in quiz mode and revealed its answer on tap.
+**Decisions:**
+- The amount set aside is one figure in the `settings` table (`fixed_commitments_cents`), taken off the money on hand before it is spread over the days. It is included in backups. No schema change.
+- Exam and assignment words must match whole words in the title. The editor writes the type tag itself and hides it from the notes field, so the type can be changed back.
+- The "Class" type chip was removed: it stored nothing.
+- New notes and existing notes now use the same editor sheet, so both have "Add Q&A recall card".
+- The emoji were removed from the type chips (the selection tick covered them); the pills on the cards still use them.
+**Open items:** The widget has still not been viewed on a home screen. Push to `origin` awaits the owner.

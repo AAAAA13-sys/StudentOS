@@ -9,6 +9,7 @@ class SafeToSpendCard extends StatelessWidget {
   const SafeToSpendCard({
     required this.value,
     required this.onSetAllowanceDay,
+    required this.onSetReserved,
     super.key,
   });
 
@@ -16,6 +17,9 @@ class SafeToSpendCard extends StatelessWidget {
 
   /// Called when the user wants to pick the next allowance day.
   final VoidCallback onSetAllowanceDay;
+
+  /// Called when the user wants to change the money set aside for bills.
+  final VoidCallback onSetReserved;
 
   @override
   Widget build(BuildContext context) {
@@ -38,9 +42,17 @@ class SafeToSpendCard extends StatelessWidget {
               : '${value.daysLeft} days left this month');
     final String detail = !value.hasFunds
         ? 'Add your allowance to see what is safe to spend.'
+        : value.reserved > 0 && value.leftToday == 0 && value.spentToday == 0
+        ? 'Everything on hand is set aside for bills.'
         : value.spentToday > 0
         ? '$days · ${money.format(value.spentToday)} spent today'
         : days;
+
+    final ButtonStyle linkStyle = TextButton.styleFrom(
+      padding: EdgeInsets.zero,
+      visualDensity: VisualDensity.compact,
+      foregroundColor: colors.primary,
+    );
 
     return Container(
       width: double.infinity,
@@ -76,21 +88,29 @@ class SafeToSpendCard extends StatelessWidget {
               color: colors.onPrimaryContainer,
             ),
           ),
-          Align(
-            alignment: Alignment.centerLeft,
-            child: TextButton(
-              style: TextButton.styleFrom(
-                padding: EdgeInsets.zero,
-                visualDensity: VisualDensity.compact,
-                foregroundColor: colors.primary,
+          Wrap(
+            spacing: AppSpacing.lg,
+            children: <Widget>[
+              TextButton(
+                style: linkStyle,
+                onPressed: onSetAllowanceDay,
+                child: Text(
+                  value.untilAllowance
+                      ? 'Change allowance day'
+                      : 'Set next allowance day',
+                ),
               ),
-              onPressed: onSetAllowanceDay,
-              child: Text(
-                value.untilAllowance
-                    ? 'Change allowance day'
-                    : 'Set next allowance day',
+              TextButton(
+                style: linkStyle,
+                onPressed: onSetReserved,
+                child: Text(
+                  value.reserved > 0
+                      ? '${money.format(value.reserved)} set aside for bills'
+                      : 'Set aside for bills',
+                  style: const TextStyle(fontFeatures: tabular),
+                ),
               ),
-            ),
+            ],
           ),
         ],
       ),

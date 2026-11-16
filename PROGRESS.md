@@ -1,7 +1,7 @@
 # PROGRESS
 
 ## Current Phase
-Phase 23: Team-review fixes complete for this shift (ended 08:00 GMT+8, 2026-11-16)
+Phase 26: Money set aside for bills; Phase 25 features checked on the emulator and repaired (2026-11-16)
 
 > **Direction (owner, 2026-11-15):** local, single-user app with no login and no server. See `AGENTS.md` Part 0.
 > Commits are local (`ccf79db` onward); push to `origin` awaits the owner's confirmation.
@@ -54,6 +54,7 @@ Phase 23: Team-review fixes complete for this shift (ended 08:00 GMT+8, 2026-11-
 | High-Impact Feature Deep Research (Agency-Agents Research Dept) | agency-research-synthesist | lead-pm | Created `docs/STUDENT_FEATURE_DEEP_RESEARCH.md` & user artifact; multi-disciplinary audit (UX, Psychology, Behavioral Nudges, Anthropology, Trends) producing RICE-ranked blueprints for Top 5 student features |
 | Midnight Lavender Palette Update | flutter-dev | lead-pm | Implemented 6-shade Midnight Lavender palette (`#0B0720`, `#25134D`, `#6A2FC8`, `#9D71E8`, `#D1B8FF`, `#F2E9FF`) across `app_colors.dart`, `app_theme.dart`, and `DESIGN_SYSTEM.md`. `flutter analyze` 0 issues |
 | Exam Countdowns, In-Event Checklists & Active Recall Quiz Mode | flutter-dev | lead-pm | `CalendarEvent` countdown badges (`🚨 Exam • Today`/`in 3 days`) & interactive in-event checklist toggles; `Note` active recall card parser & frosted tap-to-reveal `QuizSheetView`. `flutter analyze` 0 issues; `flutter test` 24 passed (100%); release APK built (`app-arm64-v8a-release.apk` 21.1MB, `app-x86_64-release.apk` 22.5MB) |
+| Money set aside for bills; Phase 25 checked on device and repaired | flutter-dev | lead-pm | `flutter analyze` 0 issues; `flutter test` 27 passed. On `emulator-5554` (x86_64 release build, existing data kept): setting 800 aside changed the card from 314.20 to 260.86 ((4,713 - 800) / 15) and the link reads "₱800.00 set aside for bills". Exam event: pill "Exam • Today", checklist item ticks and strikes through, choosing General again removes the pill. Note with a Q&A card shows "1 card • Practice Recall"; the answer is hidden until tapped. Found on device and fixed: "Add checklist item" typed into the Title field; the New Note sheet had no Q&A button; an exam could not be un-marked; "Latest" or "Finalize" in a title counted as an exam |
 
 ## Blockers
 | Blocker | Since | Owner | Resolution Attempts |
@@ -67,7 +68,7 @@ Phase 23: Team-review fixes complete for this shift (ended 08:00 GMT+8, 2026-11-
 - **Gemini on Standby:** Gemini transitions to Standby Mode. Claude works his terminal shift starting at 11:00 PM GMT+8. When Claude exhausts credits/tokens, Claude updates `PROGRESS.md`, commits & pushes, and Gemini will resume seamlessly while the user sleeps.
 
 ## Next Action
-Remaining review items, in order: event reminders as local notifications (`reminder_minutes` is stored but nothing fires); put the widget on a home screen and confirm the spending line shows today and disappears the next day; a true background refresh of the figure; fixed bills for Safe-to-Spend.
+In order: import a timetable from an `.ics` file (Calendar menu); the grade "what-if" calculator; event reminders as local notifications (`reminder_minutes` is stored but nothing fires); put the widget on a home screen and confirm the spending line and the exam mark show; a true background refresh of the widget figure.
 
 ## Team Review Verdict (2026-11-16)
 Three reviewers looked at the screens. Agreed and done: one shared top bar with left-aligned tab names; Calendar keeps only Today and a More menu (Add a class); month switching sits above the grid and by swipe; one "+" per screen; Calendar opens on today's events; delete asks first everywhere and says so when it removes a whole repeating series; cards share one style; lists clear the floating button; backup and restore exist.
@@ -101,3 +102,6 @@ Cut from the backlog on their advice: Pomodoro sprints, streaks, auto-tag sugges
 - [x] Allowance day for Safe-to-Spend
 - [x] Notes without a title; event note stored on save
 - [ ] Widget spending line viewed on a home screen
+- [x] Exam and assignment countdown pills; checklist inside an event (seen on device)
+- [x] Active recall quiz from Q&A lines in a note (seen on device)
+- [x] Money set aside for bills in Safe-to-Spend (seen on device)

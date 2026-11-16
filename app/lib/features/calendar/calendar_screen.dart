@@ -264,8 +264,9 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                                     start.minute,
                                   )
                                 : start;
-                            final String? countdown =
-                                event.countdownBadge(today);
+                            final String? countdown = event.countdownBadge(
+                              today,
+                            );
 
                             return Card(
                               elevation: 0,
@@ -468,40 +469,69 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                                           ),
                                         ],
                                       ),
-                                      if (event.checklistItems.isNotEmpty) ...<Widget>[
+                                      if (event
+                                          .checklistItems
+                                          .isNotEmpty) ...<Widget>[
                                         const SizedBox(height: 6),
-                                        for (int i = 0; i < event.checklistItems.length; i++) ...<Widget>[
+                                        for (
+                                          int i = 0;
+                                          i < event.checklistItems.length;
+                                          i++
+                                        ) ...<Widget>[
                                           InkWell(
                                             borderRadius: AppRadius.small,
                                             onTap: () async {
-                                              final CalendarEvent updated = event.toggleChecklistItem(i);
+                                              final CalendarEvent updated =
+                                                  event.toggleChecklistItem(i);
                                               await ref
-                                                  .read(calendarControllerProvider.notifier)
+                                                  .read(
+                                                    calendarControllerProvider
+                                                        .notifier,
+                                                  )
                                                   .updateEvent(updated);
                                             },
                                             child: Padding(
-                                              padding: const EdgeInsets.symmetric(vertical: 2.5),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    vertical: 2.5,
+                                                  ),
                                               child: Row(
                                                 children: <Widget>[
                                                   Icon(
                                                     event.checklistItems[i].done
-                                                        ? Icons.check_box_rounded
-                                                        : Icons.check_box_outline_blank_rounded,
+                                                        ? Icons
+                                                              .check_box_rounded
+                                                        : Icons
+                                                              .check_box_outline_blank_rounded,
                                                     size: 17,
-                                                    color: event.checklistItems[i].done
+                                                    color:
+                                                        event
+                                                            .checklistItems[i]
+                                                            .done
                                                         ? colors.primary
-                                                        : colors.onSurfaceVariant,
+                                                        : colors
+                                                              .onSurfaceVariant,
                                                   ),
                                                   const SizedBox(width: 6),
                                                   Expanded(
                                                     child: Text(
-                                                      event.checklistItems[i].text,
+                                                      event
+                                                          .checklistItems[i]
+                                                          .text,
                                                       style: textStyles.bodySmall?.copyWith(
-                                                        decoration: event.checklistItems[i].done
-                                                            ? TextDecoration.lineThrough
+                                                        decoration:
+                                                            event
+                                                                .checklistItems[i]
+                                                                .done
+                                                            ? TextDecoration
+                                                                  .lineThrough
                                                             : null,
-                                                        color: event.checklistItems[i].done
-                                                            ? colors.onSurfaceVariant
+                                                        color:
+                                                            event
+                                                                .checklistItems[i]
+                                                                .done
+                                                            ? colors
+                                                                  .onSurfaceVariant
                                                             : colors.onSurface,
                                                       ),
                                                     ),
@@ -795,8 +825,10 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
       text: existingEvent?.location ?? '',
     );
     final TextEditingController notesController = TextEditingController(
-      text: existingEvent?.notes ?? '',
+      // The type tag line is shown as the chips instead.
+      text: CalendarEvent.notesWithType(existingEvent?.notes, 'general') ?? '',
     );
+    final FocusNode notesFocus = FocusNode();
 
     final DateTime baseDate =
         existingEvent?.startsAt.toLocal() ?? prefilledDate ?? _selectedDate;
@@ -874,14 +906,6 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                             ),
                             const SizedBox(width: 8),
                             ChoiceChip(
-                              label: const Text('Class'),
-                              selected: eventType == 'class',
-                              onSelected: (_) =>
-                                  setModalState(() => eventType = 'class'),
-                            ),
-                            const SizedBox(width: 8),
-                            ChoiceChip(
-                              avatar: const Text('🚨'),
                               label: const Text('Exam / Quiz'),
                               selected: eventType == 'exam',
                               onSelected: (_) =>
@@ -889,7 +913,6 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                             ),
                             const SizedBox(width: 8),
                             ChoiceChip(
-                              avatar: const Text('⚠️'),
                               label: const Text('Assignment'),
                               selected: eventType == 'assignment',
                               onSelected: (_) =>
@@ -1051,6 +1074,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                       AppSpacing.gapMd,
                       TextFormField(
                         controller: notesController,
+                        focusNode: notesFocus,
                         maxLines: 3,
                         decoration: const InputDecoration(
                           labelText: 'Notes & Checklist (optional)',
@@ -1066,11 +1090,18 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                         child: TextButton.icon(
                           onPressed: () {
                             final String current = notesController.text;
-                            final String prefix = current.isEmpty || current.endsWith('\n') ? '' : '\n';
+                            final String prefix =
+                                current.isEmpty || current.endsWith('\n')
+                                ? ''
+                                : '\n';
                             notesController.text = '$current$prefix- [ ] ';
-                            notesController.selection = TextSelection.fromPosition(
+                            notesController
+                                .selection = TextSelection.fromPosition(
                               TextPosition(offset: notesController.text.length),
                             );
+                            // So the item's text is typed here, not in
+                            // whichever field had the cursor.
+                            notesFocus.requestFocus();
                             setModalState(() {});
                           },
                           icon: const Icon(Icons.add_task_rounded, size: 16),
@@ -1094,17 +1125,11 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                               eventTime.minute,
                             );
 
-                            String? combinedNotes = notesController.text.trim().isNotEmpty
-                                ? notesController.text.trim()
-                                : null;
-                            if (eventType == 'exam' &&
-                                (combinedNotes == null || !combinedNotes.contains('#exam'))) {
-                              combinedNotes = combinedNotes == null ? '#exam' : '$combinedNotes\n#exam';
-                            } else if (eventType == 'assignment' &&
-                                (combinedNotes == null || !combinedNotes.contains('#assignment'))) {
-                              combinedNotes =
-                                  combinedNotes == null ? '#assignment' : '$combinedNotes\n#assignment';
-                            }
+                            final String? combinedNotes =
+                                CalendarEvent.notesWithType(
+                                  notesController.text,
+                                  eventType,
+                                );
 
                             final CalendarEvent newEvent = CalendarEvent(
                               id: existingEvent?.id ?? 0,

@@ -66,27 +66,44 @@ class CalendarEvent {
     );
   }
 
-  bool get isExam {
-    final String lower = title.toLowerCase();
-    final String notesLower = notes?.toLowerCase() ?? '';
-    return lower.contains('exam') ||
-        lower.contains('quiz') ||
-        lower.contains('midterm') ||
-        lower.contains('final') ||
-        lower.contains('test') ||
-        notesLower.contains('#exam');
-  }
+  // Whole words only, so "Latest" or "Finalize" is not taken for an exam.
+  static final RegExp _examWords = RegExp(
+    r'\b(exams?|quiz(zes)?|midterms?|finals?|tests?)\b',
+    caseSensitive: false,
+  );
+  static final RegExp _assignmentWords = RegExp(
+    r'\b(assignments?|due|deadlines?|projects?|papers?|homework)\b',
+    caseSensitive: false,
+  );
 
-  bool get isAssignment {
-    final String lower = title.toLowerCase();
-    final String notesLower = notes?.toLowerCase() ?? '';
-    return lower.contains('assignment') ||
-        lower.contains('due') ||
-        lower.contains('deadline') ||
-        lower.contains('project') ||
-        lower.contains('paper') ||
-        lower.contains('homework') ||
-        notesLower.contains('#assignment');
+  /// The lines the editor adds to [notes] to record the chosen event type.
+  static const String examTag = '#exam';
+  static const String assignmentTag = '#assignment';
+
+  bool get isExam =>
+      _examWords.hasMatch(title) ||
+      (notes?.toLowerCase().contains(examTag) ?? false);
+
+  bool get isAssignment =>
+      _assignmentWords.hasMatch(title) ||
+      (notes?.toLowerCase().contains(assignmentTag) ?? false);
+
+  /// [notes] with the type tag lines removed and the tag for [type] (`exam`,
+  /// `assignment`, or anything else for none) added, so the type can be
+  /// changed back. Null when nothing is left.
+  static String? notesWithType(String? notes, String type) {
+    final List<String> lines = <String>[
+      for (final String line in (notes ?? '').split('\n'))
+        if (line.trim().toLowerCase() != examTag &&
+            line.trim().toLowerCase() != assignmentTag)
+          line,
+    ];
+    final String body = lines.join('\n').trim();
+    final String? tag = type == 'exam'
+        ? examTag
+        : (type == 'assignment' ? assignmentTag : null);
+    if (tag == null) return body.isEmpty ? null : body;
+    return body.isEmpty ? tag : '$body\n$tag';
   }
 
   /// Relative countdown string from [now] (e.g. 'Today', 'Tomorrow', 'in 3 days').
@@ -105,8 +122,11 @@ class CalendarEvent {
 
   /// Parses markdown task items from [notes] (e.g. `- [ ] Item` or `[ ] Item`).
   List<({String text, bool done})> get checklistItems {
-    if (notes == null || notes!.isEmpty) return const <({String text, bool done})>[];
-    final List<({String text, bool done})> items = <({String text, bool done})>[];
+    if (notes == null || notes!.isEmpty) {
+      return const <({String text, bool done})>[];
+    }
+    final List<({String text, bool done})> items =
+        <({String text, bool done})>[];
     for (final String rawLine in notes!.split('\n')) {
       final String trimmed = rawLine.trim();
       if (trimmed.startsWith('- [ ] ') || trimmed.startsWith('[ ] ')) {
@@ -114,9 +134,12 @@ class CalendarEvent {
             ? trimmed.substring(6).trim()
             : trimmed.substring(4).trim();
         if (text.isNotEmpty) items.add((text: text, done: false));
-      } else if (trimmed.startsWith('- [x] ') || trimmed.startsWith('[x] ') ||
-                 trimmed.startsWith('- [X] ') || trimmed.startsWith('[X] ')) {
-        final String text = (trimmed.startsWith('- [x] ') || trimmed.startsWith('- [X] '))
+      } else if (trimmed.startsWith('- [x] ') ||
+          trimmed.startsWith('[x] ') ||
+          trimmed.startsWith('- [X] ') ||
+          trimmed.startsWith('[X] ')) {
+        final String text =
+            (trimmed.startsWith('- [x] ') || trimmed.startsWith('- [X] '))
             ? trimmed.substring(6).trim()
             : trimmed.substring(4).trim();
         if (text.isNotEmpty) items.add((text: text, done: true));
@@ -133,9 +156,13 @@ class CalendarEvent {
     for (int i = 0; i < lines.length; i++) {
       final String line = lines[i];
       final String trimmed = line.trim();
-      final bool isUnchecked = trimmed.startsWith('- [ ] ') || trimmed.startsWith('[ ] ');
-      final bool isChecked = trimmed.startsWith('- [x] ') || trimmed.startsWith('[x] ') ||
-                             trimmed.startsWith('- [X] ') || trimmed.startsWith('[X] ');
+      final bool isUnchecked =
+          trimmed.startsWith('- [ ] ') || trimmed.startsWith('[ ] ');
+      final bool isChecked =
+          trimmed.startsWith('- [x] ') ||
+          trimmed.startsWith('[x] ') ||
+          trimmed.startsWith('- [X] ') ||
+          trimmed.startsWith('[X] ');
       if (isUnchecked || isChecked) {
         if (currentIndex == targetIndex) {
           if (isUnchecked) {

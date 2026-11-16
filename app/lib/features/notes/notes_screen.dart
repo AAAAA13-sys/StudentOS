@@ -249,26 +249,38 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
                                                     ),
                                               ),
                                             ],
-                                            if (note.recallCards.isNotEmpty) ...<Widget>[
+                                            if (note
+                                                .recallCards
+                                                .isNotEmpty) ...<Widget>[
                                               AppSpacing.gapSm,
                                               InkWell(
                                                 borderRadius: AppRadius.pill,
-                                                onTap: () => showQuizSheet(context, note),
+                                                onTap: () => showQuizSheet(
+                                                  context,
+                                                  note,
+                                                ),
                                                 child: Container(
-                                                  padding: const EdgeInsets.symmetric(
-                                                    horizontal: 10,
-                                                    vertical: 4,
-                                                  ),
+                                                  padding:
+                                                      const EdgeInsets.symmetric(
+                                                        horizontal: 10,
+                                                        vertical: 4,
+                                                      ),
                                                   decoration: BoxDecoration(
-                                                    color: colors.primaryContainer,
-                                                    borderRadius: AppRadius.pill,
+                                                    color:
+                                                        colors.primaryContainer,
+                                                    borderRadius:
+                                                        AppRadius.pill,
                                                     border: Border.all(
-                                                      color: colors.primary.withValues(alpha: 0.3),
+                                                      color: colors.primary
+                                                          .withValues(
+                                                            alpha: 0.3,
+                                                          ),
                                                       width: 0.75,
                                                     ),
                                                   ),
                                                   child: Row(
-                                                    mainAxisSize: MainAxisSize.min,
+                                                    mainAxisSize:
+                                                        MainAxisSize.min,
                                                     children: <Widget>[
                                                       Icon(
                                                         Icons.bolt_rounded,
@@ -278,10 +290,15 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
                                                       const SizedBox(width: 4),
                                                       Text(
                                                         '${note.recallCards.length} ${note.recallCards.length == 1 ? 'card' : 'cards'} • Practice Recall',
-                                                        style: textStyles.labelSmall?.copyWith(
-                                                          color: colors.onPrimaryContainer,
-                                                          fontWeight: FontWeight.bold,
-                                                        ),
+                                                        style: textStyles
+                                                            .labelSmall
+                                                            ?.copyWith(
+                                                              color: colors
+                                                                  .onPrimaryContainer,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                            ),
                                                       ),
                                                     ],
                                                   ),
@@ -356,115 +373,13 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
     );
   }
 
-  Future<void> _showAddNoteDialog(BuildContext context) async {
-    final GlobalKey<FormState> formKey = GlobalKey<FormState>();
-    final TextEditingController titleController = TextEditingController();
-    final TextEditingController bodyController = TextEditingController();
-    final TextEditingController tagsController = TextEditingController();
-
-    await showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      // A stray tap outside must not throw away what was typed.
-      isDismissible: false,
-      enableDrag: false,
-      builder: (BuildContext ctx) {
-        return Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(ctx).viewInsets.bottom,
-            left: AppSpacing.lg,
-            right: AppSpacing.lg,
-            top: AppSpacing.xl,
-          ),
-          child: Form(
-            key: formKey,
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: <Widget>[
-                  Text(
-                    'New Note',
-                    style: ctx.textStyles.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  AppSpacing.gapLg,
-                  TextFormField(
-                    controller: titleController,
-                    decoration: const InputDecoration(
-                      labelText: 'Title (optional)',
-                      border: OutlineInputBorder(
-                        borderRadius: AppRadius.medium,
-                      ),
-                    ),
-                    validator: (String? val) =>
-                        noteTitleFor(val ?? '', bodyController.text) == null
-                        ? 'Write a title or some text'
-                        : null,
-                  ),
-                  AppSpacing.gapMd,
-                  TextFormField(
-                    controller: bodyController,
-                    maxLines: 5,
-                    decoration: const InputDecoration(
-                      labelText: 'Note content (plain text)',
-                      border: OutlineInputBorder(
-                        borderRadius: AppRadius.medium,
-                      ),
-                    ),
-                  ),
-                  AppSpacing.gapMd,
-                  TextFormField(
-                    controller: tagsController,
-                    decoration: const InputDecoration(
-                      labelText: 'Tags (comma separated, e.g. math, lecture)',
-                      border: OutlineInputBorder(
-                        borderRadius: AppRadius.medium,
-                      ),
-                    ),
-                  ),
-                  AppSpacing.gapXl,
-                  SizedBox(
-                    height: AppSizes.buttonHeight,
-                    child: FilledButton(
-                      onPressed: () {
-                        if (!formKey.currentState!.validate()) return;
-                        final List<String> tags = tagsController.text
-                            .split(',')
-                            .map((String s) => s.trim())
-                            .where((String s) => s.isNotEmpty)
-                            .toList();
-
-                        ref
-                            .read(notesControllerProvider.notifier)
-                            .addNote(
-                              Note(
-                                id: 0,
-                                title: noteTitleFor(
-                                  titleController.text,
-                                  bodyController.text,
-                                )!,
-                                body: bodyController.text,
-                                tags: tags,
-                              ),
-                            );
-                        Navigator.pop(ctx);
-                      },
-                      child: const Text('Save Note'),
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () => Navigator.pop(ctx),
-                    child: const Text('Cancel'),
-                  ),
-                  AppSpacing.gapSm,
-                ],
-              ),
-            ),
-          ),
-        );
-      },
+  Future<void> _showAddNoteDialog(BuildContext context) {
+    return showNoteEditor(
+      context,
+      ref,
+      Note(id: 0, title: '', body: '', tags: const <String>[]),
+      onCreate: (Note draft) =>
+          ref.read(notesControllerProvider.notifier).addNote(draft),
     );
   }
 }

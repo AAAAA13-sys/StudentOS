@@ -12,6 +12,7 @@ import 'finance_controller.dart';
 import 'finance_repository.dart';
 import 'transaction.dart';
 import 'widgets/quick_expense_sheet.dart';
+import 'widgets/reserve_dialog.dart';
 import 'widgets/safe_to_spend_card.dart';
 
 class FinanceScreen extends ConsumerWidget {
@@ -99,6 +100,17 @@ class FinanceScreen extends ConsumerWidget {
                                 await ref
                                     .read(financeControllerProvider.notifier)
                                     .setNextAllowance(picked);
+                              }
+                            },
+                            onSetReserved: () async {
+                              final double? amount = await showReserveDialog(
+                                context,
+                                current: state.safeToSpend!.reserved,
+                              );
+                              if (amount != null) {
+                                await ref
+                                    .read(financeControllerProvider.notifier)
+                                    .setReserved(amount);
                               }
                             },
                           ),

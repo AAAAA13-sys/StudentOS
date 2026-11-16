@@ -179,7 +179,7 @@ void main() {
 
     expect(find.text('New Note'), findsOneWidget);
     expect(find.text('Title (optional)'), findsOneWidget);
-    expect(find.text('Note content (plain text)'), findsOneWidget);
+    expect(find.text('Note content'), findsOneWidget);
   });
 
   group('Student Features: Exam countdowns & in-event checklists', () {
@@ -210,6 +210,29 @@ void main() {
       );
       expect(projectInFiveDays.isAssignment, isTrue);
       expect(projectInFiveDays.countdownBadge(now), 'in 5 days');
+    });
+
+    test('Event type follows whole words and can be changed back', () {
+      CalendarEvent event(String title, [String? notes]) => CalendarEvent(
+        id: 1,
+        title: title,
+        startsAt: DateTime(2026, 11, 16, 9),
+        notes: notes,
+      );
+      expect(event('Latest news club').isExam, isFalse);
+      expect(event('Finalize thesis outline').isExam, isFalse);
+      expect(event('Test 2').isExam, isTrue);
+
+      final String? tagged = CalendarEvent.notesWithType('Room 2', 'exam');
+      expect(tagged, 'Room 2\n#exam');
+      expect(event('Physics', tagged).isExam, isTrue);
+      // Picking General again removes the tag.
+      expect(CalendarEvent.notesWithType(tagged, 'general'), 'Room 2');
+      expect(CalendarEvent.notesWithType('#exam', 'general'), isNull);
+      expect(
+        CalendarEvent.notesWithType(tagged, 'assignment'),
+        'Room 2\n#assignment',
+      );
     });
 
     test('CalendarEvent parses and toggles markdown checklist items', () {
@@ -259,7 +282,10 @@ Osmosis :: Diffusion of water across a semipermeable membrane
       expect(cards[1].question, 'Function of ribosomes?');
       expect(cards[1].answer, 'Protein synthesis');
       expect(cards[2].question, 'Osmosis');
-      expect(cards[2].answer, 'Diffusion of water across a semipermeable membrane');
+      expect(
+        cards[2].answer,
+        'Diffusion of water across a semipermeable membrane',
+      );
     });
   });
 }

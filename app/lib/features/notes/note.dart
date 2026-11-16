@@ -44,7 +44,9 @@ List<RecallCard> extractRecallCards(String text) {
     final String line = lines[i].trim();
     if (line.isEmpty) continue;
 
-    final RegExp qMatch = RegExp(r'^(?:Q|q|Question|question)\s*[:\-\)]\s*(.*)$');
+    final RegExp qMatch = RegExp(
+      r'^(?:Q|q|Question|question)\s*[:\-\)]\s*(.*)$',
+    );
     final RegExp aMatch = RegExp(r'^(?:A|a|Answer|answer)\s*[:\-\)]\s*(.*)$');
 
     final Match? q = qMatch.firstMatch(line);
