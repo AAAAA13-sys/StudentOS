@@ -18,6 +18,7 @@ import '../work/add_shift_sheet.dart';
 import '../work/day_shifts.dart';
 import '../work/shift.dart';
 import '../work/work_controller.dart';
+import '../../core/widgets/ponpon.dart';
 
 class CalendarScreen extends ConsumerStatefulWidget {
   const CalendarScreen({super.key});
@@ -229,37 +230,36 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
               Expanded(
                 child: displayedEvents.isEmpty
                     ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: <Widget>[
-                            Icon(
-                              Icons.event_available_outlined,
-                              size: 48,
-                              color: colors.outlineVariant,
-                            ),
-                            AppSpacing.gapMd,
-                            Text(
-                              _filterByDay
-                                  ? (shiftDays.contains(_selectedDate)
-                                        ? 'No other events on ${DateFormat('MMM d').format(_selectedDate)}'
-                                        : 'No events on ${DateFormat('MMM d').format(_selectedDate)}')
-                                  : 'No events scheduled',
-                              style: textStyles.titleMedium?.copyWith(
-                                color: colors.onSurfaceVariant,
+                        // Scrolls on short screens instead of overflowing.
+                        child: SingleChildScrollView(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: <Widget>[
+                              const Ponpon(mood: PonponMood.sleepy, size: 88),
+                              AppSpacing.gapMd,
+                              Text(
+                                _filterByDay
+                                    ? (shiftDays.contains(_selectedDate)
+                                          ? 'No other events on ${DateFormat('MMM d').format(_selectedDate)}'
+                                          : 'No events on ${DateFormat('MMM d').format(_selectedDate)}')
+                                    : 'No events scheduled',
+                                style: textStyles.titleMedium?.copyWith(
+                                  color: colors.onSurfaceVariant,
+                                ),
                               ),
-                            ),
-                            AppSpacing.gapSm,
-                            FilledButton.tonalIcon(
-                              icon: const Icon(Icons.add_rounded),
-                              label: Text(
-                                'Add Event for ${DateFormat('MMM d').format(_selectedDate)}',
+                              AppSpacing.gapSm,
+                              FilledButton.tonalIcon(
+                                icon: const Icon(Icons.add_rounded),
+                                label: Text(
+                                  'Add Event for ${DateFormat('MMM d').format(_selectedDate)}',
+                                ),
+                                onPressed: () => _showAddEventDialog(
+                                  context,
+                                  prefilledDate: _selectedDate,
+                                ),
                               ),
-                              onPressed: () => _showAddEventDialog(
-                                context,
-                                prefilledDate: _selectedDate,
-                              ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       )
                     : RefreshIndicator(

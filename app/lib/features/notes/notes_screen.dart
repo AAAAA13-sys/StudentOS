@@ -10,6 +10,7 @@ import 'note.dart';
 import 'note_editor_sheet.dart';
 import 'notes_controller.dart';
 import 'quiz_sheet.dart';
+import '../../core/widgets/ponpon.dart';
 
 class NotesScreen extends ConsumerStatefulWidget {
   const NotesScreen({super.key});
@@ -144,10 +145,11 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: <Widget>[
-                                  Icon(
-                                    Icons.note_alt_outlined,
-                                    size: 56,
-                                    color: colors.outlineVariant,
+                                  Ponpon(
+                                    mood: state.searchQuery.isNotEmpty
+                                        ? PonponMood.smug
+                                        : PonponMood.happy,
+                                    size: 88,
                                   ),
                                   AppSpacing.gapMd,
                                   Text(

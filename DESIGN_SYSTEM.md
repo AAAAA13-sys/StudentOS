@@ -157,3 +157,20 @@ Before declaring any UI task done, verify:
 - [ ] Tap targets are minimum 48×48dp.
 - [ ] Bottom sheets dismiss smoothly and respect keyboard insets.
 - [ ] App is tested in both Light Mode and Dark Mode.
+
+---
+
+## Mascot: Ponpon
+
+Ponpon is an orange tabby puspin (pusang Pinoy), StudentOS's mascot. Use the `Ponpon` widget (`lib/core/widgets/ponpon.dart`), never an emoji or a photo.
+
+| Mood | Use |
+|------|-----|
+| `happy` | Default, menu header, empty lists that are fine to be empty |
+| `sleepy` | Nothing scheduled, no alarms, focus breaks |
+| `yelling` | A ringing alarm |
+| `smug` | "Still awake?", a search with no match, a paused timer |
+| `focused` | The focus timer |
+
+Sizes: 56-64 in headers, 88-120 in empty states, 44dp in widget corners. Ponpon's colours do not follow the theme. Android-side images come from `tool/render_ponpon_test.dart`.
+

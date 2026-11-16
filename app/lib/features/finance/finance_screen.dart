@@ -15,6 +15,7 @@ import 'widgets/quick_expense_sheet.dart';
 import 'widgets/reserve_dialog.dart';
 import 'widgets/safe_to_spend_card.dart';
 import '../work/work_pay_card.dart';
+import '../../core/widgets/ponpon.dart';
 
 class FinanceScreen extends ConsumerWidget {
   const FinanceScreen({super.key});
@@ -290,11 +291,7 @@ class FinanceScreen extends ConsumerWidget {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: <Widget>[
-                          Icon(
-                            Icons.receipt_long_outlined,
-                            size: 56,
-                            color: colors.outlineVariant,
-                          ),
+                          const Ponpon(size: 88),
                           AppSpacing.gapMd,
                           Text(
                             'No transactions this month',

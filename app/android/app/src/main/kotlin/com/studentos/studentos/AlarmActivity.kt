@@ -21,6 +21,7 @@ import android.view.WindowManager
 import android.view.inputmethod.EditorInfo
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
@@ -52,7 +53,7 @@ class AlarmActivity : Activity(), SensorEventListener {
         root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER_HORIZONTAL
-            setPadding(dp(24), dp(56), dp(24), dp(32))
+            setPadding(dp(24), dp(32), dp(24), dp(32))
         }
         val scroll = ScrollView(this).apply {
             setBackgroundColor(BG)
@@ -100,7 +101,16 @@ class AlarmActivity : Activity(), SensorEventListener {
             finish()
             return
         }
-        root.addView(text(SimpleDateFormat("h:mm", Locale.getDefault()).format(Date()), 72f, bold = true))
+        root.addView(
+            ImageView(this).apply {
+                setImageResource(
+                    if (AlarmService.currentIsCheck) R.drawable.ponpon_smug else R.drawable.ponpon_yelling,
+                )
+                contentDescription = "Ponpon the cat"
+            },
+            LinearLayout.LayoutParams(dp(150), dp(150)),
+        )
+        root.addView(text(SimpleDateFormat("h:mm", Locale.getDefault()).format(Date()), 64f, bold = true))
         root.addView(text(spec.label.ifBlank { "Wake up" }, 22f, color = LILAC))
         root.addView(space(28))
 

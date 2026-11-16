@@ -16,6 +16,7 @@ import '../db/backup.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
 import 'confirm_dialog.dart';
+import 'ponpon.dart';
 
 /// The menu behind the hamburger button: things that are not a tab.
 class AppDrawer extends ConsumerWidget {
@@ -122,20 +123,34 @@ class AppDrawer extends ConsumerWidget {
             ),
             child: SafeArea(
               bottom: false,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: Row(
                 children: <Widget>[
-                  Text(
-                    'StudentOS',
-                    style: textStyles.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Everything is stored on this device.',
-                    style: textStyles.bodySmall?.copyWith(
-                      color: colors.onSurfaceVariant,
+                  const Ponpon(size: 64),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Text(
+                          'StudentOS',
+                          style: textStyles.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Everything is stored on this device.',
+                          style: textStyles.bodySmall?.copyWith(
+                            color: colors.onSurfaceVariant,
+                          ),
+                        ),
+                        Text(
+                          'Ponpon says hi.',
+                          style: textStyles.bodySmall?.copyWith(
+                            color: colors.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],

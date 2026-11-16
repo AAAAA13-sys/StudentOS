@@ -36,6 +36,10 @@ class FinanceWidgetProvider : AppWidgetProvider() {
                     R.id.finance_note,
                     if (amount.isEmpty() || note.isNotEmpty()) View.VISIBLE else View.GONE,
                 )
+                setImageViewResource(
+                    R.id.widget_ponpon,
+                    if (amount == "₱0") R.drawable.ponpon_smug else R.drawable.ponpon_happy,
+                )
                 setOnClickPendingIntent(
                     R.id.finance_root,
                     WidgetSupport.openApp(context, "finance", 21),

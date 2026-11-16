@@ -53,6 +53,15 @@ class ClockWidgetProvider : AppWidgetProvider() {
                     WidgetSupport.openApp(context, "clock", 22),
                 )
 
+                setImageViewResource(
+                    R.id.widget_ponpon,
+                    when {
+                        phase?.kind == "focus" -> R.drawable.ponpon_focused
+                        phase != null -> R.drawable.ponpon_sleepy
+                        next == null -> R.drawable.ponpon_sleepy
+                        else -> R.drawable.ponpon_happy
+                    },
+                )
                 if (phase == null) {
                     setViewVisibility(R.id.clock_focus_running, View.GONE)
                     setViewVisibility(R.id.clock_start_focus, View.VISIBLE)

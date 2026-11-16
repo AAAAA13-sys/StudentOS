@@ -24,6 +24,12 @@ class CalendarWidgetProvider : AppWidgetProvider() {
                     R.id.widget_event_time,
                     data.getString("event_time", "Enjoy your free time!"),
                 )
+                val title = data.getString("event_title", null)
+                setImageViewResource(
+                    R.id.widget_ponpon,
+                    if (title == null || title == "No upcoming events") R.drawable.ponpon_sleepy
+                    else R.drawable.ponpon_happy,
+                )
                 setOnClickPendingIntent(
                     R.id.widget_layout_root,
                     WidgetSupport.openApp(context, "calendar", 20),

@@ -13,6 +13,7 @@ import 'focus_controller.dart';
 import 'focus_plan.dart';
 import 'focus_platform.dart';
 import 'focus_settings_sheet.dart';
+import '../../core/widgets/ponpon.dart';
 
 const List<FontFeature> _tabular = <FontFeature>[FontFeature.tabularFigures()];
 
@@ -180,11 +181,7 @@ class _EmptyAlarms extends StatelessWidget {
       padding: const EdgeInsets.only(top: AppSpacing.xxxl),
       child: Column(
         children: <Widget>[
-          Icon(
-            Icons.alarm_rounded,
-            size: AppSizes.iconXl,
-            color: colors.primary,
-          ),
+          const Ponpon(mood: PonponMood.sleepy, size: 120),
           AppSpacing.gapMd,
           Text(
             'No alarms yet',
@@ -398,6 +395,8 @@ class _TimerIdle extends ConsumerWidget {
         AppSpacing.xxl,
       ),
       children: <Widget>[
+        const Center(child: Ponpon(mood: PonponMood.focused, size: 104)),
+        AppSpacing.gapSm,
         Container(
           padding: AppSpacing.card,
           decoration: BoxDecoration(
@@ -679,7 +678,18 @@ class _TimerRunningState extends ConsumerState<_TimerRunning> {
             ),
           ),
         ),
-        AppSpacing.gapXl,
+        AppSpacing.gapLg,
+        Center(
+          child: Ponpon(
+            mood: s.paused
+                ? PonponMood.smug
+                : onBreak
+                ? PonponMood.sleepy
+                : PonponMood.focused,
+            size: 88,
+          ),
+        ),
+        AppSpacing.gapSm,
         Text(
           onBreak
               ? 'Step away from the screen. The next round starts on its own.'

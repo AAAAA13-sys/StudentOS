@@ -38,6 +38,8 @@ Checked on the emulator: alarm rings with the screen off, maths and typed challe
 
 Widgets (Phase 30): three independent home-screen widgets, `CalendarWidgetProvider`, `FinanceWidgetProvider` ("StudentOS money") and `ClockWidgetProvider`, with layouts `widget_layout.xml`, `widget_finance.xml`, `widget_clock.xml`. Menu > Home-screen widgets adds them with Android's pin prompt. Checked on the emulator only.
 
+Mascot (Phase 31): Ponpon, an orange puspin, drawn in `lib/core/widgets/ponpon.dart`; Android copies in `res/drawable-nodpi/` come from `tool/render_ponpon_test.dart`. See `DESIGN_SYSTEM.md` > Mascot.
+
 Still open, in suggested order:
 0. See the shift overlap warning on a device; add a payday date to the Work pay card.
 1. Import a timetable from an `.ics` file (Calendar menu; `file_picker` is already a dependency).

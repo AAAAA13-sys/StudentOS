@@ -400,3 +400,13 @@ Entries are appended, never edited. Corrections are new entries that reference t
 - Widget taps open routes (`calendar`, `finance`, `clock`, `timer`, `start_focus`); the old `OPEN_CALENDAR` action was never handled.
 **Open items:** Not checked on a real phone. The calendar widget still shows emoji for exams and assignments, against `DESIGN_SYSTEM.md`.
 
+## Phase 31: Ponpon, the orange puspin mascot
+**Date:** 2026-11-16 (20:25 GMT+8)
+**Verified by:** lead-pm on `emulator-5554`
+**Evidence:** see the Ponpon row in `PROGRESS.md`.
+**Decisions:**
+- Simple flat style (owner's choice): rounded shapes, flat orange, cream and pink, thin dark-brown outline, ginger tabby stripes. Colours are fixed, not themed.
+- One painter is the source of truth. The Android PNGs in `res/drawable-nodpi/ponpon_*.png` (288 px) are generated from it; run `flutter test tool/render_ponpon_test.dart` and copy from `build/ponpon/` after changing the drawing.
+- Moods carry meaning: sleepy = nothing on or a break, yelling = ringing, smug = checking on you or nothing found, focused = timer.
+**Open items:** App icon not changed to Ponpon (the owner picked the photo icon earlier; asked). The alarm notification pop-up covers Ponpon on the alarm screen for a few seconds.
+
