@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../features/calendar/calendar_screen.dart';
 import '../../features/finance/finance_screen.dart';
 import '../../features/notes/notes_screen.dart';
+import '../../features/focus/clock_screen.dart';
 import '../widgets/scaffold_with_nav_bar.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>(
@@ -50,6 +51,15 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((ref) {
                 path: '/notes',
                 builder: (BuildContext context, GoRouterState state) =>
                     const NotesScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: <RouteBase>[
+              GoRoute(
+                path: '/clock',
+                builder: (BuildContext context, GoRouterState state) =>
+                    const ClockScreen(),
               ),
             ],
           ),

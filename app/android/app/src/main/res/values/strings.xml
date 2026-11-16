@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="focus_block_description">Used only during a strict focus session in StudentOS. When an app that is not on your allow list opens, StudentOS comes back to the front. It sees only which app opened, never what is on the screen, and nothing leaves the phone.</string>
+</resources>

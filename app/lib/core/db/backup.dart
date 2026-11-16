@@ -21,8 +21,9 @@ class BackupService {
 
   final AppDatabase _db;
 
-  /// 2 added work shifts. Older files restore with no shifts.
-  static const int formatVersion = 2;
+  /// 2 added work shifts, 3 phone use, 4 alarms and focus sessions. Older
+  /// files restore with none of what they lack.
+  static const int formatVersion = 4;
 
   Future<String> exportJson() async {
     final List<EventRow> events = await _db.select(_db.eventRows).get();
@@ -32,6 +33,16 @@ class BackupService {
     final List<NoteRow> notes = await _db.select(_db.noteRows).get();
     final List<SettingRow> settings = await _db.select(_db.settingRows).get();
     final List<ShiftRow> shifts = await _db.select(_db.shiftRows).get();
+    final List<PhoneDayRow> phoneDays = await _db
+        .select(_db.phoneDayRows)
+        .get();
+    final List<PhoneAppDayRow> phoneApps = await _db
+        .select(_db.phoneAppDayRows)
+        .get();
+    final List<AlarmRow> alarms = await _db.select(_db.alarmRows).get();
+    final List<FocusLogRow> focusLogs = await _db
+        .select(_db.focusLogRows)
+        .get();
 
     return const JsonEncoder.withIndent('  ').convert(<String, Object?>{
       'app': 'studentos',
@@ -46,6 +57,16 @@ class BackupService {
         for (final SettingRow row in settings) row.toJson(),
       ],
       'shifts': <Object?>[for (final ShiftRow row in shifts) row.toJson()],
+      'phone_days': <Object?>[
+        for (final PhoneDayRow row in phoneDays) row.toJson(),
+      ],
+      'phone_app_days': <Object?>[
+        for (final PhoneAppDayRow row in phoneApps) row.toJson(),
+      ],
+      'alarms': <Object?>[for (final AlarmRow row in alarms) row.toJson()],
+      'focus_logs': <Object?>[
+        for (final FocusLogRow row in focusLogs) row.toJson(),
+      ],
     });
   }
 
@@ -59,6 +80,10 @@ class BackupService {
     final List<NoteRow> notes;
     final List<SettingRow> settings;
     final List<ShiftRow> shifts;
+    final List<PhoneDayRow> phoneDays;
+    final List<PhoneAppDayRow> phoneApps;
+    final List<AlarmRow> alarms;
+    final List<FocusLogRow> focusLogs;
     try {
       final Object? decoded = jsonDecode(json);
       if (decoded is! Map<String, dynamic> || decoded['app'] != 'studentos') {
@@ -82,6 +107,18 @@ class BackupService {
       shifts = decoded['shifts'] == null
           ? <ShiftRow>[]
           : rows('shifts').map(ShiftRow.fromJson).toList();
+      phoneDays = decoded['phone_days'] == null
+          ? <PhoneDayRow>[]
+          : rows('phone_days').map(PhoneDayRow.fromJson).toList();
+      phoneApps = decoded['phone_app_days'] == null
+          ? <PhoneAppDayRow>[]
+          : rows('phone_app_days').map(PhoneAppDayRow.fromJson).toList();
+      alarms = decoded['alarms'] == null
+          ? <AlarmRow>[]
+          : rows('alarms').map(AlarmRow.fromJson).toList();
+      focusLogs = decoded['focus_logs'] == null
+          ? <FocusLogRow>[]
+          : rows('focus_logs').map(FocusLogRow.fromJson).toList();
     } on BackupFormatException {
       rethrow;
     } catch (_) {
@@ -94,12 +131,20 @@ class BackupService {
       await _db.delete(_db.noteRows).go();
       await _db.delete(_db.settingRows).go();
       await _db.delete(_db.shiftRows).go();
+      await _db.delete(_db.phoneDayRows).go();
+      await _db.delete(_db.phoneAppDayRows).go();
+      await _db.delete(_db.alarmRows).go();
+      await _db.delete(_db.focusLogRows).go();
       await _db.batch((batch) {
         batch.insertAll(_db.eventRows, events);
         batch.insertAll(_db.transactionRows, transactions);
         batch.insertAll(_db.noteRows, notes);
         batch.insertAll(_db.settingRows, settings);
         batch.insertAll(_db.shiftRows, shifts);
+        batch.insertAll(_db.phoneDayRows, phoneDays);
+        batch.insertAll(_db.phoneAppDayRows, phoneApps);
+        batch.insertAll(_db.alarmRows, alarms);
+        batch.insertAll(_db.focusLogRows, focusLogs);
       });
     });
     return (

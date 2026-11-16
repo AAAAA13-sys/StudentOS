@@ -117,16 +117,160 @@ class ShiftRows extends Table {
   IntColumn get seriesId => integer().nullable()();
 }
 
+/// Phone use on one day, copied from Android's usage history, which the
+/// system keeps for only a few days.
+@DataClassName('PhoneDayRow')
+class PhoneDayRows extends Table {
+  @override
+  String get tableName => 'phone_days';
+
+  /// `YYYY-MM-DD`.
+  TextColumn get date => text()();
+
+  /// Time the screen was on.
+  IntColumn get screenOnMs => integer()();
+
+  IntColumn get unlocks => integer()();
+
+  /// First unlock of the day.
+  DateTimeColumn get firstPickup => dateTime().nullable()();
+
+  /// The longest stretch with the screen off around the night before this
+  /// day; the app cannot know whether that was sleep.
+  DateTimeColumn get restStart => dateTime().nullable()();
+
+  DateTimeColumn get restEnd => dateTime().nullable()();
+
+  /// True once the day was read after it ended. A complete day is never read
+  /// again, so the system forgetting it later cannot wipe it.
+  BoolColumn get complete => boolean().withDefault(const Constant(false))();
+
+  @override
+  Set<Column<Object>> get primaryKey => <Column<Object>>{date};
+}
+
+/// Time in one app on one day.
+@DataClassName('PhoneAppDayRow')
+class PhoneAppDayRows extends Table {
+  @override
+  String get tableName => 'phone_app_days';
+
+  TextColumn get date => text()();
+
+  TextColumn get package => text()();
+
+  /// Kept so the name survives the app being uninstalled.
+  TextColumn get label => text()();
+
+  IntColumn get foregroundMs => integer()();
+
+  @override
+  Set<Column<Object>> get primaryKey => <Column<Object>>{date, package};
+}
+
+/// One wake-up alarm and everything that makes it hard to ignore. The
+/// Android side keeps its own copy so it can ring with the app closed.
+@DataClassName('AlarmRow')
+class AlarmRows extends Table {
+  @override
+  String get tableName => 'alarms';
+
+  IntColumn get id => integer().autoIncrement()();
+
+  IntColumn get hour => integer()();
+
+  IntColumn get minute => integer()();
+
+  /// Weekdays it repeats on: bit 0 is Monday ... bit 6 is Sunday. Zero rings
+  /// once and then turns itself off.
+  IntColumn get days => integer().withDefault(const Constant(0))();
+
+  TextColumn get label => text().withDefault(const Constant(''))();
+
+  BoolColumn get enabled => boolean().withDefault(const Constant(true))();
+
+  /// A content URI from Android's sound picker; null is the phone's alarm.
+  TextColumn get soundUri => text().nullable()();
+
+  TextColumn get soundName => text().nullable()();
+
+  /// Alarm volume in percent of the phone's maximum.
+  IntColumn get volume => integer().withDefault(const Constant(100))();
+
+  /// Seconds to rise from quiet to [volume]; 0 starts at full volume.
+  IntColumn get rampSeconds => integer().withDefault(const Constant(0))();
+
+  /// Puts the alarm volume back up whenever it is turned down while ringing.
+  BoolColumn get volumeLock => boolean().withDefault(const Constant(true))();
+
+  BoolColumn get vibrate => boolean().withDefault(const Constant(true))();
+
+  /// `none`, `math`, `type` or `shake`: what it takes to turn it off.
+  TextColumn get challenge => text().withDefault(const Constant('math'))();
+
+  /// Problems to solve, or shakes to make.
+  IntColumn get challengeCount => integer().withDefault(const Constant(3))();
+
+  /// `easy`, `medium` or `hard` for maths.
+  TextColumn get difficulty => text().withDefault(const Constant('medium'))();
+
+  /// The sentence to type for the `type` challenge.
+  TextColumn get phrase => text().withDefault(const Constant(''))();
+
+  /// How many snoozes are allowed; 0 hides the button.
+  IntColumn get snoozeLimit => integer().withDefault(const Constant(1))();
+
+  IntColumn get snoozeMinutes => integer().withDefault(const Constant(5))();
+
+  /// Asks "still awake?" a while after it is turned off, and rings again
+  /// when nobody answers.
+  BoolColumn get wakeCheck => boolean().withDefault(const Constant(true))();
+
+  IntColumn get wakeCheckMinutes => integer().withDefault(const Constant(5))();
+}
+
+/// One finished focus session (a run of Pomodoro rounds).
+@DataClassName('FocusLogRow')
+class FocusLogRows extends Table {
+  @override
+  String get tableName => 'focus_logs';
+
+  IntColumn get id => integer().autoIncrement()();
+
+  DateTimeColumn get startedAt => dateTime()();
+
+  DateTimeColumn get endedAt => dateTime()();
+
+  /// Time actually spent in focus phases, without breaks or pauses.
+  IntColumn get focusMs => integer()();
+
+  /// Focus rounds finished in full.
+  IntColumn get rounds => integer()();
+
+  /// True when it was stopped before the last round ended.
+  BoolColumn get endedEarly => boolean().withDefault(const Constant(false))();
+}
+
 /// The app's only data store. Everything lives on this device.
 @DriftDatabase(
-  tables: <Type>[EventRows, TransactionRows, NoteRows, SettingRows, ShiftRows],
+  tables: <Type>[
+    EventRows,
+    TransactionRows,
+    NoteRows,
+    SettingRows,
+    ShiftRows,
+    PhoneDayRows,
+    PhoneAppDayRows,
+    AlarmRows,
+    FocusLogRows,
+  ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor])
     : super(executor ?? driftDatabase(name: 'studentos'));
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -139,6 +283,14 @@ class AppDatabase extends _$AppDatabase {
       }
       if (from < 4) {
         await m.createTable(shiftRows);
+      }
+      if (from < 5) {
+        await m.createTable(phoneDayRows);
+        await m.createTable(phoneAppDayRows);
+      }
+      if (from < 6) {
+        await m.createTable(alarmRows);
+        await m.createTable(focusLogRows);
       }
     },
   );

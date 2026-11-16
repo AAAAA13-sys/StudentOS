@@ -7,6 +7,8 @@ import 'package:intl/intl.dart';
 
 import '../../features/calendar/calendar_controller.dart';
 import '../../features/finance/finance_controller.dart';
+import '../../features/focus/focus_controller.dart';
+import '../../features/phone/phone_controller.dart';
 import '../../features/work/work_controller.dart';
 import '../../features/notes/notes_controller.dart';
 import '../db/backup.dart';
@@ -67,7 +69,10 @@ class AppDrawer extends ConsumerWidget {
         ..invalidate(calendarControllerProvider)
         ..invalidate(financeControllerProvider)
         ..invalidate(notesControllerProvider)
-        ..invalidate(workControllerProvider);
+        ..invalidate(workControllerProvider)
+        ..invalidate(phoneControllerProvider)
+        ..invalidate(alarmControllerProvider)
+        ..invalidate(focusControllerProvider);
       messenger.showSnackBar(
         SnackBar(
           content: Text(

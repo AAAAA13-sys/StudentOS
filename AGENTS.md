@@ -289,7 +289,7 @@ The UI must adhere strictly to `DESIGN_SYSTEM.md` and eliminate all generic AI t
 - **No Purple Gradient Syndrome:** No diagonal purple-to-indigo gradients, no glowing radial blobs, and no muddy backgrounds. Use a crisp, calming porcelain canvas (`#FAF8FF` / `#FFFFFF`) with a restrained **hint of lavender** (`#7C3AED` primary, `#EDE9FE` container).
 - **Hairlines Over Shadows:** Use high-craft 0.75px–1.0px hairline borders (`#E4E0F0` light, `#2D2845` dark) instead of heavy blurry drop shadows.
 - **Dual-Tier Navigation:** 
-  1. Bottom Navigation Bar: strictly 3 thumb-accessible destinations (Calendar, Finance, Notes).
+  1. Bottom Navigation Bar: 4 thumb-accessible destinations (Calendar, Finance, Notes, Clock). Clock was added 2026-11-16 at the owner's request; school modules (subjects, grades) are out.
   2. Hamburger Drawer (`NavigationDrawer`): top-left menu icon (`Icons.menu_rounded`) opening the command center for Student Profile, Drift SQLite offline sync status, and secondary utilities.
 - **Physics Easing & Snappy Micro-Interactions:** 100–140ms for tactile button ink feedback, 250–300ms with `Curves.easeOutCubic` for modal sheets and drawer slides. No sluggish 800ms floating transitions.
 - **Tabular Figures:** Always use `FontFeature.tabularFigures()` on monetary figures (`₱120.00`) and timestamps.

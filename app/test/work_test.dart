@@ -150,7 +150,7 @@ void main() {
       ]);
 
       final String json = await BackupService(database).exportJson();
-      expect(json, contains('"format": 2'));
+      expect(json, contains('"shifts"'));
       await BackupService(target).restoreJson(json);
       final List<Shift> restored = await WorkRepository(target).getShifts();
       expect(restored.length, 2);

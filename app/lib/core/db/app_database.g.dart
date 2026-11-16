@@ -2155,6 +2155,2326 @@ class ShiftRowsCompanion extends UpdateCompanion<ShiftRow> {
   }
 }
 
+class $PhoneDayRowsTable extends PhoneDayRows
+    with TableInfo<$PhoneDayRowsTable, PhoneDayRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $PhoneDayRowsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _dateMeta = const VerificationMeta('date');
+  @override
+  late final GeneratedColumn<String> date = GeneratedColumn<String>(
+    'date',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _screenOnMsMeta = const VerificationMeta(
+    'screenOnMs',
+  );
+  @override
+  late final GeneratedColumn<int> screenOnMs = GeneratedColumn<int>(
+    'screen_on_ms',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _unlocksMeta = const VerificationMeta(
+    'unlocks',
+  );
+  @override
+  late final GeneratedColumn<int> unlocks = GeneratedColumn<int>(
+    'unlocks',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _firstPickupMeta = const VerificationMeta(
+    'firstPickup',
+  );
+  @override
+  late final GeneratedColumn<DateTime> firstPickup = GeneratedColumn<DateTime>(
+    'first_pickup',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _restStartMeta = const VerificationMeta(
+    'restStart',
+  );
+  @override
+  late final GeneratedColumn<DateTime> restStart = GeneratedColumn<DateTime>(
+    'rest_start',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _restEndMeta = const VerificationMeta(
+    'restEnd',
+  );
+  @override
+  late final GeneratedColumn<DateTime> restEnd = GeneratedColumn<DateTime>(
+    'rest_end',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _completeMeta = const VerificationMeta(
+    'complete',
+  );
+  @override
+  late final GeneratedColumn<bool> complete = GeneratedColumn<bool>(
+    'complete',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("complete" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    date,
+    screenOnMs,
+    unlocks,
+    firstPickup,
+    restStart,
+    restEnd,
+    complete,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'phone_days';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<PhoneDayRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('date')) {
+      context.handle(
+        _dateMeta,
+        date.isAcceptableOrUnknown(data['date']!, _dateMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_dateMeta);
+    }
+    if (data.containsKey('screen_on_ms')) {
+      context.handle(
+        _screenOnMsMeta,
+        screenOnMs.isAcceptableOrUnknown(
+          data['screen_on_ms']!,
+          _screenOnMsMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_screenOnMsMeta);
+    }
+    if (data.containsKey('unlocks')) {
+      context.handle(
+        _unlocksMeta,
+        unlocks.isAcceptableOrUnknown(data['unlocks']!, _unlocksMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_unlocksMeta);
+    }
+    if (data.containsKey('first_pickup')) {
+      context.handle(
+        _firstPickupMeta,
+        firstPickup.isAcceptableOrUnknown(
+          data['first_pickup']!,
+          _firstPickupMeta,
+        ),
+      );
+    }
+    if (data.containsKey('rest_start')) {
+      context.handle(
+        _restStartMeta,
+        restStart.isAcceptableOrUnknown(data['rest_start']!, _restStartMeta),
+      );
+    }
+    if (data.containsKey('rest_end')) {
+      context.handle(
+        _restEndMeta,
+        restEnd.isAcceptableOrUnknown(data['rest_end']!, _restEndMeta),
+      );
+    }
+    if (data.containsKey('complete')) {
+      context.handle(
+        _completeMeta,
+        complete.isAcceptableOrUnknown(data['complete']!, _completeMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {date};
+  @override
+  PhoneDayRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return PhoneDayRow(
+      date: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}date'],
+      )!,
+      screenOnMs: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}screen_on_ms'],
+      )!,
+      unlocks: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}unlocks'],
+      )!,
+      firstPickup: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}first_pickup'],
+      ),
+      restStart: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}rest_start'],
+      ),
+      restEnd: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}rest_end'],
+      ),
+      complete: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}complete'],
+      )!,
+    );
+  }
+
+  @override
+  $PhoneDayRowsTable createAlias(String alias) {
+    return $PhoneDayRowsTable(attachedDatabase, alias);
+  }
+}
+
+class PhoneDayRow extends DataClass implements Insertable<PhoneDayRow> {
+  /// `YYYY-MM-DD`.
+  final String date;
+
+  /// Time the screen was on.
+  final int screenOnMs;
+  final int unlocks;
+
+  /// First unlock of the day.
+  final DateTime? firstPickup;
+
+  /// The longest stretch with the screen off around the night before this
+  /// day; the app cannot know whether that was sleep.
+  final DateTime? restStart;
+  final DateTime? restEnd;
+
+  /// True once the day was read after it ended. A complete day is never read
+  /// again, so the system forgetting it later cannot wipe it.
+  final bool complete;
+  const PhoneDayRow({
+    required this.date,
+    required this.screenOnMs,
+    required this.unlocks,
+    this.firstPickup,
+    this.restStart,
+    this.restEnd,
+    required this.complete,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['date'] = Variable<String>(date);
+    map['screen_on_ms'] = Variable<int>(screenOnMs);
+    map['unlocks'] = Variable<int>(unlocks);
+    if (!nullToAbsent || firstPickup != null) {
+      map['first_pickup'] = Variable<DateTime>(firstPickup);
+    }
+    if (!nullToAbsent || restStart != null) {
+      map['rest_start'] = Variable<DateTime>(restStart);
+    }
+    if (!nullToAbsent || restEnd != null) {
+      map['rest_end'] = Variable<DateTime>(restEnd);
+    }
+    map['complete'] = Variable<bool>(complete);
+    return map;
+  }
+
+  PhoneDayRowsCompanion toCompanion(bool nullToAbsent) {
+    return PhoneDayRowsCompanion(
+      date: Value(date),
+      screenOnMs: Value(screenOnMs),
+      unlocks: Value(unlocks),
+      firstPickup: firstPickup == null && nullToAbsent
+          ? const Value.absent()
+          : Value(firstPickup),
+      restStart: restStart == null && nullToAbsent
+          ? const Value.absent()
+          : Value(restStart),
+      restEnd: restEnd == null && nullToAbsent
+          ? const Value.absent()
+          : Value(restEnd),
+      complete: Value(complete),
+    );
+  }
+
+  factory PhoneDayRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return PhoneDayRow(
+      date: serializer.fromJson<String>(json['date']),
+      screenOnMs: serializer.fromJson<int>(json['screenOnMs']),
+      unlocks: serializer.fromJson<int>(json['unlocks']),
+      firstPickup: serializer.fromJson<DateTime?>(json['firstPickup']),
+      restStart: serializer.fromJson<DateTime?>(json['restStart']),
+      restEnd: serializer.fromJson<DateTime?>(json['restEnd']),
+      complete: serializer.fromJson<bool>(json['complete']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'date': serializer.toJson<String>(date),
+      'screenOnMs': serializer.toJson<int>(screenOnMs),
+      'unlocks': serializer.toJson<int>(unlocks),
+      'firstPickup': serializer.toJson<DateTime?>(firstPickup),
+      'restStart': serializer.toJson<DateTime?>(restStart),
+      'restEnd': serializer.toJson<DateTime?>(restEnd),
+      'complete': serializer.toJson<bool>(complete),
+    };
+  }
+
+  PhoneDayRow copyWith({
+    String? date,
+    int? screenOnMs,
+    int? unlocks,
+    Value<DateTime?> firstPickup = const Value.absent(),
+    Value<DateTime?> restStart = const Value.absent(),
+    Value<DateTime?> restEnd = const Value.absent(),
+    bool? complete,
+  }) => PhoneDayRow(
+    date: date ?? this.date,
+    screenOnMs: screenOnMs ?? this.screenOnMs,
+    unlocks: unlocks ?? this.unlocks,
+    firstPickup: firstPickup.present ? firstPickup.value : this.firstPickup,
+    restStart: restStart.present ? restStart.value : this.restStart,
+    restEnd: restEnd.present ? restEnd.value : this.restEnd,
+    complete: complete ?? this.complete,
+  );
+  PhoneDayRow copyWithCompanion(PhoneDayRowsCompanion data) {
+    return PhoneDayRow(
+      date: data.date.present ? data.date.value : this.date,
+      screenOnMs: data.screenOnMs.present
+          ? data.screenOnMs.value
+          : this.screenOnMs,
+      unlocks: data.unlocks.present ? data.unlocks.value : this.unlocks,
+      firstPickup: data.firstPickup.present
+          ? data.firstPickup.value
+          : this.firstPickup,
+      restStart: data.restStart.present ? data.restStart.value : this.restStart,
+      restEnd: data.restEnd.present ? data.restEnd.value : this.restEnd,
+      complete: data.complete.present ? data.complete.value : this.complete,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PhoneDayRow(')
+          ..write('date: $date, ')
+          ..write('screenOnMs: $screenOnMs, ')
+          ..write('unlocks: $unlocks, ')
+          ..write('firstPickup: $firstPickup, ')
+          ..write('restStart: $restStart, ')
+          ..write('restEnd: $restEnd, ')
+          ..write('complete: $complete')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    date,
+    screenOnMs,
+    unlocks,
+    firstPickup,
+    restStart,
+    restEnd,
+    complete,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is PhoneDayRow &&
+          other.date == this.date &&
+          other.screenOnMs == this.screenOnMs &&
+          other.unlocks == this.unlocks &&
+          other.firstPickup == this.firstPickup &&
+          other.restStart == this.restStart &&
+          other.restEnd == this.restEnd &&
+          other.complete == this.complete);
+}
+
+class PhoneDayRowsCompanion extends UpdateCompanion<PhoneDayRow> {
+  final Value<String> date;
+  final Value<int> screenOnMs;
+  final Value<int> unlocks;
+  final Value<DateTime?> firstPickup;
+  final Value<DateTime?> restStart;
+  final Value<DateTime?> restEnd;
+  final Value<bool> complete;
+  final Value<int> rowid;
+  const PhoneDayRowsCompanion({
+    this.date = const Value.absent(),
+    this.screenOnMs = const Value.absent(),
+    this.unlocks = const Value.absent(),
+    this.firstPickup = const Value.absent(),
+    this.restStart = const Value.absent(),
+    this.restEnd = const Value.absent(),
+    this.complete = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  PhoneDayRowsCompanion.insert({
+    required String date,
+    required int screenOnMs,
+    required int unlocks,
+    this.firstPickup = const Value.absent(),
+    this.restStart = const Value.absent(),
+    this.restEnd = const Value.absent(),
+    this.complete = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : date = Value(date),
+       screenOnMs = Value(screenOnMs),
+       unlocks = Value(unlocks);
+  static Insertable<PhoneDayRow> custom({
+    Expression<String>? date,
+    Expression<int>? screenOnMs,
+    Expression<int>? unlocks,
+    Expression<DateTime>? firstPickup,
+    Expression<DateTime>? restStart,
+    Expression<DateTime>? restEnd,
+    Expression<bool>? complete,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (date != null) 'date': date,
+      if (screenOnMs != null) 'screen_on_ms': screenOnMs,
+      if (unlocks != null) 'unlocks': unlocks,
+      if (firstPickup != null) 'first_pickup': firstPickup,
+      if (restStart != null) 'rest_start': restStart,
+      if (restEnd != null) 'rest_end': restEnd,
+      if (complete != null) 'complete': complete,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  PhoneDayRowsCompanion copyWith({
+    Value<String>? date,
+    Value<int>? screenOnMs,
+    Value<int>? unlocks,
+    Value<DateTime?>? firstPickup,
+    Value<DateTime?>? restStart,
+    Value<DateTime?>? restEnd,
+    Value<bool>? complete,
+    Value<int>? rowid,
+  }) {
+    return PhoneDayRowsCompanion(
+      date: date ?? this.date,
+      screenOnMs: screenOnMs ?? this.screenOnMs,
+      unlocks: unlocks ?? this.unlocks,
+      firstPickup: firstPickup ?? this.firstPickup,
+      restStart: restStart ?? this.restStart,
+      restEnd: restEnd ?? this.restEnd,
+      complete: complete ?? this.complete,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (date.present) {
+      map['date'] = Variable<String>(date.value);
+    }
+    if (screenOnMs.present) {
+      map['screen_on_ms'] = Variable<int>(screenOnMs.value);
+    }
+    if (unlocks.present) {
+      map['unlocks'] = Variable<int>(unlocks.value);
+    }
+    if (firstPickup.present) {
+      map['first_pickup'] = Variable<DateTime>(firstPickup.value);
+    }
+    if (restStart.present) {
+      map['rest_start'] = Variable<DateTime>(restStart.value);
+    }
+    if (restEnd.present) {
+      map['rest_end'] = Variable<DateTime>(restEnd.value);
+    }
+    if (complete.present) {
+      map['complete'] = Variable<bool>(complete.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PhoneDayRowsCompanion(')
+          ..write('date: $date, ')
+          ..write('screenOnMs: $screenOnMs, ')
+          ..write('unlocks: $unlocks, ')
+          ..write('firstPickup: $firstPickup, ')
+          ..write('restStart: $restStart, ')
+          ..write('restEnd: $restEnd, ')
+          ..write('complete: $complete, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $PhoneAppDayRowsTable extends PhoneAppDayRows
+    with TableInfo<$PhoneAppDayRowsTable, PhoneAppDayRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $PhoneAppDayRowsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _dateMeta = const VerificationMeta('date');
+  @override
+  late final GeneratedColumn<String> date = GeneratedColumn<String>(
+    'date',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _packageMeta = const VerificationMeta(
+    'package',
+  );
+  @override
+  late final GeneratedColumn<String> package = GeneratedColumn<String>(
+    'package',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _labelMeta = const VerificationMeta('label');
+  @override
+  late final GeneratedColumn<String> label = GeneratedColumn<String>(
+    'label',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _foregroundMsMeta = const VerificationMeta(
+    'foregroundMs',
+  );
+  @override
+  late final GeneratedColumn<int> foregroundMs = GeneratedColumn<int>(
+    'foreground_ms',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [date, package, label, foregroundMs];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'phone_app_days';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<PhoneAppDayRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('date')) {
+      context.handle(
+        _dateMeta,
+        date.isAcceptableOrUnknown(data['date']!, _dateMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_dateMeta);
+    }
+    if (data.containsKey('package')) {
+      context.handle(
+        _packageMeta,
+        package.isAcceptableOrUnknown(data['package']!, _packageMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_packageMeta);
+    }
+    if (data.containsKey('label')) {
+      context.handle(
+        _labelMeta,
+        label.isAcceptableOrUnknown(data['label']!, _labelMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_labelMeta);
+    }
+    if (data.containsKey('foreground_ms')) {
+      context.handle(
+        _foregroundMsMeta,
+        foregroundMs.isAcceptableOrUnknown(
+          data['foreground_ms']!,
+          _foregroundMsMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_foregroundMsMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {date, package};
+  @override
+  PhoneAppDayRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return PhoneAppDayRow(
+      date: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}date'],
+      )!,
+      package: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}package'],
+      )!,
+      label: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}label'],
+      )!,
+      foregroundMs: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}foreground_ms'],
+      )!,
+    );
+  }
+
+  @override
+  $PhoneAppDayRowsTable createAlias(String alias) {
+    return $PhoneAppDayRowsTable(attachedDatabase, alias);
+  }
+}
+
+class PhoneAppDayRow extends DataClass implements Insertable<PhoneAppDayRow> {
+  final String date;
+  final String package;
+
+  /// Kept so the name survives the app being uninstalled.
+  final String label;
+  final int foregroundMs;
+  const PhoneAppDayRow({
+    required this.date,
+    required this.package,
+    required this.label,
+    required this.foregroundMs,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['date'] = Variable<String>(date);
+    map['package'] = Variable<String>(package);
+    map['label'] = Variable<String>(label);
+    map['foreground_ms'] = Variable<int>(foregroundMs);
+    return map;
+  }
+
+  PhoneAppDayRowsCompanion toCompanion(bool nullToAbsent) {
+    return PhoneAppDayRowsCompanion(
+      date: Value(date),
+      package: Value(package),
+      label: Value(label),
+      foregroundMs: Value(foregroundMs),
+    );
+  }
+
+  factory PhoneAppDayRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return PhoneAppDayRow(
+      date: serializer.fromJson<String>(json['date']),
+      package: serializer.fromJson<String>(json['package']),
+      label: serializer.fromJson<String>(json['label']),
+      foregroundMs: serializer.fromJson<int>(json['foregroundMs']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'date': serializer.toJson<String>(date),
+      'package': serializer.toJson<String>(package),
+      'label': serializer.toJson<String>(label),
+      'foregroundMs': serializer.toJson<int>(foregroundMs),
+    };
+  }
+
+  PhoneAppDayRow copyWith({
+    String? date,
+    String? package,
+    String? label,
+    int? foregroundMs,
+  }) => PhoneAppDayRow(
+    date: date ?? this.date,
+    package: package ?? this.package,
+    label: label ?? this.label,
+    foregroundMs: foregroundMs ?? this.foregroundMs,
+  );
+  PhoneAppDayRow copyWithCompanion(PhoneAppDayRowsCompanion data) {
+    return PhoneAppDayRow(
+      date: data.date.present ? data.date.value : this.date,
+      package: data.package.present ? data.package.value : this.package,
+      label: data.label.present ? data.label.value : this.label,
+      foregroundMs: data.foregroundMs.present
+          ? data.foregroundMs.value
+          : this.foregroundMs,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PhoneAppDayRow(')
+          ..write('date: $date, ')
+          ..write('package: $package, ')
+          ..write('label: $label, ')
+          ..write('foregroundMs: $foregroundMs')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(date, package, label, foregroundMs);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is PhoneAppDayRow &&
+          other.date == this.date &&
+          other.package == this.package &&
+          other.label == this.label &&
+          other.foregroundMs == this.foregroundMs);
+}
+
+class PhoneAppDayRowsCompanion extends UpdateCompanion<PhoneAppDayRow> {
+  final Value<String> date;
+  final Value<String> package;
+  final Value<String> label;
+  final Value<int> foregroundMs;
+  final Value<int> rowid;
+  const PhoneAppDayRowsCompanion({
+    this.date = const Value.absent(),
+    this.package = const Value.absent(),
+    this.label = const Value.absent(),
+    this.foregroundMs = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  PhoneAppDayRowsCompanion.insert({
+    required String date,
+    required String package,
+    required String label,
+    required int foregroundMs,
+    this.rowid = const Value.absent(),
+  }) : date = Value(date),
+       package = Value(package),
+       label = Value(label),
+       foregroundMs = Value(foregroundMs);
+  static Insertable<PhoneAppDayRow> custom({
+    Expression<String>? date,
+    Expression<String>? package,
+    Expression<String>? label,
+    Expression<int>? foregroundMs,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (date != null) 'date': date,
+      if (package != null) 'package': package,
+      if (label != null) 'label': label,
+      if (foregroundMs != null) 'foreground_ms': foregroundMs,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  PhoneAppDayRowsCompanion copyWith({
+    Value<String>? date,
+    Value<String>? package,
+    Value<String>? label,
+    Value<int>? foregroundMs,
+    Value<int>? rowid,
+  }) {
+    return PhoneAppDayRowsCompanion(
+      date: date ?? this.date,
+      package: package ?? this.package,
+      label: label ?? this.label,
+      foregroundMs: foregroundMs ?? this.foregroundMs,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (date.present) {
+      map['date'] = Variable<String>(date.value);
+    }
+    if (package.present) {
+      map['package'] = Variable<String>(package.value);
+    }
+    if (label.present) {
+      map['label'] = Variable<String>(label.value);
+    }
+    if (foregroundMs.present) {
+      map['foreground_ms'] = Variable<int>(foregroundMs.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PhoneAppDayRowsCompanion(')
+          ..write('date: $date, ')
+          ..write('package: $package, ')
+          ..write('label: $label, ')
+          ..write('foregroundMs: $foregroundMs, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $AlarmRowsTable extends AlarmRows
+    with TableInfo<$AlarmRowsTable, AlarmRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $AlarmRowsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _hourMeta = const VerificationMeta('hour');
+  @override
+  late final GeneratedColumn<int> hour = GeneratedColumn<int>(
+    'hour',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _minuteMeta = const VerificationMeta('minute');
+  @override
+  late final GeneratedColumn<int> minute = GeneratedColumn<int>(
+    'minute',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _daysMeta = const VerificationMeta('days');
+  @override
+  late final GeneratedColumn<int> days = GeneratedColumn<int>(
+    'days',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _labelMeta = const VerificationMeta('label');
+  @override
+  late final GeneratedColumn<String> label = GeneratedColumn<String>(
+    'label',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _enabledMeta = const VerificationMeta(
+    'enabled',
+  );
+  @override
+  late final GeneratedColumn<bool> enabled = GeneratedColumn<bool>(
+    'enabled',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("enabled" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  static const VerificationMeta _soundUriMeta = const VerificationMeta(
+    'soundUri',
+  );
+  @override
+  late final GeneratedColumn<String> soundUri = GeneratedColumn<String>(
+    'sound_uri',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _soundNameMeta = const VerificationMeta(
+    'soundName',
+  );
+  @override
+  late final GeneratedColumn<String> soundName = GeneratedColumn<String>(
+    'sound_name',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _volumeMeta = const VerificationMeta('volume');
+  @override
+  late final GeneratedColumn<int> volume = GeneratedColumn<int>(
+    'volume',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(100),
+  );
+  static const VerificationMeta _rampSecondsMeta = const VerificationMeta(
+    'rampSeconds',
+  );
+  @override
+  late final GeneratedColumn<int> rampSeconds = GeneratedColumn<int>(
+    'ramp_seconds',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _volumeLockMeta = const VerificationMeta(
+    'volumeLock',
+  );
+  @override
+  late final GeneratedColumn<bool> volumeLock = GeneratedColumn<bool>(
+    'volume_lock',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("volume_lock" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  static const VerificationMeta _vibrateMeta = const VerificationMeta(
+    'vibrate',
+  );
+  @override
+  late final GeneratedColumn<bool> vibrate = GeneratedColumn<bool>(
+    'vibrate',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("vibrate" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  static const VerificationMeta _challengeMeta = const VerificationMeta(
+    'challenge',
+  );
+  @override
+  late final GeneratedColumn<String> challenge = GeneratedColumn<String>(
+    'challenge',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('math'),
+  );
+  static const VerificationMeta _challengeCountMeta = const VerificationMeta(
+    'challengeCount',
+  );
+  @override
+  late final GeneratedColumn<int> challengeCount = GeneratedColumn<int>(
+    'challenge_count',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(3),
+  );
+  static const VerificationMeta _difficultyMeta = const VerificationMeta(
+    'difficulty',
+  );
+  @override
+  late final GeneratedColumn<String> difficulty = GeneratedColumn<String>(
+    'difficulty',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('medium'),
+  );
+  static const VerificationMeta _phraseMeta = const VerificationMeta('phrase');
+  @override
+  late final GeneratedColumn<String> phrase = GeneratedColumn<String>(
+    'phrase',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _snoozeLimitMeta = const VerificationMeta(
+    'snoozeLimit',
+  );
+  @override
+  late final GeneratedColumn<int> snoozeLimit = GeneratedColumn<int>(
+    'snooze_limit',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1),
+  );
+  static const VerificationMeta _snoozeMinutesMeta = const VerificationMeta(
+    'snoozeMinutes',
+  );
+  @override
+  late final GeneratedColumn<int> snoozeMinutes = GeneratedColumn<int>(
+    'snooze_minutes',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(5),
+  );
+  static const VerificationMeta _wakeCheckMeta = const VerificationMeta(
+    'wakeCheck',
+  );
+  @override
+  late final GeneratedColumn<bool> wakeCheck = GeneratedColumn<bool>(
+    'wake_check',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("wake_check" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  static const VerificationMeta _wakeCheckMinutesMeta = const VerificationMeta(
+    'wakeCheckMinutes',
+  );
+  @override
+  late final GeneratedColumn<int> wakeCheckMinutes = GeneratedColumn<int>(
+    'wake_check_minutes',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(5),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    hour,
+    minute,
+    days,
+    label,
+    enabled,
+    soundUri,
+    soundName,
+    volume,
+    rampSeconds,
+    volumeLock,
+    vibrate,
+    challenge,
+    challengeCount,
+    difficulty,
+    phrase,
+    snoozeLimit,
+    snoozeMinutes,
+    wakeCheck,
+    wakeCheckMinutes,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'alarms';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<AlarmRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('hour')) {
+      context.handle(
+        _hourMeta,
+        hour.isAcceptableOrUnknown(data['hour']!, _hourMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_hourMeta);
+    }
+    if (data.containsKey('minute')) {
+      context.handle(
+        _minuteMeta,
+        minute.isAcceptableOrUnknown(data['minute']!, _minuteMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_minuteMeta);
+    }
+    if (data.containsKey('days')) {
+      context.handle(
+        _daysMeta,
+        days.isAcceptableOrUnknown(data['days']!, _daysMeta),
+      );
+    }
+    if (data.containsKey('label')) {
+      context.handle(
+        _labelMeta,
+        label.isAcceptableOrUnknown(data['label']!, _labelMeta),
+      );
+    }
+    if (data.containsKey('enabled')) {
+      context.handle(
+        _enabledMeta,
+        enabled.isAcceptableOrUnknown(data['enabled']!, _enabledMeta),
+      );
+    }
+    if (data.containsKey('sound_uri')) {
+      context.handle(
+        _soundUriMeta,
+        soundUri.isAcceptableOrUnknown(data['sound_uri']!, _soundUriMeta),
+      );
+    }
+    if (data.containsKey('sound_name')) {
+      context.handle(
+        _soundNameMeta,
+        soundName.isAcceptableOrUnknown(data['sound_name']!, _soundNameMeta),
+      );
+    }
+    if (data.containsKey('volume')) {
+      context.handle(
+        _volumeMeta,
+        volume.isAcceptableOrUnknown(data['volume']!, _volumeMeta),
+      );
+    }
+    if (data.containsKey('ramp_seconds')) {
+      context.handle(
+        _rampSecondsMeta,
+        rampSeconds.isAcceptableOrUnknown(
+          data['ramp_seconds']!,
+          _rampSecondsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('volume_lock')) {
+      context.handle(
+        _volumeLockMeta,
+        volumeLock.isAcceptableOrUnknown(data['volume_lock']!, _volumeLockMeta),
+      );
+    }
+    if (data.containsKey('vibrate')) {
+      context.handle(
+        _vibrateMeta,
+        vibrate.isAcceptableOrUnknown(data['vibrate']!, _vibrateMeta),
+      );
+    }
+    if (data.containsKey('challenge')) {
+      context.handle(
+        _challengeMeta,
+        challenge.isAcceptableOrUnknown(data['challenge']!, _challengeMeta),
+      );
+    }
+    if (data.containsKey('challenge_count')) {
+      context.handle(
+        _challengeCountMeta,
+        challengeCount.isAcceptableOrUnknown(
+          data['challenge_count']!,
+          _challengeCountMeta,
+        ),
+      );
+    }
+    if (data.containsKey('difficulty')) {
+      context.handle(
+        _difficultyMeta,
+        difficulty.isAcceptableOrUnknown(data['difficulty']!, _difficultyMeta),
+      );
+    }
+    if (data.containsKey('phrase')) {
+      context.handle(
+        _phraseMeta,
+        phrase.isAcceptableOrUnknown(data['phrase']!, _phraseMeta),
+      );
+    }
+    if (data.containsKey('snooze_limit')) {
+      context.handle(
+        _snoozeLimitMeta,
+        snoozeLimit.isAcceptableOrUnknown(
+          data['snooze_limit']!,
+          _snoozeLimitMeta,
+        ),
+      );
+    }
+    if (data.containsKey('snooze_minutes')) {
+      context.handle(
+        _snoozeMinutesMeta,
+        snoozeMinutes.isAcceptableOrUnknown(
+          data['snooze_minutes']!,
+          _snoozeMinutesMeta,
+        ),
+      );
+    }
+    if (data.containsKey('wake_check')) {
+      context.handle(
+        _wakeCheckMeta,
+        wakeCheck.isAcceptableOrUnknown(data['wake_check']!, _wakeCheckMeta),
+      );
+    }
+    if (data.containsKey('wake_check_minutes')) {
+      context.handle(
+        _wakeCheckMinutesMeta,
+        wakeCheckMinutes.isAcceptableOrUnknown(
+          data['wake_check_minutes']!,
+          _wakeCheckMinutesMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  AlarmRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return AlarmRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      hour: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}hour'],
+      )!,
+      minute: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}minute'],
+      )!,
+      days: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}days'],
+      )!,
+      label: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}label'],
+      )!,
+      enabled: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}enabled'],
+      )!,
+      soundUri: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sound_uri'],
+      ),
+      soundName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sound_name'],
+      ),
+      volume: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}volume'],
+      )!,
+      rampSeconds: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}ramp_seconds'],
+      )!,
+      volumeLock: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}volume_lock'],
+      )!,
+      vibrate: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}vibrate'],
+      )!,
+      challenge: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}challenge'],
+      )!,
+      challengeCount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}challenge_count'],
+      )!,
+      difficulty: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}difficulty'],
+      )!,
+      phrase: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}phrase'],
+      )!,
+      snoozeLimit: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}snooze_limit'],
+      )!,
+      snoozeMinutes: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}snooze_minutes'],
+      )!,
+      wakeCheck: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}wake_check'],
+      )!,
+      wakeCheckMinutes: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}wake_check_minutes'],
+      )!,
+    );
+  }
+
+  @override
+  $AlarmRowsTable createAlias(String alias) {
+    return $AlarmRowsTable(attachedDatabase, alias);
+  }
+}
+
+class AlarmRow extends DataClass implements Insertable<AlarmRow> {
+  final int id;
+  final int hour;
+  final int minute;
+
+  /// Weekdays it repeats on: bit 0 is Monday ... bit 6 is Sunday. Zero rings
+  /// once and then turns itself off.
+  final int days;
+  final String label;
+  final bool enabled;
+
+  /// A content URI from Android's sound picker; null is the phone's alarm.
+  final String? soundUri;
+  final String? soundName;
+
+  /// Alarm volume in percent of the phone's maximum.
+  final int volume;
+
+  /// Seconds to rise from quiet to [volume]; 0 starts at full volume.
+  final int rampSeconds;
+
+  /// Puts the alarm volume back up whenever it is turned down while ringing.
+  final bool volumeLock;
+  final bool vibrate;
+
+  /// `none`, `math`, `type` or `shake`: what it takes to turn it off.
+  final String challenge;
+
+  /// Problems to solve, or shakes to make.
+  final int challengeCount;
+
+  /// `easy`, `medium` or `hard` for maths.
+  final String difficulty;
+
+  /// The sentence to type for the `type` challenge.
+  final String phrase;
+
+  /// How many snoozes are allowed; 0 hides the button.
+  final int snoozeLimit;
+  final int snoozeMinutes;
+
+  /// Asks "still awake?" a while after it is turned off, and rings again
+  /// when nobody answers.
+  final bool wakeCheck;
+  final int wakeCheckMinutes;
+  const AlarmRow({
+    required this.id,
+    required this.hour,
+    required this.minute,
+    required this.days,
+    required this.label,
+    required this.enabled,
+    this.soundUri,
+    this.soundName,
+    required this.volume,
+    required this.rampSeconds,
+    required this.volumeLock,
+    required this.vibrate,
+    required this.challenge,
+    required this.challengeCount,
+    required this.difficulty,
+    required this.phrase,
+    required this.snoozeLimit,
+    required this.snoozeMinutes,
+    required this.wakeCheck,
+    required this.wakeCheckMinutes,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['hour'] = Variable<int>(hour);
+    map['minute'] = Variable<int>(minute);
+    map['days'] = Variable<int>(days);
+    map['label'] = Variable<String>(label);
+    map['enabled'] = Variable<bool>(enabled);
+    if (!nullToAbsent || soundUri != null) {
+      map['sound_uri'] = Variable<String>(soundUri);
+    }
+    if (!nullToAbsent || soundName != null) {
+      map['sound_name'] = Variable<String>(soundName);
+    }
+    map['volume'] = Variable<int>(volume);
+    map['ramp_seconds'] = Variable<int>(rampSeconds);
+    map['volume_lock'] = Variable<bool>(volumeLock);
+    map['vibrate'] = Variable<bool>(vibrate);
+    map['challenge'] = Variable<String>(challenge);
+    map['challenge_count'] = Variable<int>(challengeCount);
+    map['difficulty'] = Variable<String>(difficulty);
+    map['phrase'] = Variable<String>(phrase);
+    map['snooze_limit'] = Variable<int>(snoozeLimit);
+    map['snooze_minutes'] = Variable<int>(snoozeMinutes);
+    map['wake_check'] = Variable<bool>(wakeCheck);
+    map['wake_check_minutes'] = Variable<int>(wakeCheckMinutes);
+    return map;
+  }
+
+  AlarmRowsCompanion toCompanion(bool nullToAbsent) {
+    return AlarmRowsCompanion(
+      id: Value(id),
+      hour: Value(hour),
+      minute: Value(minute),
+      days: Value(days),
+      label: Value(label),
+      enabled: Value(enabled),
+      soundUri: soundUri == null && nullToAbsent
+          ? const Value.absent()
+          : Value(soundUri),
+      soundName: soundName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(soundName),
+      volume: Value(volume),
+      rampSeconds: Value(rampSeconds),
+      volumeLock: Value(volumeLock),
+      vibrate: Value(vibrate),
+      challenge: Value(challenge),
+      challengeCount: Value(challengeCount),
+      difficulty: Value(difficulty),
+      phrase: Value(phrase),
+      snoozeLimit: Value(snoozeLimit),
+      snoozeMinutes: Value(snoozeMinutes),
+      wakeCheck: Value(wakeCheck),
+      wakeCheckMinutes: Value(wakeCheckMinutes),
+    );
+  }
+
+  factory AlarmRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return AlarmRow(
+      id: serializer.fromJson<int>(json['id']),
+      hour: serializer.fromJson<int>(json['hour']),
+      minute: serializer.fromJson<int>(json['minute']),
+      days: serializer.fromJson<int>(json['days']),
+      label: serializer.fromJson<String>(json['label']),
+      enabled: serializer.fromJson<bool>(json['enabled']),
+      soundUri: serializer.fromJson<String?>(json['soundUri']),
+      soundName: serializer.fromJson<String?>(json['soundName']),
+      volume: serializer.fromJson<int>(json['volume']),
+      rampSeconds: serializer.fromJson<int>(json['rampSeconds']),
+      volumeLock: serializer.fromJson<bool>(json['volumeLock']),
+      vibrate: serializer.fromJson<bool>(json['vibrate']),
+      challenge: serializer.fromJson<String>(json['challenge']),
+      challengeCount: serializer.fromJson<int>(json['challengeCount']),
+      difficulty: serializer.fromJson<String>(json['difficulty']),
+      phrase: serializer.fromJson<String>(json['phrase']),
+      snoozeLimit: serializer.fromJson<int>(json['snoozeLimit']),
+      snoozeMinutes: serializer.fromJson<int>(json['snoozeMinutes']),
+      wakeCheck: serializer.fromJson<bool>(json['wakeCheck']),
+      wakeCheckMinutes: serializer.fromJson<int>(json['wakeCheckMinutes']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'hour': serializer.toJson<int>(hour),
+      'minute': serializer.toJson<int>(minute),
+      'days': serializer.toJson<int>(days),
+      'label': serializer.toJson<String>(label),
+      'enabled': serializer.toJson<bool>(enabled),
+      'soundUri': serializer.toJson<String?>(soundUri),
+      'soundName': serializer.toJson<String?>(soundName),
+      'volume': serializer.toJson<int>(volume),
+      'rampSeconds': serializer.toJson<int>(rampSeconds),
+      'volumeLock': serializer.toJson<bool>(volumeLock),
+      'vibrate': serializer.toJson<bool>(vibrate),
+      'challenge': serializer.toJson<String>(challenge),
+      'challengeCount': serializer.toJson<int>(challengeCount),
+      'difficulty': serializer.toJson<String>(difficulty),
+      'phrase': serializer.toJson<String>(phrase),
+      'snoozeLimit': serializer.toJson<int>(snoozeLimit),
+      'snoozeMinutes': serializer.toJson<int>(snoozeMinutes),
+      'wakeCheck': serializer.toJson<bool>(wakeCheck),
+      'wakeCheckMinutes': serializer.toJson<int>(wakeCheckMinutes),
+    };
+  }
+
+  AlarmRow copyWith({
+    int? id,
+    int? hour,
+    int? minute,
+    int? days,
+    String? label,
+    bool? enabled,
+    Value<String?> soundUri = const Value.absent(),
+    Value<String?> soundName = const Value.absent(),
+    int? volume,
+    int? rampSeconds,
+    bool? volumeLock,
+    bool? vibrate,
+    String? challenge,
+    int? challengeCount,
+    String? difficulty,
+    String? phrase,
+    int? snoozeLimit,
+    int? snoozeMinutes,
+    bool? wakeCheck,
+    int? wakeCheckMinutes,
+  }) => AlarmRow(
+    id: id ?? this.id,
+    hour: hour ?? this.hour,
+    minute: minute ?? this.minute,
+    days: days ?? this.days,
+    label: label ?? this.label,
+    enabled: enabled ?? this.enabled,
+    soundUri: soundUri.present ? soundUri.value : this.soundUri,
+    soundName: soundName.present ? soundName.value : this.soundName,
+    volume: volume ?? this.volume,
+    rampSeconds: rampSeconds ?? this.rampSeconds,
+    volumeLock: volumeLock ?? this.volumeLock,
+    vibrate: vibrate ?? this.vibrate,
+    challenge: challenge ?? this.challenge,
+    challengeCount: challengeCount ?? this.challengeCount,
+    difficulty: difficulty ?? this.difficulty,
+    phrase: phrase ?? this.phrase,
+    snoozeLimit: snoozeLimit ?? this.snoozeLimit,
+    snoozeMinutes: snoozeMinutes ?? this.snoozeMinutes,
+    wakeCheck: wakeCheck ?? this.wakeCheck,
+    wakeCheckMinutes: wakeCheckMinutes ?? this.wakeCheckMinutes,
+  );
+  AlarmRow copyWithCompanion(AlarmRowsCompanion data) {
+    return AlarmRow(
+      id: data.id.present ? data.id.value : this.id,
+      hour: data.hour.present ? data.hour.value : this.hour,
+      minute: data.minute.present ? data.minute.value : this.minute,
+      days: data.days.present ? data.days.value : this.days,
+      label: data.label.present ? data.label.value : this.label,
+      enabled: data.enabled.present ? data.enabled.value : this.enabled,
+      soundUri: data.soundUri.present ? data.soundUri.value : this.soundUri,
+      soundName: data.soundName.present ? data.soundName.value : this.soundName,
+      volume: data.volume.present ? data.volume.value : this.volume,
+      rampSeconds: data.rampSeconds.present
+          ? data.rampSeconds.value
+          : this.rampSeconds,
+      volumeLock: data.volumeLock.present
+          ? data.volumeLock.value
+          : this.volumeLock,
+      vibrate: data.vibrate.present ? data.vibrate.value : this.vibrate,
+      challenge: data.challenge.present ? data.challenge.value : this.challenge,
+      challengeCount: data.challengeCount.present
+          ? data.challengeCount.value
+          : this.challengeCount,
+      difficulty: data.difficulty.present
+          ? data.difficulty.value
+          : this.difficulty,
+      phrase: data.phrase.present ? data.phrase.value : this.phrase,
+      snoozeLimit: data.snoozeLimit.present
+          ? data.snoozeLimit.value
+          : this.snoozeLimit,
+      snoozeMinutes: data.snoozeMinutes.present
+          ? data.snoozeMinutes.value
+          : this.snoozeMinutes,
+      wakeCheck: data.wakeCheck.present ? data.wakeCheck.value : this.wakeCheck,
+      wakeCheckMinutes: data.wakeCheckMinutes.present
+          ? data.wakeCheckMinutes.value
+          : this.wakeCheckMinutes,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AlarmRow(')
+          ..write('id: $id, ')
+          ..write('hour: $hour, ')
+          ..write('minute: $minute, ')
+          ..write('days: $days, ')
+          ..write('label: $label, ')
+          ..write('enabled: $enabled, ')
+          ..write('soundUri: $soundUri, ')
+          ..write('soundName: $soundName, ')
+          ..write('volume: $volume, ')
+          ..write('rampSeconds: $rampSeconds, ')
+          ..write('volumeLock: $volumeLock, ')
+          ..write('vibrate: $vibrate, ')
+          ..write('challenge: $challenge, ')
+          ..write('challengeCount: $challengeCount, ')
+          ..write('difficulty: $difficulty, ')
+          ..write('phrase: $phrase, ')
+          ..write('snoozeLimit: $snoozeLimit, ')
+          ..write('snoozeMinutes: $snoozeMinutes, ')
+          ..write('wakeCheck: $wakeCheck, ')
+          ..write('wakeCheckMinutes: $wakeCheckMinutes')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    hour,
+    minute,
+    days,
+    label,
+    enabled,
+    soundUri,
+    soundName,
+    volume,
+    rampSeconds,
+    volumeLock,
+    vibrate,
+    challenge,
+    challengeCount,
+    difficulty,
+    phrase,
+    snoozeLimit,
+    snoozeMinutes,
+    wakeCheck,
+    wakeCheckMinutes,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is AlarmRow &&
+          other.id == this.id &&
+          other.hour == this.hour &&
+          other.minute == this.minute &&
+          other.days == this.days &&
+          other.label == this.label &&
+          other.enabled == this.enabled &&
+          other.soundUri == this.soundUri &&
+          other.soundName == this.soundName &&
+          other.volume == this.volume &&
+          other.rampSeconds == this.rampSeconds &&
+          other.volumeLock == this.volumeLock &&
+          other.vibrate == this.vibrate &&
+          other.challenge == this.challenge &&
+          other.challengeCount == this.challengeCount &&
+          other.difficulty == this.difficulty &&
+          other.phrase == this.phrase &&
+          other.snoozeLimit == this.snoozeLimit &&
+          other.snoozeMinutes == this.snoozeMinutes &&
+          other.wakeCheck == this.wakeCheck &&
+          other.wakeCheckMinutes == this.wakeCheckMinutes);
+}
+
+class AlarmRowsCompanion extends UpdateCompanion<AlarmRow> {
+  final Value<int> id;
+  final Value<int> hour;
+  final Value<int> minute;
+  final Value<int> days;
+  final Value<String> label;
+  final Value<bool> enabled;
+  final Value<String?> soundUri;
+  final Value<String?> soundName;
+  final Value<int> volume;
+  final Value<int> rampSeconds;
+  final Value<bool> volumeLock;
+  final Value<bool> vibrate;
+  final Value<String> challenge;
+  final Value<int> challengeCount;
+  final Value<String> difficulty;
+  final Value<String> phrase;
+  final Value<int> snoozeLimit;
+  final Value<int> snoozeMinutes;
+  final Value<bool> wakeCheck;
+  final Value<int> wakeCheckMinutes;
+  const AlarmRowsCompanion({
+    this.id = const Value.absent(),
+    this.hour = const Value.absent(),
+    this.minute = const Value.absent(),
+    this.days = const Value.absent(),
+    this.label = const Value.absent(),
+    this.enabled = const Value.absent(),
+    this.soundUri = const Value.absent(),
+    this.soundName = const Value.absent(),
+    this.volume = const Value.absent(),
+    this.rampSeconds = const Value.absent(),
+    this.volumeLock = const Value.absent(),
+    this.vibrate = const Value.absent(),
+    this.challenge = const Value.absent(),
+    this.challengeCount = const Value.absent(),
+    this.difficulty = const Value.absent(),
+    this.phrase = const Value.absent(),
+    this.snoozeLimit = const Value.absent(),
+    this.snoozeMinutes = const Value.absent(),
+    this.wakeCheck = const Value.absent(),
+    this.wakeCheckMinutes = const Value.absent(),
+  });
+  AlarmRowsCompanion.insert({
+    this.id = const Value.absent(),
+    required int hour,
+    required int minute,
+    this.days = const Value.absent(),
+    this.label = const Value.absent(),
+    this.enabled = const Value.absent(),
+    this.soundUri = const Value.absent(),
+    this.soundName = const Value.absent(),
+    this.volume = const Value.absent(),
+    this.rampSeconds = const Value.absent(),
+    this.volumeLock = const Value.absent(),
+    this.vibrate = const Value.absent(),
+    this.challenge = const Value.absent(),
+    this.challengeCount = const Value.absent(),
+    this.difficulty = const Value.absent(),
+    this.phrase = const Value.absent(),
+    this.snoozeLimit = const Value.absent(),
+    this.snoozeMinutes = const Value.absent(),
+    this.wakeCheck = const Value.absent(),
+    this.wakeCheckMinutes = const Value.absent(),
+  }) : hour = Value(hour),
+       minute = Value(minute);
+  static Insertable<AlarmRow> custom({
+    Expression<int>? id,
+    Expression<int>? hour,
+    Expression<int>? minute,
+    Expression<int>? days,
+    Expression<String>? label,
+    Expression<bool>? enabled,
+    Expression<String>? soundUri,
+    Expression<String>? soundName,
+    Expression<int>? volume,
+    Expression<int>? rampSeconds,
+    Expression<bool>? volumeLock,
+    Expression<bool>? vibrate,
+    Expression<String>? challenge,
+    Expression<int>? challengeCount,
+    Expression<String>? difficulty,
+    Expression<String>? phrase,
+    Expression<int>? snoozeLimit,
+    Expression<int>? snoozeMinutes,
+    Expression<bool>? wakeCheck,
+    Expression<int>? wakeCheckMinutes,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (hour != null) 'hour': hour,
+      if (minute != null) 'minute': minute,
+      if (days != null) 'days': days,
+      if (label != null) 'label': label,
+      if (enabled != null) 'enabled': enabled,
+      if (soundUri != null) 'sound_uri': soundUri,
+      if (soundName != null) 'sound_name': soundName,
+      if (volume != null) 'volume': volume,
+      if (rampSeconds != null) 'ramp_seconds': rampSeconds,
+      if (volumeLock != null) 'volume_lock': volumeLock,
+      if (vibrate != null) 'vibrate': vibrate,
+      if (challenge != null) 'challenge': challenge,
+      if (challengeCount != null) 'challenge_count': challengeCount,
+      if (difficulty != null) 'difficulty': difficulty,
+      if (phrase != null) 'phrase': phrase,
+      if (snoozeLimit != null) 'snooze_limit': snoozeLimit,
+      if (snoozeMinutes != null) 'snooze_minutes': snoozeMinutes,
+      if (wakeCheck != null) 'wake_check': wakeCheck,
+      if (wakeCheckMinutes != null) 'wake_check_minutes': wakeCheckMinutes,
+    });
+  }
+
+  AlarmRowsCompanion copyWith({
+    Value<int>? id,
+    Value<int>? hour,
+    Value<int>? minute,
+    Value<int>? days,
+    Value<String>? label,
+    Value<bool>? enabled,
+    Value<String?>? soundUri,
+    Value<String?>? soundName,
+    Value<int>? volume,
+    Value<int>? rampSeconds,
+    Value<bool>? volumeLock,
+    Value<bool>? vibrate,
+    Value<String>? challenge,
+    Value<int>? challengeCount,
+    Value<String>? difficulty,
+    Value<String>? phrase,
+    Value<int>? snoozeLimit,
+    Value<int>? snoozeMinutes,
+    Value<bool>? wakeCheck,
+    Value<int>? wakeCheckMinutes,
+  }) {
+    return AlarmRowsCompanion(
+      id: id ?? this.id,
+      hour: hour ?? this.hour,
+      minute: minute ?? this.minute,
+      days: days ?? this.days,
+      label: label ?? this.label,
+      enabled: enabled ?? this.enabled,
+      soundUri: soundUri ?? this.soundUri,
+      soundName: soundName ?? this.soundName,
+      volume: volume ?? this.volume,
+      rampSeconds: rampSeconds ?? this.rampSeconds,
+      volumeLock: volumeLock ?? this.volumeLock,
+      vibrate: vibrate ?? this.vibrate,
+      challenge: challenge ?? this.challenge,
+      challengeCount: challengeCount ?? this.challengeCount,
+      difficulty: difficulty ?? this.difficulty,
+      phrase: phrase ?? this.phrase,
+      snoozeLimit: snoozeLimit ?? this.snoozeLimit,
+      snoozeMinutes: snoozeMinutes ?? this.snoozeMinutes,
+      wakeCheck: wakeCheck ?? this.wakeCheck,
+      wakeCheckMinutes: wakeCheckMinutes ?? this.wakeCheckMinutes,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (hour.present) {
+      map['hour'] = Variable<int>(hour.value);
+    }
+    if (minute.present) {
+      map['minute'] = Variable<int>(minute.value);
+    }
+    if (days.present) {
+      map['days'] = Variable<int>(days.value);
+    }
+    if (label.present) {
+      map['label'] = Variable<String>(label.value);
+    }
+    if (enabled.present) {
+      map['enabled'] = Variable<bool>(enabled.value);
+    }
+    if (soundUri.present) {
+      map['sound_uri'] = Variable<String>(soundUri.value);
+    }
+    if (soundName.present) {
+      map['sound_name'] = Variable<String>(soundName.value);
+    }
+    if (volume.present) {
+      map['volume'] = Variable<int>(volume.value);
+    }
+    if (rampSeconds.present) {
+      map['ramp_seconds'] = Variable<int>(rampSeconds.value);
+    }
+    if (volumeLock.present) {
+      map['volume_lock'] = Variable<bool>(volumeLock.value);
+    }
+    if (vibrate.present) {
+      map['vibrate'] = Variable<bool>(vibrate.value);
+    }
+    if (challenge.present) {
+      map['challenge'] = Variable<String>(challenge.value);
+    }
+    if (challengeCount.present) {
+      map['challenge_count'] = Variable<int>(challengeCount.value);
+    }
+    if (difficulty.present) {
+      map['difficulty'] = Variable<String>(difficulty.value);
+    }
+    if (phrase.present) {
+      map['phrase'] = Variable<String>(phrase.value);
+    }
+    if (snoozeLimit.present) {
+      map['snooze_limit'] = Variable<int>(snoozeLimit.value);
+    }
+    if (snoozeMinutes.present) {
+      map['snooze_minutes'] = Variable<int>(snoozeMinutes.value);
+    }
+    if (wakeCheck.present) {
+      map['wake_check'] = Variable<bool>(wakeCheck.value);
+    }
+    if (wakeCheckMinutes.present) {
+      map['wake_check_minutes'] = Variable<int>(wakeCheckMinutes.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AlarmRowsCompanion(')
+          ..write('id: $id, ')
+          ..write('hour: $hour, ')
+          ..write('minute: $minute, ')
+          ..write('days: $days, ')
+          ..write('label: $label, ')
+          ..write('enabled: $enabled, ')
+          ..write('soundUri: $soundUri, ')
+          ..write('soundName: $soundName, ')
+          ..write('volume: $volume, ')
+          ..write('rampSeconds: $rampSeconds, ')
+          ..write('volumeLock: $volumeLock, ')
+          ..write('vibrate: $vibrate, ')
+          ..write('challenge: $challenge, ')
+          ..write('challengeCount: $challengeCount, ')
+          ..write('difficulty: $difficulty, ')
+          ..write('phrase: $phrase, ')
+          ..write('snoozeLimit: $snoozeLimit, ')
+          ..write('snoozeMinutes: $snoozeMinutes, ')
+          ..write('wakeCheck: $wakeCheck, ')
+          ..write('wakeCheckMinutes: $wakeCheckMinutes')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $FocusLogRowsTable extends FocusLogRows
+    with TableInfo<$FocusLogRowsTable, FocusLogRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $FocusLogRowsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _startedAtMeta = const VerificationMeta(
+    'startedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> startedAt = GeneratedColumn<DateTime>(
+    'started_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _endedAtMeta = const VerificationMeta(
+    'endedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> endedAt = GeneratedColumn<DateTime>(
+    'ended_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _focusMsMeta = const VerificationMeta(
+    'focusMs',
+  );
+  @override
+  late final GeneratedColumn<int> focusMs = GeneratedColumn<int>(
+    'focus_ms',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _roundsMeta = const VerificationMeta('rounds');
+  @override
+  late final GeneratedColumn<int> rounds = GeneratedColumn<int>(
+    'rounds',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _endedEarlyMeta = const VerificationMeta(
+    'endedEarly',
+  );
+  @override
+  late final GeneratedColumn<bool> endedEarly = GeneratedColumn<bool>(
+    'ended_early',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("ended_early" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    startedAt,
+    endedAt,
+    focusMs,
+    rounds,
+    endedEarly,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'focus_logs';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<FocusLogRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('started_at')) {
+      context.handle(
+        _startedAtMeta,
+        startedAt.isAcceptableOrUnknown(data['started_at']!, _startedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_startedAtMeta);
+    }
+    if (data.containsKey('ended_at')) {
+      context.handle(
+        _endedAtMeta,
+        endedAt.isAcceptableOrUnknown(data['ended_at']!, _endedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_endedAtMeta);
+    }
+    if (data.containsKey('focus_ms')) {
+      context.handle(
+        _focusMsMeta,
+        focusMs.isAcceptableOrUnknown(data['focus_ms']!, _focusMsMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_focusMsMeta);
+    }
+    if (data.containsKey('rounds')) {
+      context.handle(
+        _roundsMeta,
+        rounds.isAcceptableOrUnknown(data['rounds']!, _roundsMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_roundsMeta);
+    }
+    if (data.containsKey('ended_early')) {
+      context.handle(
+        _endedEarlyMeta,
+        endedEarly.isAcceptableOrUnknown(data['ended_early']!, _endedEarlyMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  FocusLogRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return FocusLogRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      startedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}started_at'],
+      )!,
+      endedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}ended_at'],
+      )!,
+      focusMs: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}focus_ms'],
+      )!,
+      rounds: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}rounds'],
+      )!,
+      endedEarly: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}ended_early'],
+      )!,
+    );
+  }
+
+  @override
+  $FocusLogRowsTable createAlias(String alias) {
+    return $FocusLogRowsTable(attachedDatabase, alias);
+  }
+}
+
+class FocusLogRow extends DataClass implements Insertable<FocusLogRow> {
+  final int id;
+  final DateTime startedAt;
+  final DateTime endedAt;
+
+  /// Time actually spent in focus phases, without breaks or pauses.
+  final int focusMs;
+
+  /// Focus rounds finished in full.
+  final int rounds;
+
+  /// True when it was stopped before the last round ended.
+  final bool endedEarly;
+  const FocusLogRow({
+    required this.id,
+    required this.startedAt,
+    required this.endedAt,
+    required this.focusMs,
+    required this.rounds,
+    required this.endedEarly,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['started_at'] = Variable<DateTime>(startedAt);
+    map['ended_at'] = Variable<DateTime>(endedAt);
+    map['focus_ms'] = Variable<int>(focusMs);
+    map['rounds'] = Variable<int>(rounds);
+    map['ended_early'] = Variable<bool>(endedEarly);
+    return map;
+  }
+
+  FocusLogRowsCompanion toCompanion(bool nullToAbsent) {
+    return FocusLogRowsCompanion(
+      id: Value(id),
+      startedAt: Value(startedAt),
+      endedAt: Value(endedAt),
+      focusMs: Value(focusMs),
+      rounds: Value(rounds),
+      endedEarly: Value(endedEarly),
+    );
+  }
+
+  factory FocusLogRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return FocusLogRow(
+      id: serializer.fromJson<int>(json['id']),
+      startedAt: serializer.fromJson<DateTime>(json['startedAt']),
+      endedAt: serializer.fromJson<DateTime>(json['endedAt']),
+      focusMs: serializer.fromJson<int>(json['focusMs']),
+      rounds: serializer.fromJson<int>(json['rounds']),
+      endedEarly: serializer.fromJson<bool>(json['endedEarly']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'startedAt': serializer.toJson<DateTime>(startedAt),
+      'endedAt': serializer.toJson<DateTime>(endedAt),
+      'focusMs': serializer.toJson<int>(focusMs),
+      'rounds': serializer.toJson<int>(rounds),
+      'endedEarly': serializer.toJson<bool>(endedEarly),
+    };
+  }
+
+  FocusLogRow copyWith({
+    int? id,
+    DateTime? startedAt,
+    DateTime? endedAt,
+    int? focusMs,
+    int? rounds,
+    bool? endedEarly,
+  }) => FocusLogRow(
+    id: id ?? this.id,
+    startedAt: startedAt ?? this.startedAt,
+    endedAt: endedAt ?? this.endedAt,
+    focusMs: focusMs ?? this.focusMs,
+    rounds: rounds ?? this.rounds,
+    endedEarly: endedEarly ?? this.endedEarly,
+  );
+  FocusLogRow copyWithCompanion(FocusLogRowsCompanion data) {
+    return FocusLogRow(
+      id: data.id.present ? data.id.value : this.id,
+      startedAt: data.startedAt.present ? data.startedAt.value : this.startedAt,
+      endedAt: data.endedAt.present ? data.endedAt.value : this.endedAt,
+      focusMs: data.focusMs.present ? data.focusMs.value : this.focusMs,
+      rounds: data.rounds.present ? data.rounds.value : this.rounds,
+      endedEarly: data.endedEarly.present
+          ? data.endedEarly.value
+          : this.endedEarly,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FocusLogRow(')
+          ..write('id: $id, ')
+          ..write('startedAt: $startedAt, ')
+          ..write('endedAt: $endedAt, ')
+          ..write('focusMs: $focusMs, ')
+          ..write('rounds: $rounds, ')
+          ..write('endedEarly: $endedEarly')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, startedAt, endedAt, focusMs, rounds, endedEarly);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is FocusLogRow &&
+          other.id == this.id &&
+          other.startedAt == this.startedAt &&
+          other.endedAt == this.endedAt &&
+          other.focusMs == this.focusMs &&
+          other.rounds == this.rounds &&
+          other.endedEarly == this.endedEarly);
+}
+
+class FocusLogRowsCompanion extends UpdateCompanion<FocusLogRow> {
+  final Value<int> id;
+  final Value<DateTime> startedAt;
+  final Value<DateTime> endedAt;
+  final Value<int> focusMs;
+  final Value<int> rounds;
+  final Value<bool> endedEarly;
+  const FocusLogRowsCompanion({
+    this.id = const Value.absent(),
+    this.startedAt = const Value.absent(),
+    this.endedAt = const Value.absent(),
+    this.focusMs = const Value.absent(),
+    this.rounds = const Value.absent(),
+    this.endedEarly = const Value.absent(),
+  });
+  FocusLogRowsCompanion.insert({
+    this.id = const Value.absent(),
+    required DateTime startedAt,
+    required DateTime endedAt,
+    required int focusMs,
+    required int rounds,
+    this.endedEarly = const Value.absent(),
+  }) : startedAt = Value(startedAt),
+       endedAt = Value(endedAt),
+       focusMs = Value(focusMs),
+       rounds = Value(rounds);
+  static Insertable<FocusLogRow> custom({
+    Expression<int>? id,
+    Expression<DateTime>? startedAt,
+    Expression<DateTime>? endedAt,
+    Expression<int>? focusMs,
+    Expression<int>? rounds,
+    Expression<bool>? endedEarly,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (startedAt != null) 'started_at': startedAt,
+      if (endedAt != null) 'ended_at': endedAt,
+      if (focusMs != null) 'focus_ms': focusMs,
+      if (rounds != null) 'rounds': rounds,
+      if (endedEarly != null) 'ended_early': endedEarly,
+    });
+  }
+
+  FocusLogRowsCompanion copyWith({
+    Value<int>? id,
+    Value<DateTime>? startedAt,
+    Value<DateTime>? endedAt,
+    Value<int>? focusMs,
+    Value<int>? rounds,
+    Value<bool>? endedEarly,
+  }) {
+    return FocusLogRowsCompanion(
+      id: id ?? this.id,
+      startedAt: startedAt ?? this.startedAt,
+      endedAt: endedAt ?? this.endedAt,
+      focusMs: focusMs ?? this.focusMs,
+      rounds: rounds ?? this.rounds,
+      endedEarly: endedEarly ?? this.endedEarly,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (startedAt.present) {
+      map['started_at'] = Variable<DateTime>(startedAt.value);
+    }
+    if (endedAt.present) {
+      map['ended_at'] = Variable<DateTime>(endedAt.value);
+    }
+    if (focusMs.present) {
+      map['focus_ms'] = Variable<int>(focusMs.value);
+    }
+    if (rounds.present) {
+      map['rounds'] = Variable<int>(rounds.value);
+    }
+    if (endedEarly.present) {
+      map['ended_early'] = Variable<bool>(endedEarly.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FocusLogRowsCompanion(')
+          ..write('id: $id, ')
+          ..write('startedAt: $startedAt, ')
+          ..write('endedAt: $endedAt, ')
+          ..write('focusMs: $focusMs, ')
+          ..write('rounds: $rounds, ')
+          ..write('endedEarly: $endedEarly')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -2165,6 +4485,12 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $NoteRowsTable noteRows = $NoteRowsTable(this);
   late final $SettingRowsTable settingRows = $SettingRowsTable(this);
   late final $ShiftRowsTable shiftRows = $ShiftRowsTable(this);
+  late final $PhoneDayRowsTable phoneDayRows = $PhoneDayRowsTable(this);
+  late final $PhoneAppDayRowsTable phoneAppDayRows = $PhoneAppDayRowsTable(
+    this,
+  );
+  late final $AlarmRowsTable alarmRows = $AlarmRowsTable(this);
+  late final $FocusLogRowsTable focusLogRows = $FocusLogRowsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -2175,6 +4501,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     noteRows,
     settingRows,
     shiftRows,
+    phoneDayRows,
+    phoneAppDayRows,
+    alarmRows,
+    focusLogRows,
   ];
 }
 
@@ -3327,6 +5657,1173 @@ typedef $$ShiftRowsTableProcessedTableManager =
       ShiftRow,
       PrefetchHooks Function()
     >;
+typedef $$PhoneDayRowsTableCreateCompanionBuilder =
+    PhoneDayRowsCompanion Function({
+      required String date,
+      required int screenOnMs,
+      required int unlocks,
+      Value<DateTime?> firstPickup,
+      Value<DateTime?> restStart,
+      Value<DateTime?> restEnd,
+      Value<bool> complete,
+      Value<int> rowid,
+    });
+typedef $$PhoneDayRowsTableUpdateCompanionBuilder =
+    PhoneDayRowsCompanion Function({
+      Value<String> date,
+      Value<int> screenOnMs,
+      Value<int> unlocks,
+      Value<DateTime?> firstPickup,
+      Value<DateTime?> restStart,
+      Value<DateTime?> restEnd,
+      Value<bool> complete,
+      Value<int> rowid,
+    });
+
+class $$PhoneDayRowsTableFilterComposer
+    extends Composer<_$AppDatabase, $PhoneDayRowsTable> {
+  $$PhoneDayRowsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get date => $composableBuilder(
+    column: $table.date,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get screenOnMs => $composableBuilder(
+    column: $table.screenOnMs,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get unlocks => $composableBuilder(
+    column: $table.unlocks,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get firstPickup => $composableBuilder(
+    column: $table.firstPickup,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get restStart => $composableBuilder(
+    column: $table.restStart,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get restEnd => $composableBuilder(
+    column: $table.restEnd,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get complete => $composableBuilder(
+    column: $table.complete,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$PhoneDayRowsTableOrderingComposer
+    extends Composer<_$AppDatabase, $PhoneDayRowsTable> {
+  $$PhoneDayRowsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get date => $composableBuilder(
+    column: $table.date,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get screenOnMs => $composableBuilder(
+    column: $table.screenOnMs,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get unlocks => $composableBuilder(
+    column: $table.unlocks,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get firstPickup => $composableBuilder(
+    column: $table.firstPickup,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get restStart => $composableBuilder(
+    column: $table.restStart,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get restEnd => $composableBuilder(
+    column: $table.restEnd,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get complete => $composableBuilder(
+    column: $table.complete,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$PhoneDayRowsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $PhoneDayRowsTable> {
+  $$PhoneDayRowsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get date =>
+      $composableBuilder(column: $table.date, builder: (column) => column);
+
+  GeneratedColumn<int> get screenOnMs => $composableBuilder(
+    column: $table.screenOnMs,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get unlocks =>
+      $composableBuilder(column: $table.unlocks, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get firstPickup => $composableBuilder(
+    column: $table.firstPickup,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get restStart =>
+      $composableBuilder(column: $table.restStart, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get restEnd =>
+      $composableBuilder(column: $table.restEnd, builder: (column) => column);
+
+  GeneratedColumn<bool> get complete =>
+      $composableBuilder(column: $table.complete, builder: (column) => column);
+}
+
+class $$PhoneDayRowsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $PhoneDayRowsTable,
+          PhoneDayRow,
+          $$PhoneDayRowsTableFilterComposer,
+          $$PhoneDayRowsTableOrderingComposer,
+          $$PhoneDayRowsTableAnnotationComposer,
+          $$PhoneDayRowsTableCreateCompanionBuilder,
+          $$PhoneDayRowsTableUpdateCompanionBuilder,
+          (
+            PhoneDayRow,
+            BaseReferences<_$AppDatabase, $PhoneDayRowsTable, PhoneDayRow>,
+          ),
+          PhoneDayRow,
+          PrefetchHooks Function()
+        > {
+  $$PhoneDayRowsTableTableManager(_$AppDatabase db, $PhoneDayRowsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$PhoneDayRowsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$PhoneDayRowsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$PhoneDayRowsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> date = const Value.absent(),
+                Value<int> screenOnMs = const Value.absent(),
+                Value<int> unlocks = const Value.absent(),
+                Value<DateTime?> firstPickup = const Value.absent(),
+                Value<DateTime?> restStart = const Value.absent(),
+                Value<DateTime?> restEnd = const Value.absent(),
+                Value<bool> complete = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => PhoneDayRowsCompanion(
+                date: date,
+                screenOnMs: screenOnMs,
+                unlocks: unlocks,
+                firstPickup: firstPickup,
+                restStart: restStart,
+                restEnd: restEnd,
+                complete: complete,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String date,
+                required int screenOnMs,
+                required int unlocks,
+                Value<DateTime?> firstPickup = const Value.absent(),
+                Value<DateTime?> restStart = const Value.absent(),
+                Value<DateTime?> restEnd = const Value.absent(),
+                Value<bool> complete = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => PhoneDayRowsCompanion.insert(
+                date: date,
+                screenOnMs: screenOnMs,
+                unlocks: unlocks,
+                firstPickup: firstPickup,
+                restStart: restStart,
+                restEnd: restEnd,
+                complete: complete,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$PhoneDayRowsTable, PhoneDayRow>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $PhoneDayRowsTable,
+                    PhoneDayRow
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$PhoneDayRowsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $PhoneDayRowsTable,
+      PhoneDayRow,
+      $$PhoneDayRowsTableFilterComposer,
+      $$PhoneDayRowsTableOrderingComposer,
+      $$PhoneDayRowsTableAnnotationComposer,
+      $$PhoneDayRowsTableCreateCompanionBuilder,
+      $$PhoneDayRowsTableUpdateCompanionBuilder,
+      (
+        PhoneDayRow,
+        BaseReferences<_$AppDatabase, $PhoneDayRowsTable, PhoneDayRow>,
+      ),
+      PhoneDayRow,
+      PrefetchHooks Function()
+    >;
+typedef $$PhoneAppDayRowsTableCreateCompanionBuilder =
+    PhoneAppDayRowsCompanion Function({
+      required String date,
+      required String package,
+      required String label,
+      required int foregroundMs,
+      Value<int> rowid,
+    });
+typedef $$PhoneAppDayRowsTableUpdateCompanionBuilder =
+    PhoneAppDayRowsCompanion Function({
+      Value<String> date,
+      Value<String> package,
+      Value<String> label,
+      Value<int> foregroundMs,
+      Value<int> rowid,
+    });
+
+class $$PhoneAppDayRowsTableFilterComposer
+    extends Composer<_$AppDatabase, $PhoneAppDayRowsTable> {
+  $$PhoneAppDayRowsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get date => $composableBuilder(
+    column: $table.date,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get package => $composableBuilder(
+    column: $table.package,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get label => $composableBuilder(
+    column: $table.label,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get foregroundMs => $composableBuilder(
+    column: $table.foregroundMs,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$PhoneAppDayRowsTableOrderingComposer
+    extends Composer<_$AppDatabase, $PhoneAppDayRowsTable> {
+  $$PhoneAppDayRowsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get date => $composableBuilder(
+    column: $table.date,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get package => $composableBuilder(
+    column: $table.package,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get label => $composableBuilder(
+    column: $table.label,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get foregroundMs => $composableBuilder(
+    column: $table.foregroundMs,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$PhoneAppDayRowsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $PhoneAppDayRowsTable> {
+  $$PhoneAppDayRowsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get date =>
+      $composableBuilder(column: $table.date, builder: (column) => column);
+
+  GeneratedColumn<String> get package =>
+      $composableBuilder(column: $table.package, builder: (column) => column);
+
+  GeneratedColumn<String> get label =>
+      $composableBuilder(column: $table.label, builder: (column) => column);
+
+  GeneratedColumn<int> get foregroundMs => $composableBuilder(
+    column: $table.foregroundMs,
+    builder: (column) => column,
+  );
+}
+
+class $$PhoneAppDayRowsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $PhoneAppDayRowsTable,
+          PhoneAppDayRow,
+          $$PhoneAppDayRowsTableFilterComposer,
+          $$PhoneAppDayRowsTableOrderingComposer,
+          $$PhoneAppDayRowsTableAnnotationComposer,
+          $$PhoneAppDayRowsTableCreateCompanionBuilder,
+          $$PhoneAppDayRowsTableUpdateCompanionBuilder,
+          (
+            PhoneAppDayRow,
+            BaseReferences<
+              _$AppDatabase,
+              $PhoneAppDayRowsTable,
+              PhoneAppDayRow
+            >,
+          ),
+          PhoneAppDayRow,
+          PrefetchHooks Function()
+        > {
+  $$PhoneAppDayRowsTableTableManager(
+    _$AppDatabase db,
+    $PhoneAppDayRowsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$PhoneAppDayRowsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$PhoneAppDayRowsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$PhoneAppDayRowsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> date = const Value.absent(),
+                Value<String> package = const Value.absent(),
+                Value<String> label = const Value.absent(),
+                Value<int> foregroundMs = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => PhoneAppDayRowsCompanion(
+                date: date,
+                package: package,
+                label: label,
+                foregroundMs: foregroundMs,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String date,
+                required String package,
+                required String label,
+                required int foregroundMs,
+                Value<int> rowid = const Value.absent(),
+              }) => PhoneAppDayRowsCompanion.insert(
+                date: date,
+                package: package,
+                label: label,
+                foregroundMs: foregroundMs,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$PhoneAppDayRowsTable, PhoneAppDayRow>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $PhoneAppDayRowsTable,
+                    PhoneAppDayRow
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$PhoneAppDayRowsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $PhoneAppDayRowsTable,
+      PhoneAppDayRow,
+      $$PhoneAppDayRowsTableFilterComposer,
+      $$PhoneAppDayRowsTableOrderingComposer,
+      $$PhoneAppDayRowsTableAnnotationComposer,
+      $$PhoneAppDayRowsTableCreateCompanionBuilder,
+      $$PhoneAppDayRowsTableUpdateCompanionBuilder,
+      (
+        PhoneAppDayRow,
+        BaseReferences<_$AppDatabase, $PhoneAppDayRowsTable, PhoneAppDayRow>,
+      ),
+      PhoneAppDayRow,
+      PrefetchHooks Function()
+    >;
+typedef $$AlarmRowsTableCreateCompanionBuilder = AlarmRowsCompanion Function({
+  Value<int> id,
+  required int hour,
+  required int minute,
+  Value<int> days,
+  Value<String> label,
+  Value<bool> enabled,
+  Value<String?> soundUri,
+  Value<String?> soundName,
+  Value<int> volume,
+  Value<int> rampSeconds,
+  Value<bool> volumeLock,
+  Value<bool> vibrate,
+  Value<String> challenge,
+  Value<int> challengeCount,
+  Value<String> difficulty,
+  Value<String> phrase,
+  Value<int> snoozeLimit,
+  Value<int> snoozeMinutes,
+  Value<bool> wakeCheck,
+  Value<int> wakeCheckMinutes,
+});
+typedef $$AlarmRowsTableUpdateCompanionBuilder = AlarmRowsCompanion Function({
+  Value<int> id,
+  Value<int> hour,
+  Value<int> minute,
+  Value<int> days,
+  Value<String> label,
+  Value<bool> enabled,
+  Value<String?> soundUri,
+  Value<String?> soundName,
+  Value<int> volume,
+  Value<int> rampSeconds,
+  Value<bool> volumeLock,
+  Value<bool> vibrate,
+  Value<String> challenge,
+  Value<int> challengeCount,
+  Value<String> difficulty,
+  Value<String> phrase,
+  Value<int> snoozeLimit,
+  Value<int> snoozeMinutes,
+  Value<bool> wakeCheck,
+  Value<int> wakeCheckMinutes,
+});
+
+class $$AlarmRowsTableFilterComposer
+    extends Composer<_$AppDatabase, $AlarmRowsTable> {
+  $$AlarmRowsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get hour => $composableBuilder(
+    column: $table.hour,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get minute => $composableBuilder(
+    column: $table.minute,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get days => $composableBuilder(
+    column: $table.days,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get label => $composableBuilder(
+    column: $table.label,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get enabled => $composableBuilder(
+    column: $table.enabled,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get soundUri => $composableBuilder(
+    column: $table.soundUri,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get soundName => $composableBuilder(
+    column: $table.soundName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get volume => $composableBuilder(
+    column: $table.volume,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get rampSeconds => $composableBuilder(
+    column: $table.rampSeconds,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get volumeLock => $composableBuilder(
+    column: $table.volumeLock,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get vibrate => $composableBuilder(
+    column: $table.vibrate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get challenge => $composableBuilder(
+    column: $table.challenge,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get challengeCount => $composableBuilder(
+    column: $table.challengeCount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get difficulty => $composableBuilder(
+    column: $table.difficulty,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get phrase => $composableBuilder(
+    column: $table.phrase,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get snoozeLimit => $composableBuilder(
+    column: $table.snoozeLimit,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get snoozeMinutes => $composableBuilder(
+    column: $table.snoozeMinutes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get wakeCheck => $composableBuilder(
+    column: $table.wakeCheck,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get wakeCheckMinutes => $composableBuilder(
+    column: $table.wakeCheckMinutes,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$AlarmRowsTableOrderingComposer
+    extends Composer<_$AppDatabase, $AlarmRowsTable> {
+  $$AlarmRowsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get hour => $composableBuilder(
+    column: $table.hour,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get minute => $composableBuilder(
+    column: $table.minute,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get days => $composableBuilder(
+    column: $table.days,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get label => $composableBuilder(
+    column: $table.label,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get enabled => $composableBuilder(
+    column: $table.enabled,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get soundUri => $composableBuilder(
+    column: $table.soundUri,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get soundName => $composableBuilder(
+    column: $table.soundName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get volume => $composableBuilder(
+    column: $table.volume,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get rampSeconds => $composableBuilder(
+    column: $table.rampSeconds,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get volumeLock => $composableBuilder(
+    column: $table.volumeLock,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get vibrate => $composableBuilder(
+    column: $table.vibrate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get challenge => $composableBuilder(
+    column: $table.challenge,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get challengeCount => $composableBuilder(
+    column: $table.challengeCount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get difficulty => $composableBuilder(
+    column: $table.difficulty,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get phrase => $composableBuilder(
+    column: $table.phrase,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get snoozeLimit => $composableBuilder(
+    column: $table.snoozeLimit,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get snoozeMinutes => $composableBuilder(
+    column: $table.snoozeMinutes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get wakeCheck => $composableBuilder(
+    column: $table.wakeCheck,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get wakeCheckMinutes => $composableBuilder(
+    column: $table.wakeCheckMinutes,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$AlarmRowsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $AlarmRowsTable> {
+  $$AlarmRowsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<int> get hour =>
+      $composableBuilder(column: $table.hour, builder: (column) => column);
+
+  GeneratedColumn<int> get minute =>
+      $composableBuilder(column: $table.minute, builder: (column) => column);
+
+  GeneratedColumn<int> get days =>
+      $composableBuilder(column: $table.days, builder: (column) => column);
+
+  GeneratedColumn<String> get label =>
+      $composableBuilder(column: $table.label, builder: (column) => column);
+
+  GeneratedColumn<bool> get enabled =>
+      $composableBuilder(column: $table.enabled, builder: (column) => column);
+
+  GeneratedColumn<String> get soundUri =>
+      $composableBuilder(column: $table.soundUri, builder: (column) => column);
+
+  GeneratedColumn<String> get soundName =>
+      $composableBuilder(column: $table.soundName, builder: (column) => column);
+
+  GeneratedColumn<int> get volume =>
+      $composableBuilder(column: $table.volume, builder: (column) => column);
+
+  GeneratedColumn<int> get rampSeconds => $composableBuilder(
+    column: $table.rampSeconds,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get volumeLock => $composableBuilder(
+    column: $table.volumeLock,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get vibrate =>
+      $composableBuilder(column: $table.vibrate, builder: (column) => column);
+
+  GeneratedColumn<String> get challenge =>
+      $composableBuilder(column: $table.challenge, builder: (column) => column);
+
+  GeneratedColumn<int> get challengeCount => $composableBuilder(
+    column: $table.challengeCount,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get difficulty => $composableBuilder(
+    column: $table.difficulty,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get phrase =>
+      $composableBuilder(column: $table.phrase, builder: (column) => column);
+
+  GeneratedColumn<int> get snoozeLimit => $composableBuilder(
+    column: $table.snoozeLimit,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get snoozeMinutes => $composableBuilder(
+    column: $table.snoozeMinutes,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get wakeCheck =>
+      $composableBuilder(column: $table.wakeCheck, builder: (column) => column);
+
+  GeneratedColumn<int> get wakeCheckMinutes => $composableBuilder(
+    column: $table.wakeCheckMinutes,
+    builder: (column) => column,
+  );
+}
+
+class $$AlarmRowsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $AlarmRowsTable,
+          AlarmRow,
+          $$AlarmRowsTableFilterComposer,
+          $$AlarmRowsTableOrderingComposer,
+          $$AlarmRowsTableAnnotationComposer,
+          $$AlarmRowsTableCreateCompanionBuilder,
+          $$AlarmRowsTableUpdateCompanionBuilder,
+          (AlarmRow, BaseReferences<_$AppDatabase, $AlarmRowsTable, AlarmRow>),
+          AlarmRow,
+          PrefetchHooks Function()
+        > {
+  $$AlarmRowsTableTableManager(_$AppDatabase db, $AlarmRowsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$AlarmRowsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$AlarmRowsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$AlarmRowsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> hour = const Value.absent(),
+                Value<int> minute = const Value.absent(),
+                Value<int> days = const Value.absent(),
+                Value<String> label = const Value.absent(),
+                Value<bool> enabled = const Value.absent(),
+                Value<String?> soundUri = const Value.absent(),
+                Value<String?> soundName = const Value.absent(),
+                Value<int> volume = const Value.absent(),
+                Value<int> rampSeconds = const Value.absent(),
+                Value<bool> volumeLock = const Value.absent(),
+                Value<bool> vibrate = const Value.absent(),
+                Value<String> challenge = const Value.absent(),
+                Value<int> challengeCount = const Value.absent(),
+                Value<String> difficulty = const Value.absent(),
+                Value<String> phrase = const Value.absent(),
+                Value<int> snoozeLimit = const Value.absent(),
+                Value<int> snoozeMinutes = const Value.absent(),
+                Value<bool> wakeCheck = const Value.absent(),
+                Value<int> wakeCheckMinutes = const Value.absent(),
+              }) => AlarmRowsCompanion(
+                id: id,
+                hour: hour,
+                minute: minute,
+                days: days,
+                label: label,
+                enabled: enabled,
+                soundUri: soundUri,
+                soundName: soundName,
+                volume: volume,
+                rampSeconds: rampSeconds,
+                volumeLock: volumeLock,
+                vibrate: vibrate,
+                challenge: challenge,
+                challengeCount: challengeCount,
+                difficulty: difficulty,
+                phrase: phrase,
+                snoozeLimit: snoozeLimit,
+                snoozeMinutes: snoozeMinutes,
+                wakeCheck: wakeCheck,
+                wakeCheckMinutes: wakeCheckMinutes,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required int hour,
+                required int minute,
+                Value<int> days = const Value.absent(),
+                Value<String> label = const Value.absent(),
+                Value<bool> enabled = const Value.absent(),
+                Value<String?> soundUri = const Value.absent(),
+                Value<String?> soundName = const Value.absent(),
+                Value<int> volume = const Value.absent(),
+                Value<int> rampSeconds = const Value.absent(),
+                Value<bool> volumeLock = const Value.absent(),
+                Value<bool> vibrate = const Value.absent(),
+                Value<String> challenge = const Value.absent(),
+                Value<int> challengeCount = const Value.absent(),
+                Value<String> difficulty = const Value.absent(),
+                Value<String> phrase = const Value.absent(),
+                Value<int> snoozeLimit = const Value.absent(),
+                Value<int> snoozeMinutes = const Value.absent(),
+                Value<bool> wakeCheck = const Value.absent(),
+                Value<int> wakeCheckMinutes = const Value.absent(),
+              }) => AlarmRowsCompanion.insert(
+                id: id,
+                hour: hour,
+                minute: minute,
+                days: days,
+                label: label,
+                enabled: enabled,
+                soundUri: soundUri,
+                soundName: soundName,
+                volume: volume,
+                rampSeconds: rampSeconds,
+                volumeLock: volumeLock,
+                vibrate: vibrate,
+                challenge: challenge,
+                challengeCount: challengeCount,
+                difficulty: difficulty,
+                phrase: phrase,
+                snoozeLimit: snoozeLimit,
+                snoozeMinutes: snoozeMinutes,
+                wakeCheck: wakeCheck,
+                wakeCheckMinutes: wakeCheckMinutes,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$AlarmRowsTable, AlarmRow>(table),
+                  BaseReferences<_$AppDatabase, $AlarmRowsTable, AlarmRow>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$AlarmRowsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $AlarmRowsTable,
+      AlarmRow,
+      $$AlarmRowsTableFilterComposer,
+      $$AlarmRowsTableOrderingComposer,
+      $$AlarmRowsTableAnnotationComposer,
+      $$AlarmRowsTableCreateCompanionBuilder,
+      $$AlarmRowsTableUpdateCompanionBuilder,
+      (AlarmRow, BaseReferences<_$AppDatabase, $AlarmRowsTable, AlarmRow>),
+      AlarmRow,
+      PrefetchHooks Function()
+    >;
+typedef $$FocusLogRowsTableCreateCompanionBuilder =
+    FocusLogRowsCompanion Function({
+      Value<int> id,
+      required DateTime startedAt,
+      required DateTime endedAt,
+      required int focusMs,
+      required int rounds,
+      Value<bool> endedEarly,
+    });
+typedef $$FocusLogRowsTableUpdateCompanionBuilder =
+    FocusLogRowsCompanion Function({
+      Value<int> id,
+      Value<DateTime> startedAt,
+      Value<DateTime> endedAt,
+      Value<int> focusMs,
+      Value<int> rounds,
+      Value<bool> endedEarly,
+    });
+
+class $$FocusLogRowsTableFilterComposer
+    extends Composer<_$AppDatabase, $FocusLogRowsTable> {
+  $$FocusLogRowsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get startedAt => $composableBuilder(
+    column: $table.startedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get endedAt => $composableBuilder(
+    column: $table.endedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get focusMs => $composableBuilder(
+    column: $table.focusMs,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get rounds => $composableBuilder(
+    column: $table.rounds,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get endedEarly => $composableBuilder(
+    column: $table.endedEarly,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$FocusLogRowsTableOrderingComposer
+    extends Composer<_$AppDatabase, $FocusLogRowsTable> {
+  $$FocusLogRowsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get startedAt => $composableBuilder(
+    column: $table.startedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get endedAt => $composableBuilder(
+    column: $table.endedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get focusMs => $composableBuilder(
+    column: $table.focusMs,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get rounds => $composableBuilder(
+    column: $table.rounds,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get endedEarly => $composableBuilder(
+    column: $table.endedEarly,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$FocusLogRowsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $FocusLogRowsTable> {
+  $$FocusLogRowsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get startedAt =>
+      $composableBuilder(column: $table.startedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get endedAt =>
+      $composableBuilder(column: $table.endedAt, builder: (column) => column);
+
+  GeneratedColumn<int> get focusMs =>
+      $composableBuilder(column: $table.focusMs, builder: (column) => column);
+
+  GeneratedColumn<int> get rounds =>
+      $composableBuilder(column: $table.rounds, builder: (column) => column);
+
+  GeneratedColumn<bool> get endedEarly => $composableBuilder(
+    column: $table.endedEarly,
+    builder: (column) => column,
+  );
+}
+
+class $$FocusLogRowsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $FocusLogRowsTable,
+          FocusLogRow,
+          $$FocusLogRowsTableFilterComposer,
+          $$FocusLogRowsTableOrderingComposer,
+          $$FocusLogRowsTableAnnotationComposer,
+          $$FocusLogRowsTableCreateCompanionBuilder,
+          $$FocusLogRowsTableUpdateCompanionBuilder,
+          (
+            FocusLogRow,
+            BaseReferences<_$AppDatabase, $FocusLogRowsTable, FocusLogRow>,
+          ),
+          FocusLogRow,
+          PrefetchHooks Function()
+        > {
+  $$FocusLogRowsTableTableManager(_$AppDatabase db, $FocusLogRowsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$FocusLogRowsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$FocusLogRowsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$FocusLogRowsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<DateTime> startedAt = const Value.absent(),
+                Value<DateTime> endedAt = const Value.absent(),
+                Value<int> focusMs = const Value.absent(),
+                Value<int> rounds = const Value.absent(),
+                Value<bool> endedEarly = const Value.absent(),
+              }) => FocusLogRowsCompanion(
+                id: id,
+                startedAt: startedAt,
+                endedAt: endedAt,
+                focusMs: focusMs,
+                rounds: rounds,
+                endedEarly: endedEarly,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required DateTime startedAt,
+                required DateTime endedAt,
+                required int focusMs,
+                required int rounds,
+                Value<bool> endedEarly = const Value.absent(),
+              }) => FocusLogRowsCompanion.insert(
+                id: id,
+                startedAt: startedAt,
+                endedAt: endedAt,
+                focusMs: focusMs,
+                rounds: rounds,
+                endedEarly: endedEarly,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$FocusLogRowsTable, FocusLogRow>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $FocusLogRowsTable,
+                    FocusLogRow
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$FocusLogRowsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $FocusLogRowsTable,
+      FocusLogRow,
+      $$FocusLogRowsTableFilterComposer,
+      $$FocusLogRowsTableOrderingComposer,
+      $$FocusLogRowsTableAnnotationComposer,
+      $$FocusLogRowsTableCreateCompanionBuilder,
+      $$FocusLogRowsTableUpdateCompanionBuilder,
+      (
+        FocusLogRow,
+        BaseReferences<_$AppDatabase, $FocusLogRowsTable, FocusLogRow>,
+      ),
+      FocusLogRow,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -3341,4 +6838,12 @@ class $AppDatabaseManager {
       $$SettingRowsTableTableManager(_db, _db.settingRows);
   $$ShiftRowsTableTableManager get shiftRows =>
       $$ShiftRowsTableTableManager(_db, _db.shiftRows);
+  $$PhoneDayRowsTableTableManager get phoneDayRows =>
+      $$PhoneDayRowsTableTableManager(_db, _db.phoneDayRows);
+  $$PhoneAppDayRowsTableTableManager get phoneAppDayRows =>
+      $$PhoneAppDayRowsTableTableManager(_db, _db.phoneAppDayRows);
+  $$AlarmRowsTableTableManager get alarmRows =>
+      $$AlarmRowsTableTableManager(_db, _db.alarmRows);
+  $$FocusLogRowsTableTableManager get focusLogRows =>
+      $$FocusLogRowsTableTableManager(_db, _db.focusLogRows);
 }

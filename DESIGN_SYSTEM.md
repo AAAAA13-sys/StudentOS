@@ -26,7 +26,7 @@ StudentOS is a high-utility productivity suite for students. It must feel calm, 
 - **Tactile, Snappy Micro-Interactions:** 
   - Button taps: **100ms–140ms** subtle lavender ripple.
   - Sheet and drawer transitions: **250ms–300ms** utilizing physics-based deceleration (`Curves.easeOutCubic`).
-- **Dual-Tier Ergonomics:** Thumb-friendly 3-destination bottom bar for frequent module switching, paired with an elegant **Hamburger Drawer** for account profile, offline sync status, and secondary utilities.
+- **Dual-Tier Ergonomics:** Thumb-friendly 4-destination bottom bar for frequent module switching, paired with an elegant **Hamburger Drawer** for account profile, offline sync status, and secondary utilities.
 
 ---
 
@@ -89,10 +89,11 @@ style: textTheme.headlineMedium?.copyWith(
 ## 4. Navigation Architecture: The Dual-Tier Standard
 
 ### 4.1 Tier 1: Bottom Navigation Bar (`NavigationBar`)
-Thumb-zone navigation strictly dedicated to the 3 frequent daily student tasks:
+Thumb-zone navigation for the 4 daily destinations (the 4th, Clock, was added on 2026-11-16 at the owner's request):
 1. **Calendar** (`Icons.calendar_today_rounded` / `Icons.calendar_month_rounded`)
 2. **Finance** (`Icons.account_balance_wallet_outlined` / `Icons.account_balance_wallet_rounded`)
 3. **Notes** (`Icons.article_outlined` / `Icons.article_rounded`)
+4. **Clock** (`Icons.alarm_outlined` / `Icons.alarm_rounded`): two panels in a segmented control, Alarm (default; alarms and the night's phone rest) and Focus (timer and screen time). A running focus session shows a 40dp banner above the bar on the other tabs. Sheets open on the root navigator so they cover the bottom bar. The ringing alarm screen is native Android, drawn in the Midnight Lavender colours.
 
 **Design Details:**
 - Height: 68dp.

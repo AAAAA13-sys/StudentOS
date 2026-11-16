@@ -351,3 +351,31 @@ Entries are appended, never edited. Corrections are new entries that reference t
 - Backup format 2 includes shifts; format 1 files still restore, with no shifts.
 - Left out of version one: payday dates and pay periods, several jobs with different rates, overtime and night pay, deductions, clock-in timers, shifts on the widget, editing a shift (remove and add again).
 **Open items:** The overlap warning was checked in tests only. The system back button closes the shift sheet and drops what was typed, as the class sheet does.
+
+## Phase 28: Focus tab (alarms, focus timer with lockdown, screen time)
+**Date:** 2026-11-16 (18:40 GMT+8)
+**Verified by:** lead-pm (tests and build only; see Open items)
+**Evidence:** `flutter analyze` 0 issues; `flutter test` 52 passed; `flutter build apk --release --split-per-abi` succeeds.
+**Owner request:** opt out of school modules again; a 4th-tab module with a hard-to-ignore wake-up alarm and a Pomodoro timer that locks down the phone, customizable, "global". In a question dialog the owner chose to fold the unfinished screen-time ("Phone") work into the tab and to pick the lockdown strength per session.
+**Decisions:**
+- 4th bottom tab "Focus" with three sections: Alarms, Timer, Screen. This replaces "strictly 3 tabs" in `AGENTS.md` 6.7 and `DESIGN_SYSTEM.md` 4.1.
+- "Global" was read as: alarms ring with the app closed and survive reboots (Android `setAlarmClock`, boot receiver, a foreground service on the alarm stream, a native full-screen alarm screen that needs no Flutter), and a running focus session shows a banner above the bottom bar on every tab plus an ongoing notification with a countdown.
+- Alarm settings per alarm: time, weekdays or once, label, sound (Android picker), volume, ramp-up, volume lock, vibration, turn-off challenge (button, maths with count and difficulty, typed sentence, shakes), snooze count and length, wake-up check after N minutes that rings again when unanswered within a minute. Back and volume keys do nothing on the alarm screen. Ringing stops by itself after one hour.
+- Focus timer: focus, short and long break lengths, rounds, long break every N, chime on/off, presets (25/5, 50/10, plain timer). Lockdown off, light (Android screen pinning, in-app) or strict (an Accessibility service that only reads which app came to the front and sends the user back to StudentOS; calls, keyboard and system UI pass; an allow list of apps; pausing, skipping or stopping a strict focus round needs the exit sentence typed). Breaks are never locked.
+- Data: `alarms` and `focus_logs` tables (schema v6; v5 added the screen-time tables). Android keeps its own copy of alarms in SharedPreferences; one-time alarms that rang are turned off in the app's list on next open. Backup format 4 includes alarms and focus history.
+- Screen-time "phone rest" now only counts a screen-off stretch that starts by 6 AM, so a phone left alone after waking is not taken as the night.
+**Open items:** Nothing of the Focus tab has been seen on a device: the emulator was offline to adb. Unverified on device: ringing with the app closed, full-screen over the lock screen, challenges, snooze, wake-up check, volume lock, pinning, strict block, focus notifications. Strict lockdown can still be escaped by powering off the phone or turning the Accessibility service off from the notification shade's settings shortcut on some phones.
+
+## Phase 28 (continued): Clock tab checked on device; renamed from Focus
+**Date:** 2026-11-16 (19:20 GMT+8). Supersedes the "Open items" and the tab name in the Phase 28 entry above.
+**Verified by:** lead-pm on `emulator-5554` (API 37, x86_64 release build)
+**Owner request:** "naming the module focus while the 1/2 of the usage is just alarm is kinda meh ... we should make a 2 panel under that major module ... try consulting the it department/research department".
+**Consulted:** agency-ux-architect (research) and agency-software-architect (IT), read-only.
+**Decisions:**
+- Tab name **Clock** (what Google and Samsung call alarms plus timers). Two panels in a SegmentedButton: **Alarm** (default) and **Focus**. Screen time sits under the timer in Focus; the night's phone rest card sits under the alarms. "Focus" stays a panel name because as a tab it collides with Android's Focus mode.
+- Renamed: tab label, route `/clock`, `ClockScreen`, `ClockPanel`, `clockPanelProvider`, Android route value `timer` (Dart also accepts the old `/focus`). Not renamed on purpose: `FocusBlockService` (Android stores the class name of an enabled accessibility service), SharedPreferences files, Drift tables, settings keys, backup keys, notification channel ids, method channel names, the `features/focus` folder.
+- IT risks fixed: overlapping ticks could log a session twice (guard added); the timer only ran while its panel was on screen (the controller now ticks itself); route pushed from Android at once when the app is already open; alarm list redraws every 30 s, not every second; counters stop when unused.
+- Found on device and fixed: Back closed the alarm screen on Android 13+; light pinning hid a ringing alarm (the alarm now unpins first); a declined or escaped pin was never asked again (asked on each return during a focus round); sheets opened under the bottom bar; the escape wording assumed button navigation.
+**Evidence:** see the Clock tab row in `PROGRESS.md` (alarm at 10:55 with screen off, wrong and right answers, wake-up check unanswered then ringing again, typed sentence, light and strict lockdown, exit sentence, session log).
+**Open items:** Not checked on device: shake challenge, snooze rescheduling, sound picker, ramp, phase-change chime, alarm after reboot, strict allow list. When the phone is unlocked and in use, an alarm shows as a pop-up notification unless "Display over other apps" is allowed.
+
