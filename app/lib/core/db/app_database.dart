@@ -88,16 +88,45 @@ class SettingRows extends Table {
   Set<Column<Object>> get primaryKey => <Column<Object>>{key};
 }
 
+/// One work shift. A weekly repeat is stored as one row per day worked, so
+/// a single day can be removed or changed without touching the others.
+@DataClassName('ShiftRow')
+class ShiftRows extends Table {
+  @override
+  String get tableName => 'shifts';
+
+  IntColumn get id => integer().autoIncrement()();
+
+  /// Where the shift is worked.
+  TextColumn get job => text()();
+
+  DateTimeColumn get startsAt => dateTime()();
+
+  IntColumn get durationMinutes => integer()();
+
+  /// Unpaid break time inside the shift.
+  IntColumn get breakMinutes => integer().withDefault(const Constant(0))();
+
+  /// Centavos per hour at the time the shift was logged.
+  IntColumn get hourlyRateCents => integer().withDefault(const Constant(0))();
+
+  /// True once the pay for this shift has been received.
+  BoolColumn get paid => boolean().withDefault(const Constant(false))();
+
+  /// Shared by the shifts that were added together as one weekly repeat.
+  IntColumn get seriesId => integer().nullable()();
+}
+
 /// The app's only data store. Everything lives on this device.
 @DriftDatabase(
-  tables: <Type>[EventRows, TransactionRows, NoteRows, SettingRows],
+  tables: <Type>[EventRows, TransactionRows, NoteRows, SettingRows, ShiftRows],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor])
     : super(executor ?? driftDatabase(name: 'studentos'));
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -107,6 +136,9 @@ class AppDatabase extends _$AppDatabase {
       }
       if (from < 3) {
         await m.createTable(settingRows);
+      }
+      if (from < 4) {
+        await m.createTable(shiftRows);
       }
     },
   );

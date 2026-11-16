@@ -337,3 +337,17 @@ Entries are appended, never edited. Corrections are new entries that reference t
 - New notes and existing notes now use the same editor sheet, so both have "Add Q&A recall card".
 - The emoji were removed from the type chips (the selection tick covered them); the pills on the cards still use them.
 **Open items:** The widget has still not been viewed on a home screen. Push to `origin` awaits the owner.
+
+
+## Phase 27: Work shifts and pay
+**Date:** 2026-11-16 (13:20 GMT+8)
+**Verified by:** lead-pm
+**Evidence:** `flutter analyze` 0 issues; `flutter test` 36 passed; x86_64 release build on `emulator-5554`, installed over existing data. 8 weekly shifts added from the Calendar menu; Work pay card ₱760.00 for 8 worked hours at ₱95; "I got paid" with ₱700 recorded Part-time Job income, marked those shifts paid and raised Safe to spend from 260.86 to 307.53; removing one day kept the rest; data survived a restart.
+**Research:** agency-product-manager (web evidence and RICE), agency-ux-architect (flows and wording), agency-software-architect (data model and risks). All three recommended this feature.
+**Decisions:**
+- New `shifts` table (schema v4): job, start, duration, unpaid break, hourly rate in centavos, paid flag, series id. A weekly repeat is stored as one row per day so a single day can be removed and past pay never changes when a rate does.
+- Shifts are not calendar events, so exam-word detection and the widget do not see them. The calendar lists a day's shifts above its events and rings shift days on the grid.
+- Pay is an estimate before deductions. Worked and still-to-work hours are shown apart and never added. Unpaid pay is not counted in Safe to spend; money enters only when "I got paid" records the amount received, which also shows the difference from the logged hours.
+- Backup format 2 includes shifts; format 1 files still restore, with no shifts.
+- Left out of version one: payday dates and pay periods, several jobs with different rates, overtime and night pay, deductions, clock-in timers, shifts on the widget, editing a shift (remove and add again).
+**Open items:** The overlap warning was checked in tests only. The system back button closes the shift sheet and drops what was typed, as the class sheet does.

@@ -31,7 +31,10 @@ Also done after the team review (2026-11-16): allowance day on the Safe-to-Spend
 
 Done on 2026-11-16 after the shift above: Gemini added the Midnight Lavender palette, exam and assignment countdown pills, checklists inside events and a recall quiz from `Q:` / `A:` lines in notes (commit `0fb3ab5`, tests only). Claude then added money set aside for bills, checked all of it on the emulator and fixed what the check found (see `PROGRESS.md`, last row, and `ACCOMPLISHED.md` Phase 26).
 
+Work shifts (2026-11-16, Phase 27): Calendar > More > Add a shift, or Finance > Work pay > Add a shift. Shifts live in their own `shifts` table (schema v4), one row per day. The Work pay card shows pay for worked, unpaid shifts; "I got paid" records the real amount as Part-time Job income and marks those shifts paid. Unpaid pay is never part of Safe-to-Spend. Code: `app/lib/features/work/`.
+
 Still open, in suggested order:
+0. See the shift overlap warning on a device; add a payday date to the Work pay card.
 1. Import a timetable from an `.ics` file (Calendar menu; `file_picker` is already a dependency).
 2. Grade "what-if" calculator (`docs/STUDENT_FEATURE_DEEP_RESEARCH.md`, Feature 4).
 3. Event reminders as local notifications (`reminder_minutes` is stored but nothing fires; needs a notification package and permission).

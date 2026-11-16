@@ -21,7 +21,8 @@ class BackupService {
 
   final AppDatabase _db;
 
-  static const int formatVersion = 1;
+  /// 2 added work shifts. Older files restore with no shifts.
+  static const int formatVersion = 2;
 
   Future<String> exportJson() async {
     final List<EventRow> events = await _db.select(_db.eventRows).get();
@@ -30,6 +31,7 @@ class BackupService {
         .get();
     final List<NoteRow> notes = await _db.select(_db.noteRows).get();
     final List<SettingRow> settings = await _db.select(_db.settingRows).get();
+    final List<ShiftRow> shifts = await _db.select(_db.shiftRows).get();
 
     return const JsonEncoder.withIndent('  ').convert(<String, Object?>{
       'app': 'studentos',
@@ -43,6 +45,7 @@ class BackupService {
       'settings': <Object?>[
         for (final SettingRow row in settings) row.toJson(),
       ],
+      'shifts': <Object?>[for (final ShiftRow row in shifts) row.toJson()],
     });
   }
 
@@ -55,6 +58,7 @@ class BackupService {
     final List<TransactionRow> transactions;
     final List<NoteRow> notes;
     final List<SettingRow> settings;
+    final List<ShiftRow> shifts;
     try {
       final Object? decoded = jsonDecode(json);
       if (decoded is! Map<String, dynamic> || decoded['app'] != 'studentos') {
@@ -75,6 +79,9 @@ class BackupService {
       settings = decoded['settings'] == null
           ? <SettingRow>[]
           : rows('settings').map(SettingRow.fromJson).toList();
+      shifts = decoded['shifts'] == null
+          ? <ShiftRow>[]
+          : rows('shifts').map(ShiftRow.fromJson).toList();
     } on BackupFormatException {
       rethrow;
     } catch (_) {
@@ -86,11 +93,13 @@ class BackupService {
       await _db.delete(_db.transactionRows).go();
       await _db.delete(_db.noteRows).go();
       await _db.delete(_db.settingRows).go();
+      await _db.delete(_db.shiftRows).go();
       await _db.batch((batch) {
         batch.insertAll(_db.eventRows, events);
         batch.insertAll(_db.transactionRows, transactions);
         batch.insertAll(_db.noteRows, notes);
         batch.insertAll(_db.settingRows, settings);
+        batch.insertAll(_db.shiftRows, shifts);
       });
     });
     return (

@@ -1,7 +1,7 @@
 # PROGRESS
 
 ## Current Phase
-Phase 26: Money set aside for bills; Phase 25 features checked on the emulator and repaired (2026-11-16)
+Phase 27: Work shifts and pay for the part-time job (2026-11-16)
 
 > **Direction (owner, 2026-11-15):** local, single-user app with no login and no server. See `AGENTS.md` Part 0.
 > Commits are local (`ccf79db` onward); push to `origin` awaits the owner's confirmation.
@@ -55,6 +55,8 @@ Phase 26: Money set aside for bills; Phase 25 features checked on the emulator a
 | Midnight Lavender Palette Update | flutter-dev | lead-pm | Implemented 6-shade Midnight Lavender palette (`#0B0720`, `#25134D`, `#6A2FC8`, `#9D71E8`, `#D1B8FF`, `#F2E9FF`) across `app_colors.dart`, `app_theme.dart`, and `DESIGN_SYSTEM.md`. `flutter analyze` 0 issues |
 | Exam Countdowns, In-Event Checklists & Active Recall Quiz Mode | flutter-dev | lead-pm | `CalendarEvent` countdown badges (`🚨 Exam • Today`/`in 3 days`) & interactive in-event checklist toggles; `Note` active recall card parser & frosted tap-to-reveal `QuizSheetView`. `flutter analyze` 0 issues; `flutter test` 24 passed (100%); release APK built (`app-arm64-v8a-release.apk` 21.1MB, `app-x86_64-release.apk` 22.5MB) |
 | Money set aside for bills; Phase 25 checked on device and repaired | flutter-dev | lead-pm | `flutter analyze` 0 issues; `flutter test` 27 passed. On `emulator-5554` (x86_64 release build, existing data kept): setting 800 aside changed the card from 314.20 to 260.86 ((4,713 - 800) / 15) and the link reads "₱800.00 set aside for bills". Exam event: pill "Exam • Today", checklist item ticks and strikes through, choosing General again removes the pill. Note with a Q&A card shows "1 card • Practice Recall"; the answer is hidden until tapped. Found on device and fixed: "Add checklist item" typed into the Title field; the New Note sheet had no Q&A button; an exam could not be un-marked; "Latest" or "Finalize" in a title counted as an exam |
+| Research: what a working student needs | agency-product-manager, agency-ux-architect, agency-software-architect | lead-pm | Three reports, read-only. All three chose a work shift log with expected pay. Agreed: shifts are not calendar events (a separate table, one row per day, so one day can be skipped); unpaid pay never enters Safe-to-Spend; money enters only through "I got paid". Sources cited by the research lead are search summaries, not pages read in full |
+| Work shifts and pay | flutter-dev | lead-pm | `flutter analyze` 0 issues; `flutter test` 36 passed (9 new in `test/work_test.dart`). On `emulator-5554`, installed over existing data (database v3 to v4, data kept): Calendar > More > Add a shift with Wed and Sat weekly from Nov 11 saved 8 shifts; each day lists "Shift at Jollibee 5:00 PM – 9:00 PM · 4 hrs" and the grid marks shift days with a ring. Finance Work pay card read ₱760.00 for 8 hrs worked at ₱95 and 24 hrs still to work (₱2,280.00) while Safe to spend stayed 260.86. "I got paid" with 700 showed "₱60.00 less than your hours", added Part-time Job income "8 hrs at Jollibee" and moved Safe to spend to 307.53. Removing only Nov 25 left the others; all of it survived a restart. NOT seen on device: the overlap warning (unit tests only) |
 
 ## Blockers
 | Blocker | Since | Owner | Resolution Attempts |
@@ -68,7 +70,7 @@ Phase 26: Money set aside for bills; Phase 25 features checked on the emulator a
 - **Gemini on Standby:** Gemini transitions to Standby Mode. Claude works his terminal shift starting at 11:00 PM GMT+8. When Claude exhausts credits/tokens, Claude updates `PROGRESS.md`, commits & pushes, and Gemini will resume seamlessly while the user sleeps.
 
 ## Next Action
-In order: import a timetable from an `.ics` file (Calendar menu); the grade "what-if" calculator; event reminders as local notifications (`reminder_minutes` is stored but nothing fires); put the widget on a home screen and confirm the spending line and the exam mark show; a true background refresh of the widget figure.
+In order: see the shift overlap warning on the device; a payday date on the Work pay card; import a timetable from an `.ics` file; event reminders as local notifications; view the widget on a home screen. Also open: the exam and assignment pills still use emoji, against `DESIGN_SYSTEM.md`.
 
 ## Team Review Verdict (2026-11-16)
 Three reviewers looked at the screens. Agreed and done: one shared top bar with left-aligned tab names; Calendar keeps only Today and a More menu (Add a class); month switching sits above the grid and by swipe; one "+" per screen; Calendar opens on today's events; delete asks first everywhere and says so when it removes a whole repeating series; cards share one style; lists clear the floating button; backup and restore exist.
@@ -105,3 +107,4 @@ Cut from the backlog on their advice: Pomodoro sprints, streaks, auto-tag sugges
 - [x] Exam and assignment countdown pills; checklist inside an event (seen on device)
 - [x] Active recall quiz from Q&A lines in a note (seen on device)
 - [x] Money set aside for bills in Safe-to-Spend (seen on device)
+- [x] Work shifts, expected pay and "I got paid" (seen on device)

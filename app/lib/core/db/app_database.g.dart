@@ -1634,6 +1634,527 @@ class SettingRowsCompanion extends UpdateCompanion<SettingRow> {
   }
 }
 
+class $ShiftRowsTable extends ShiftRows
+    with TableInfo<$ShiftRowsTable, ShiftRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ShiftRowsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _jobMeta = const VerificationMeta('job');
+  @override
+  late final GeneratedColumn<String> job = GeneratedColumn<String>(
+    'job',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _startsAtMeta = const VerificationMeta(
+    'startsAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> startsAt = GeneratedColumn<DateTime>(
+    'starts_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _durationMinutesMeta = const VerificationMeta(
+    'durationMinutes',
+  );
+  @override
+  late final GeneratedColumn<int> durationMinutes = GeneratedColumn<int>(
+    'duration_minutes',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _breakMinutesMeta = const VerificationMeta(
+    'breakMinutes',
+  );
+  @override
+  late final GeneratedColumn<int> breakMinutes = GeneratedColumn<int>(
+    'break_minutes',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _hourlyRateCentsMeta = const VerificationMeta(
+    'hourlyRateCents',
+  );
+  @override
+  late final GeneratedColumn<int> hourlyRateCents = GeneratedColumn<int>(
+    'hourly_rate_cents',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _paidMeta = const VerificationMeta('paid');
+  @override
+  late final GeneratedColumn<bool> paid = GeneratedColumn<bool>(
+    'paid',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("paid" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _seriesIdMeta = const VerificationMeta(
+    'seriesId',
+  );
+  @override
+  late final GeneratedColumn<int> seriesId = GeneratedColumn<int>(
+    'series_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    job,
+    startsAt,
+    durationMinutes,
+    breakMinutes,
+    hourlyRateCents,
+    paid,
+    seriesId,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'shifts';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ShiftRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('job')) {
+      context.handle(
+        _jobMeta,
+        job.isAcceptableOrUnknown(data['job']!, _jobMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_jobMeta);
+    }
+    if (data.containsKey('starts_at')) {
+      context.handle(
+        _startsAtMeta,
+        startsAt.isAcceptableOrUnknown(data['starts_at']!, _startsAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_startsAtMeta);
+    }
+    if (data.containsKey('duration_minutes')) {
+      context.handle(
+        _durationMinutesMeta,
+        durationMinutes.isAcceptableOrUnknown(
+          data['duration_minutes']!,
+          _durationMinutesMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_durationMinutesMeta);
+    }
+    if (data.containsKey('break_minutes')) {
+      context.handle(
+        _breakMinutesMeta,
+        breakMinutes.isAcceptableOrUnknown(
+          data['break_minutes']!,
+          _breakMinutesMeta,
+        ),
+      );
+    }
+    if (data.containsKey('hourly_rate_cents')) {
+      context.handle(
+        _hourlyRateCentsMeta,
+        hourlyRateCents.isAcceptableOrUnknown(
+          data['hourly_rate_cents']!,
+          _hourlyRateCentsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('paid')) {
+      context.handle(
+        _paidMeta,
+        paid.isAcceptableOrUnknown(data['paid']!, _paidMeta),
+      );
+    }
+    if (data.containsKey('series_id')) {
+      context.handle(
+        _seriesIdMeta,
+        seriesId.isAcceptableOrUnknown(data['series_id']!, _seriesIdMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ShiftRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ShiftRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      job: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}job'],
+      )!,
+      startsAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}starts_at'],
+      )!,
+      durationMinutes: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}duration_minutes'],
+      )!,
+      breakMinutes: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}break_minutes'],
+      )!,
+      hourlyRateCents: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}hourly_rate_cents'],
+      )!,
+      paid: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}paid'],
+      )!,
+      seriesId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}series_id'],
+      ),
+    );
+  }
+
+  @override
+  $ShiftRowsTable createAlias(String alias) {
+    return $ShiftRowsTable(attachedDatabase, alias);
+  }
+}
+
+class ShiftRow extends DataClass implements Insertable<ShiftRow> {
+  final int id;
+
+  /// Where the shift is worked.
+  final String job;
+  final DateTime startsAt;
+  final int durationMinutes;
+
+  /// Unpaid break time inside the shift.
+  final int breakMinutes;
+
+  /// Centavos per hour at the time the shift was logged.
+  final int hourlyRateCents;
+
+  /// True once the pay for this shift has been received.
+  final bool paid;
+
+  /// Shared by the shifts that were added together as one weekly repeat.
+  final int? seriesId;
+  const ShiftRow({
+    required this.id,
+    required this.job,
+    required this.startsAt,
+    required this.durationMinutes,
+    required this.breakMinutes,
+    required this.hourlyRateCents,
+    required this.paid,
+    this.seriesId,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['job'] = Variable<String>(job);
+    map['starts_at'] = Variable<DateTime>(startsAt);
+    map['duration_minutes'] = Variable<int>(durationMinutes);
+    map['break_minutes'] = Variable<int>(breakMinutes);
+    map['hourly_rate_cents'] = Variable<int>(hourlyRateCents);
+    map['paid'] = Variable<bool>(paid);
+    if (!nullToAbsent || seriesId != null) {
+      map['series_id'] = Variable<int>(seriesId);
+    }
+    return map;
+  }
+
+  ShiftRowsCompanion toCompanion(bool nullToAbsent) {
+    return ShiftRowsCompanion(
+      id: Value(id),
+      job: Value(job),
+      startsAt: Value(startsAt),
+      durationMinutes: Value(durationMinutes),
+      breakMinutes: Value(breakMinutes),
+      hourlyRateCents: Value(hourlyRateCents),
+      paid: Value(paid),
+      seriesId: seriesId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(seriesId),
+    );
+  }
+
+  factory ShiftRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ShiftRow(
+      id: serializer.fromJson<int>(json['id']),
+      job: serializer.fromJson<String>(json['job']),
+      startsAt: serializer.fromJson<DateTime>(json['startsAt']),
+      durationMinutes: serializer.fromJson<int>(json['durationMinutes']),
+      breakMinutes: serializer.fromJson<int>(json['breakMinutes']),
+      hourlyRateCents: serializer.fromJson<int>(json['hourlyRateCents']),
+      paid: serializer.fromJson<bool>(json['paid']),
+      seriesId: serializer.fromJson<int?>(json['seriesId']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'job': serializer.toJson<String>(job),
+      'startsAt': serializer.toJson<DateTime>(startsAt),
+      'durationMinutes': serializer.toJson<int>(durationMinutes),
+      'breakMinutes': serializer.toJson<int>(breakMinutes),
+      'hourlyRateCents': serializer.toJson<int>(hourlyRateCents),
+      'paid': serializer.toJson<bool>(paid),
+      'seriesId': serializer.toJson<int?>(seriesId),
+    };
+  }
+
+  ShiftRow copyWith({
+    int? id,
+    String? job,
+    DateTime? startsAt,
+    int? durationMinutes,
+    int? breakMinutes,
+    int? hourlyRateCents,
+    bool? paid,
+    Value<int?> seriesId = const Value.absent(),
+  }) => ShiftRow(
+    id: id ?? this.id,
+    job: job ?? this.job,
+    startsAt: startsAt ?? this.startsAt,
+    durationMinutes: durationMinutes ?? this.durationMinutes,
+    breakMinutes: breakMinutes ?? this.breakMinutes,
+    hourlyRateCents: hourlyRateCents ?? this.hourlyRateCents,
+    paid: paid ?? this.paid,
+    seriesId: seriesId.present ? seriesId.value : this.seriesId,
+  );
+  ShiftRow copyWithCompanion(ShiftRowsCompanion data) {
+    return ShiftRow(
+      id: data.id.present ? data.id.value : this.id,
+      job: data.job.present ? data.job.value : this.job,
+      startsAt: data.startsAt.present ? data.startsAt.value : this.startsAt,
+      durationMinutes: data.durationMinutes.present
+          ? data.durationMinutes.value
+          : this.durationMinutes,
+      breakMinutes: data.breakMinutes.present
+          ? data.breakMinutes.value
+          : this.breakMinutes,
+      hourlyRateCents: data.hourlyRateCents.present
+          ? data.hourlyRateCents.value
+          : this.hourlyRateCents,
+      paid: data.paid.present ? data.paid.value : this.paid,
+      seriesId: data.seriesId.present ? data.seriesId.value : this.seriesId,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ShiftRow(')
+          ..write('id: $id, ')
+          ..write('job: $job, ')
+          ..write('startsAt: $startsAt, ')
+          ..write('durationMinutes: $durationMinutes, ')
+          ..write('breakMinutes: $breakMinutes, ')
+          ..write('hourlyRateCents: $hourlyRateCents, ')
+          ..write('paid: $paid, ')
+          ..write('seriesId: $seriesId')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    job,
+    startsAt,
+    durationMinutes,
+    breakMinutes,
+    hourlyRateCents,
+    paid,
+    seriesId,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ShiftRow &&
+          other.id == this.id &&
+          other.job == this.job &&
+          other.startsAt == this.startsAt &&
+          other.durationMinutes == this.durationMinutes &&
+          other.breakMinutes == this.breakMinutes &&
+          other.hourlyRateCents == this.hourlyRateCents &&
+          other.paid == this.paid &&
+          other.seriesId == this.seriesId);
+}
+
+class ShiftRowsCompanion extends UpdateCompanion<ShiftRow> {
+  final Value<int> id;
+  final Value<String> job;
+  final Value<DateTime> startsAt;
+  final Value<int> durationMinutes;
+  final Value<int> breakMinutes;
+  final Value<int> hourlyRateCents;
+  final Value<bool> paid;
+  final Value<int?> seriesId;
+  const ShiftRowsCompanion({
+    this.id = const Value.absent(),
+    this.job = const Value.absent(),
+    this.startsAt = const Value.absent(),
+    this.durationMinutes = const Value.absent(),
+    this.breakMinutes = const Value.absent(),
+    this.hourlyRateCents = const Value.absent(),
+    this.paid = const Value.absent(),
+    this.seriesId = const Value.absent(),
+  });
+  ShiftRowsCompanion.insert({
+    this.id = const Value.absent(),
+    required String job,
+    required DateTime startsAt,
+    required int durationMinutes,
+    this.breakMinutes = const Value.absent(),
+    this.hourlyRateCents = const Value.absent(),
+    this.paid = const Value.absent(),
+    this.seriesId = const Value.absent(),
+  }) : job = Value(job),
+       startsAt = Value(startsAt),
+       durationMinutes = Value(durationMinutes);
+  static Insertable<ShiftRow> custom({
+    Expression<int>? id,
+    Expression<String>? job,
+    Expression<DateTime>? startsAt,
+    Expression<int>? durationMinutes,
+    Expression<int>? breakMinutes,
+    Expression<int>? hourlyRateCents,
+    Expression<bool>? paid,
+    Expression<int>? seriesId,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (job != null) 'job': job,
+      if (startsAt != null) 'starts_at': startsAt,
+      if (durationMinutes != null) 'duration_minutes': durationMinutes,
+      if (breakMinutes != null) 'break_minutes': breakMinutes,
+      if (hourlyRateCents != null) 'hourly_rate_cents': hourlyRateCents,
+      if (paid != null) 'paid': paid,
+      if (seriesId != null) 'series_id': seriesId,
+    });
+  }
+
+  ShiftRowsCompanion copyWith({
+    Value<int>? id,
+    Value<String>? job,
+    Value<DateTime>? startsAt,
+    Value<int>? durationMinutes,
+    Value<int>? breakMinutes,
+    Value<int>? hourlyRateCents,
+    Value<bool>? paid,
+    Value<int?>? seriesId,
+  }) {
+    return ShiftRowsCompanion(
+      id: id ?? this.id,
+      job: job ?? this.job,
+      startsAt: startsAt ?? this.startsAt,
+      durationMinutes: durationMinutes ?? this.durationMinutes,
+      breakMinutes: breakMinutes ?? this.breakMinutes,
+      hourlyRateCents: hourlyRateCents ?? this.hourlyRateCents,
+      paid: paid ?? this.paid,
+      seriesId: seriesId ?? this.seriesId,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (job.present) {
+      map['job'] = Variable<String>(job.value);
+    }
+    if (startsAt.present) {
+      map['starts_at'] = Variable<DateTime>(startsAt.value);
+    }
+    if (durationMinutes.present) {
+      map['duration_minutes'] = Variable<int>(durationMinutes.value);
+    }
+    if (breakMinutes.present) {
+      map['break_minutes'] = Variable<int>(breakMinutes.value);
+    }
+    if (hourlyRateCents.present) {
+      map['hourly_rate_cents'] = Variable<int>(hourlyRateCents.value);
+    }
+    if (paid.present) {
+      map['paid'] = Variable<bool>(paid.value);
+    }
+    if (seriesId.present) {
+      map['series_id'] = Variable<int>(seriesId.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ShiftRowsCompanion(')
+          ..write('id: $id, ')
+          ..write('job: $job, ')
+          ..write('startsAt: $startsAt, ')
+          ..write('durationMinutes: $durationMinutes, ')
+          ..write('breakMinutes: $breakMinutes, ')
+          ..write('hourlyRateCents: $hourlyRateCents, ')
+          ..write('paid: $paid, ')
+          ..write('seriesId: $seriesId')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -1643,6 +2164,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   );
   late final $NoteRowsTable noteRows = $NoteRowsTable(this);
   late final $SettingRowsTable settingRows = $SettingRowsTable(this);
+  late final $ShiftRowsTable shiftRows = $ShiftRowsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -1652,6 +2174,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     transactionRows,
     noteRows,
     settingRows,
+    shiftRows,
   ];
 }
 
@@ -2546,6 +3069,264 @@ typedef $$SettingRowsTableProcessedTableManager =
       SettingRow,
       PrefetchHooks Function()
     >;
+typedef $$ShiftRowsTableCreateCompanionBuilder = ShiftRowsCompanion Function({
+  Value<int> id,
+  required String job,
+  required DateTime startsAt,
+  required int durationMinutes,
+  Value<int> breakMinutes,
+  Value<int> hourlyRateCents,
+  Value<bool> paid,
+  Value<int?> seriesId,
+});
+typedef $$ShiftRowsTableUpdateCompanionBuilder = ShiftRowsCompanion Function({
+  Value<int> id,
+  Value<String> job,
+  Value<DateTime> startsAt,
+  Value<int> durationMinutes,
+  Value<int> breakMinutes,
+  Value<int> hourlyRateCents,
+  Value<bool> paid,
+  Value<int?> seriesId,
+});
+
+class $$ShiftRowsTableFilterComposer
+    extends Composer<_$AppDatabase, $ShiftRowsTable> {
+  $$ShiftRowsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get job => $composableBuilder(
+    column: $table.job,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get startsAt => $composableBuilder(
+    column: $table.startsAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get durationMinutes => $composableBuilder(
+    column: $table.durationMinutes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get breakMinutes => $composableBuilder(
+    column: $table.breakMinutes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get hourlyRateCents => $composableBuilder(
+    column: $table.hourlyRateCents,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get paid => $composableBuilder(
+    column: $table.paid,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get seriesId => $composableBuilder(
+    column: $table.seriesId,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$ShiftRowsTableOrderingComposer
+    extends Composer<_$AppDatabase, $ShiftRowsTable> {
+  $$ShiftRowsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get job => $composableBuilder(
+    column: $table.job,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get startsAt => $composableBuilder(
+    column: $table.startsAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get durationMinutes => $composableBuilder(
+    column: $table.durationMinutes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get breakMinutes => $composableBuilder(
+    column: $table.breakMinutes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get hourlyRateCents => $composableBuilder(
+    column: $table.hourlyRateCents,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get paid => $composableBuilder(
+    column: $table.paid,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get seriesId => $composableBuilder(
+    column: $table.seriesId,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$ShiftRowsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ShiftRowsTable> {
+  $$ShiftRowsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get job =>
+      $composableBuilder(column: $table.job, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get startsAt =>
+      $composableBuilder(column: $table.startsAt, builder: (column) => column);
+
+  GeneratedColumn<int> get durationMinutes => $composableBuilder(
+    column: $table.durationMinutes,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get breakMinutes => $composableBuilder(
+    column: $table.breakMinutes,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get hourlyRateCents => $composableBuilder(
+    column: $table.hourlyRateCents,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get paid =>
+      $composableBuilder(column: $table.paid, builder: (column) => column);
+
+  GeneratedColumn<int> get seriesId =>
+      $composableBuilder(column: $table.seriesId, builder: (column) => column);
+}
+
+class $$ShiftRowsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ShiftRowsTable,
+          ShiftRow,
+          $$ShiftRowsTableFilterComposer,
+          $$ShiftRowsTableOrderingComposer,
+          $$ShiftRowsTableAnnotationComposer,
+          $$ShiftRowsTableCreateCompanionBuilder,
+          $$ShiftRowsTableUpdateCompanionBuilder,
+          (ShiftRow, BaseReferences<_$AppDatabase, $ShiftRowsTable, ShiftRow>),
+          ShiftRow,
+          PrefetchHooks Function()
+        > {
+  $$ShiftRowsTableTableManager(_$AppDatabase db, $ShiftRowsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ShiftRowsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ShiftRowsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ShiftRowsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> job = const Value.absent(),
+                Value<DateTime> startsAt = const Value.absent(),
+                Value<int> durationMinutes = const Value.absent(),
+                Value<int> breakMinutes = const Value.absent(),
+                Value<int> hourlyRateCents = const Value.absent(),
+                Value<bool> paid = const Value.absent(),
+                Value<int?> seriesId = const Value.absent(),
+              }) => ShiftRowsCompanion(
+                id: id,
+                job: job,
+                startsAt: startsAt,
+                durationMinutes: durationMinutes,
+                breakMinutes: breakMinutes,
+                hourlyRateCents: hourlyRateCents,
+                paid: paid,
+                seriesId: seriesId,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String job,
+                required DateTime startsAt,
+                required int durationMinutes,
+                Value<int> breakMinutes = const Value.absent(),
+                Value<int> hourlyRateCents = const Value.absent(),
+                Value<bool> paid = const Value.absent(),
+                Value<int?> seriesId = const Value.absent(),
+              }) => ShiftRowsCompanion.insert(
+                id: id,
+                job: job,
+                startsAt: startsAt,
+                durationMinutes: durationMinutes,
+                breakMinutes: breakMinutes,
+                hourlyRateCents: hourlyRateCents,
+                paid: paid,
+                seriesId: seriesId,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$ShiftRowsTable, ShiftRow>(table),
+                  BaseReferences<_$AppDatabase, $ShiftRowsTable, ShiftRow>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$ShiftRowsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ShiftRowsTable,
+      ShiftRow,
+      $$ShiftRowsTableFilterComposer,
+      $$ShiftRowsTableOrderingComposer,
+      $$ShiftRowsTableAnnotationComposer,
+      $$ShiftRowsTableCreateCompanionBuilder,
+      $$ShiftRowsTableUpdateCompanionBuilder,
+      (ShiftRow, BaseReferences<_$AppDatabase, $ShiftRowsTable, ShiftRow>),
+      ShiftRow,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -2558,4 +3339,6 @@ class $AppDatabaseManager {
       $$NoteRowsTableTableManager(_db, _db.noteRows);
   $$SettingRowsTableTableManager get settingRows =>
       $$SettingRowsTableTableManager(_db, _db.settingRows);
+  $$ShiftRowsTableTableManager get shiftRows =>
+      $$ShiftRowsTableTableManager(_db, _db.shiftRows);
 }

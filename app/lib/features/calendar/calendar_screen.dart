@@ -14,6 +14,10 @@ import '../notes/note_editor_sheet.dart';
 import '../notes/notes_controller.dart';
 import '../notes/notes_repository.dart';
 import 'event.dart';
+import '../work/add_shift_sheet.dart';
+import '../work/day_shifts.dart';
+import '../work/shift.dart';
+import '../work/work_controller.dart';
 
 class CalendarScreen extends ConsumerStatefulWidget {
   const CalendarScreen({super.key});
@@ -54,6 +58,11 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     final ColorScheme colors = context.colors;
     final TextTheme textStyles = context.textStyles;
     final DateTime today = DateTime.now();
+    final Set<DateTime> shiftDays = <DateTime>{
+      for (final Shift shift
+          in ref.watch(workControllerProvider).value ?? const <Shift>[])
+        DateTime(shift.startsAt.year, shift.startsAt.month, shift.startsAt.day),
+    };
 
     return Scaffold(
       appBar: AppTopBar(
@@ -71,6 +80,10 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
               PopupMenuItem<void>(
                 onTap: _addClass,
                 child: const Text('Add a class'),
+              ),
+              PopupMenuItem<void>(
+                onTap: () => addShift(context, ref, day: _selectedDate),
+                child: const Text('Add a shift'),
               ),
             ],
           ),
@@ -165,7 +178,13 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                           const Divider(height: 1),
                           const SizedBox(height: 6),
                           // Days grid
-                          _buildMonthGrid(allEvents, today, colors, textStyles),
+                          _buildMonthGrid(
+                            allEvents,
+                            shiftDays,
+                            today,
+                            colors,
+                            textStyles,
+                          ),
                         ],
                       ),
                     ),
@@ -204,6 +223,8 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                 ),
               ),
 
+              if (_filterByDay) DayShifts(day: _selectedDate),
+
               // Events List
               Expanded(
                 child: displayedEvents.isEmpty
@@ -219,7 +240,9 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                             AppSpacing.gapMd,
                             Text(
                               _filterByDay
-                                  ? 'No events on ${DateFormat('MMM d').format(_selectedDate)}'
+                                  ? (shiftDays.contains(_selectedDate)
+                                        ? 'No other events on ${DateFormat('MMM d').format(_selectedDate)}'
+                                        : 'No events on ${DateFormat('MMM d').format(_selectedDate)}')
                                   : 'No events scheduled',
                               style: textStyles.titleMedium?.copyWith(
                                 color: colors.onSurfaceVariant,
@@ -670,6 +693,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
   /// Builds the 7-column interactive digital month calendar grid.
   Widget _buildMonthGrid(
     List<CalendarEvent> allEvents,
+    Set<DateTime> shiftDays,
     DateTime today,
     ColorScheme colors,
     TextTheme textStyles,
@@ -710,6 +734,12 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                 allEvents,
                 cellDate,
               ).isNotEmpty;
+              final bool hasShift = shiftDays.contains(
+                DateTime(cellDate.year, cellDate.month, cellDate.day),
+              );
+              final Color markColor = isSelected
+                  ? colors.onPrimary
+                  : colors.primary;
 
               return SizedBox(
                 width: 40,
@@ -759,18 +789,37 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                                       : colors.outlineVariant),
                           ),
                         ),
-                        if (hasEvents)
+                        if (hasEvents || hasShift)
+                          // A filled dot for events, a ring for a shift.
                           Positioned(
                             bottom: 2,
-                            child: Container(
-                              width: 4,
-                              height: 4,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: isSelected
-                                    ? colors.onPrimary
-                                    : colors.primary,
-                              ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: <Widget>[
+                                if (hasEvents)
+                                  Container(
+                                    width: 4,
+                                    height: 4,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: markColor,
+                                    ),
+                                  ),
+                                if (hasEvents && hasShift)
+                                  const SizedBox(width: 2),
+                                if (hasShift)
+                                  Container(
+                                    width: 5,
+                                    height: 5,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: markColor,
+                                        width: 1,
+                                      ),
+                                    ),
+                                  ),
+                              ],
                             ),
                           ),
                       ],

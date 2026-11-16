@@ -14,6 +14,7 @@ import 'transaction.dart';
 import 'widgets/quick_expense_sheet.dart';
 import 'widgets/reserve_dialog.dart';
 import 'widgets/safe_to_spend_card.dart';
+import '../work/work_pay_card.dart';
 
 class FinanceScreen extends ConsumerWidget {
   const FinanceScreen({super.key});
@@ -114,6 +115,8 @@ class FinanceScreen extends ConsumerWidget {
                               }
                             },
                           ),
+                          AppSpacing.gapMd,
+                          const WorkPayCard(),
                           AppSpacing.gapMd,
                         ],
                         // Balance Summary Card
