@@ -52,9 +52,9 @@ class AlarmService : Service() {
                 val next = try { AlarmSpec.from(JSONObject(raw)) } catch (e: Exception) { return stopNow() }
                 // A second alarm while one rings replaces it.
                 silence()
-                spec = next
                 isCheck = intent.getBooleanExtra(EXTRA_CHECK, false)
-                current = next
+                spec = if (isCheck) next else pickChallenge(next)
+                current = spec
                 currentIsCheck = isCheck
                 goForeground(next)
                 acquireWake()
@@ -269,9 +269,24 @@ class AlarmService : Service() {
         main.postDelayed(escalate, CHECK_WINDOW_MS)
     }
 
+    /**
+     * "Surprise me" alarms get maths, typing or shaking, chosen once per
+     * ring so leaving and reopening the alarm screen cannot reroll it.
+     */
+    private fun pickChallenge(s: AlarmSpec): AlarmSpec {
+        if (s.challenge != "random") return s
+        return when (listOf("math", "type", "shake").random()) {
+            "math" -> s.copy(challenge = "math", challengeCount = s.challengeCount.coerceIn(1, 10))
+            "type" -> s.copy(challenge = "type")
+            else -> s.copy(challenge = "shake", challengeCount = (s.challengeCount * 5).coerceIn(5, 60))
+        }
+    }
+
     private val escalate = Runnable {
         isCheck = false
         currentIsCheck = false
+        spec = spec?.let { pickChallenge(it) }
+        current = spec
         spec?.let { goForeground(it) }
         startRinging()
         openScreen()

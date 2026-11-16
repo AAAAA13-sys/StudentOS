@@ -234,12 +234,33 @@ class _AlarmEditorState extends ConsumerState<_AlarmEditor> {
                 ChoiceChip(
                   label: Text(c.label),
                   selected: a.challenge == c,
-                  onSelected: (_) => _set(a.copyWith(challenge: c)),
+                  onSelected: (_) => _set(
+                    a.copyWith(
+                      challenge: c,
+                      // Each challenge keeps its count inside its own range
+                      // (sums 1-10, shakes 5-60).
+                      challengeCount: switch (c) {
+                        AlarmChallenge.shake => a.challengeCount.clamp(5, 60),
+                        AlarmChallenge.math ||
+                        AlarmChallenge.random => a.challengeCount.clamp(1, 10),
+                        _ => a.challengeCount,
+                      },
+                    ),
+                  ),
                 ),
             ],
           ),
           AppSpacing.gapMd,
-          if (a.challenge == AlarmChallenge.math) ...<Widget>[
+          if (a.challenge == AlarmChallenge.random) ...<Widget>[
+            Text(
+              'Each ring picks one at random: maths, typing or shaking. '
+              'Shaking takes 5 shakes for every problem.',
+              style: text.bodySmall?.copyWith(color: colors.onSurfaceVariant),
+            ),
+            AppSpacing.gapSm,
+          ],
+          if (a.challenge == AlarmChallenge.math ||
+              a.challenge == AlarmChallenge.random) ...<Widget>[
             _Stepper(
               label: 'Problems to solve',
               value: a.challengeCount,
@@ -268,7 +289,8 @@ class _AlarmEditorState extends ConsumerState<_AlarmEditor> {
               ),
             ),
           ],
-          if (a.challenge == AlarmChallenge.type)
+          if (a.challenge == AlarmChallenge.type ||
+              a.challenge == AlarmChallenge.random)
             TextField(
               controller: _phrase,
               maxLength: 120,

@@ -379,3 +379,13 @@ Entries are appended, never edited. Corrections are new entries that reference t
 **Evidence:** see the Clock tab row in `PROGRESS.md` (alarm at 10:55 with screen off, wrong and right answers, wake-up check unanswered then ringing again, typed sentence, light and strict lockdown, exit sentence, session log).
 **Open items:** Not checked on device: shake challenge, snooze rescheduling, sound picker, ramp, phase-change chime, alarm after reboot, strict allow list. When the phone is unlocked and in use, an alarm shows as a pop-up notification unless "Display over other apps" is allowed.
 
+## Phase 29: Random alarm challenge, app icon, first real-phone checks, first push since going local
+**Date:** 2026-11-16 (19:50 GMT+8)
+**Verified by:** lead-pm; the owner confirmed the shake challenge on their phone
+**Evidence:** `flutter analyze` 0 issues; `flutter test` 52 passed; Infinix X6525 (Android 13): alarm at 7:35 PM rang and was stopped by shaking; warning-card buttons granted notifications and battery exemption. Motorola edge 70 max (Android 16): installed.
+**Decisions:**
+- "Surprise me" challenge: Android picks maths, typing or shaking when the alarm starts ringing and keeps it for that ring; an unanswered wake-up check rolls again.
+- App icon from the owner's image `asdasd.jpg`, cropped to the face; the caption is left out because it is unreadable at icon size. The source images in the repo root are not committed.
+- Push: the owner asked in person to push; the 23 local commits since the local-only conversion went to `origin/main`.
+**Open items:** Surprise me not yet seen on a device; alarm after the app process is killed not yet proven on a real phone; snooze ringing again not yet seen.
+

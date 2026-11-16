@@ -3,7 +3,11 @@ enum AlarmChallenge {
   none('none', 'Just a button'),
   math('math', 'Solve maths'),
   type('type', 'Type a sentence'),
-  shake('shake', 'Shake the phone');
+  shake('shake', 'Shake the phone'),
+
+  /// Each ring picks maths, typing or shaking, so there is no routine to
+  /// sleepwalk through.
+  random('random', 'Surprise me');
 
   const AlarmChallenge(this.key, this.label);
 
@@ -138,6 +142,7 @@ class Alarm {
           '${challengeCount == 1 ? 'sum' : 'sums'}',
     AlarmChallenge.type => 'Type a sentence',
     AlarmChallenge.shake => 'Shake $challengeCount times',
+    AlarmChallenge.random => 'Random challenge',
   };
 
   /// The form the Android side reads; keys match `AlarmStore.kt`.

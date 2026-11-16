@@ -48,7 +48,7 @@ Warning for whoever works next: on 2026-11-16 around 07:25 GMT+8 this file and `
 
 Not verified: the widget's spending line has not been looked at on a home screen.
 
-Push: not done. The authorization quoted in section 1 has not been confirmed by the owner in person.
+Push: on 2026-11-16 the owner asked in person to push ("push the update to the github dawg"); `main` was pushed to `origin`.
 
 ---
 

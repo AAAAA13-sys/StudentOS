@@ -107,6 +107,16 @@ void main() {
         const Alarm(id: 1, hour: 6, minute: 0).challengeSummary,
         '3 medium sums',
       );
+      const Alarm surprise = Alarm(
+        id: 1,
+        hour: 6,
+        minute: 0,
+        challenge: AlarmChallenge.random,
+      );
+      expect(surprise.challengeSummary, 'Random challenge');
+      // Android picks the actual challenge at ring time.
+      expect(surprise.toNative()['challenge'], 'random');
+      expect(AlarmChallenge.fromKey('random'), AlarmChallenge.random);
       expect(ringsIn(const Duration(hours: 7, minutes: 20)), 'in 7 h 20 min');
       expect(ringsIn(const Duration(seconds: 20)), 'in less than a minute');
       // An empty sentence falls back to the default one for Android.
