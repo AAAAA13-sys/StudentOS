@@ -9,6 +9,7 @@ import '../../core/widgets/confirm_dialog.dart';
 import 'note.dart';
 import 'note_editor_sheet.dart';
 import 'notes_controller.dart';
+import 'quiz_sheet.dart';
 
 class NotesScreen extends ConsumerStatefulWidget {
   const NotesScreen({super.key});
@@ -246,6 +247,45 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
                                                       color: colors
                                                           .onSurfaceVariant,
                                                     ),
+                                              ),
+                                            ],
+                                            if (note.recallCards.isNotEmpty) ...<Widget>[
+                                              AppSpacing.gapSm,
+                                              InkWell(
+                                                borderRadius: AppRadius.pill,
+                                                onTap: () => showQuizSheet(context, note),
+                                                child: Container(
+                                                  padding: const EdgeInsets.symmetric(
+                                                    horizontal: 10,
+                                                    vertical: 4,
+                                                  ),
+                                                  decoration: BoxDecoration(
+                                                    color: colors.primaryContainer,
+                                                    borderRadius: AppRadius.pill,
+                                                    border: Border.all(
+                                                      color: colors.primary.withValues(alpha: 0.3),
+                                                      width: 0.75,
+                                                    ),
+                                                  ),
+                                                  child: Row(
+                                                    mainAxisSize: MainAxisSize.min,
+                                                    children: <Widget>[
+                                                      Icon(
+                                                        Icons.bolt_rounded,
+                                                        size: 15,
+                                                        color: colors.primary,
+                                                      ),
+                                                      const SizedBox(width: 4),
+                                                      Text(
+                                                        '${note.recallCards.length} ${note.recallCards.length == 1 ? 'card' : 'cards'} • Practice Recall',
+                                                        style: textStyles.labelSmall?.copyWith(
+                                                          color: colors.onPrimaryContainer,
+                                                          fontWeight: FontWeight.bold,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
                                               ),
                                             ],
                                             AppSpacing.gapMd,

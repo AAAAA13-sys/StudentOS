@@ -181,4 +181,85 @@ void main() {
     expect(find.text('Title (optional)'), findsOneWidget);
     expect(find.text('Note content (plain text)'), findsOneWidget);
   });
+
+  group('Student Features: Exam countdowns & in-event checklists', () {
+    test('CalendarEvent detects exams and calculates countdown badges', () {
+      final DateTime now = DateTime(2026, 11, 16, 10, 0);
+
+      final CalendarEvent examToday = CalendarEvent(
+        id: 1,
+        title: 'Physics Midterm Exam',
+        startsAt: DateTime(2026, 11, 16, 14, 0),
+      );
+      expect(examToday.isExam, isTrue);
+      expect(examToday.isAssignment, isFalse);
+      expect(examToday.countdownBadge(now), 'Today');
+
+      final CalendarEvent quizTomorrow = CalendarEvent(
+        id: 2,
+        title: 'Calculus Quiz 3',
+        startsAt: DateTime(2026, 11, 17, 9, 0),
+      );
+      expect(quizTomorrow.isExam, isTrue);
+      expect(quizTomorrow.countdownBadge(now), 'Tomorrow');
+
+      final CalendarEvent projectInFiveDays = CalendarEvent(
+        id: 3,
+        title: 'Computer Science Final Project Deadline',
+        startsAt: DateTime(2026, 11, 21, 23, 59),
+      );
+      expect(projectInFiveDays.isAssignment, isTrue);
+      expect(projectInFiveDays.countdownBadge(now), 'in 5 days');
+    });
+
+    test('CalendarEvent parses and toggles markdown checklist items', () {
+      final CalendarEvent event = CalendarEvent(
+        id: 1,
+        title: 'Chemistry Lab',
+        startsAt: DateTime(2026, 11, 16, 13, 0),
+        notes: '- [ ] Bring goggles\n- [x] Print lab sheet\n- [ ] Calculator',
+      );
+
+      final items = event.checklistItems;
+      expect(items.length, 3);
+      expect(items[0].text, 'Bring goggles');
+      expect(items[0].done, isFalse);
+      expect(items[1].text, 'Print lab sheet');
+      expect(items[1].done, isTrue);
+      expect(items[2].text, 'Calculator');
+      expect(items[2].done, isFalse);
+
+      final CalendarEvent toggled = event.toggleChecklistItem(0);
+      final updatedItems = toggled.checklistItems;
+      expect(updatedItems[0].done, isTrue);
+
+      final CalendarEvent unToggled = toggled.toggleChecklistItem(1);
+      final finalItems = unToggled.checklistItems;
+      expect(finalItems[1].done, isFalse);
+    });
+  });
+
+  group('Student Features: Active Recall in Notes', () {
+    test('extractRecallCards parses multi-line Q&A and single-line cards', () {
+      const String text = '''
+Lecture 4: Cell Biology
+Q: What is the mitochondria?
+A: Powerhouse of the cell
+
+Q: Function of ribosomes?
+A: Protein synthesis
+
+Osmosis :: Diffusion of water across a semipermeable membrane
+''';
+
+      final cards = extractRecallCards(text);
+      expect(cards.length, 3);
+      expect(cards[0].question, 'What is the mitochondria?');
+      expect(cards[0].answer, 'Powerhouse of the cell');
+      expect(cards[1].question, 'Function of ribosomes?');
+      expect(cards[1].answer, 'Protein synthesis');
+      expect(cards[2].question, 'Osmosis');
+      expect(cards[2].answer, 'Diffusion of water across a semipermeable membrane');
+    });
+  });
 }

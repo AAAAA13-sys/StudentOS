@@ -35,23 +35,19 @@ StudentOS is a high-utility productivity suite for students. It must feel calm, 
 ### 2.1 The Philosophy: Calming Lavender + Slate Contrast
 Lavender is scientifically proven to evoke calmness, reduce cognitive load, and foster mental clarity. Rather than neon violet, StudentOS uses a muted, royal lavender primary paired with soft lavender-tinted surfaces.
 
-### 2.2 Color Tokens
+### 2.2 Color Tokens (Midnight Lavender Scheme)
 
 | Token Name | Hex Code | Purpose |
 |------------|----------|---------|
-| `lavender700` | `#6D28D9` | High-contrast interactive elements, active text, focused states |
-| `lavender600` | `#7C3AED` | Primary Brand Color: Key CTA buttons, active icons, selected pill indicator |
-| `lavender500` | `#8B5CF6` | Vibrant accent, tag highlights, dark mode secondary |
-| `lavender300` | `#C4B5FD` | Dark mode primary text, subtle icon tint |
-| `lavender100` | `#EDE9FE` | Light mode container background: active chips, selected cards, pill fill |
-| `lavender50` | `#F5F3FF` | Very soft lavender tint for hover states and secondary cards |
-| `lavenderMist` | `#FAF8FF` | Light mode scaffold background: crisp porcelain with 0.5% lavender warmth |
+| `midnightIndigo` | `#0B0720` | Deepest Midnight/Indigo: Dark mode scaffold background, high-contrast text |
+| `darkPurple` | `#25134D` | Dark Purple: Dark mode surface containers/cards, secondary text container |
+| `vibrantViolet` | `#6A2FC8` | Vibrant Violet: Primary Brand Accent, key CTA buttons, active tab indicators |
+| `mediumLavender` | `#9D71E8` | Medium Lavender: Secondary accent, dark mode primary, outlines |
+| `lightLilac` | `#D1B8FF` | Light Lilac: Light mode primary container, active chips, selected pill fill |
+| `paleLavenderWhite` | `#F2E9FF` | Pale Lavender White: Light mode scaffold canvas, subtle card background |
 | `surfaceWhite` | `#FFFFFF` | Card surfaces, modal sheets, dialogs (Light mode) |
-| `hairlineLight`| `#E4E0F0` | 1px border stroke for light cards and dividers |
-| `hairlineDark` | `#2D2845` | 1px border stroke for dark cards and dividers |
-| `obsidian950` | `#0D0C14` | Dark mode scaffold background (Deep obsidian lavender) |
-| `obsidian900` | `#151322` | Dark mode card background |
-| `obsidian800` | `#1E1B30` | Dark mode elevated surface (bottom sheet, dialog) |
+| `hairlineLight`| `#E2D6F5` | 1px border stroke for light cards and dividers |
+| `hairlineDark` | `#25134D` | 1px border stroke for dark cards and dividers |
 
 ### 2.3 Semantic Module Accents
 Each module maintains identity without breaking overall harmony:

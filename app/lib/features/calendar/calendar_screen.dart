@@ -264,6 +264,8 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                                     start.minute,
                                   )
                                 : start;
+                            final String? countdown =
+                                event.countdownBadge(today);
 
                             return Card(
                               elevation: 0,
@@ -340,6 +342,57 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                                               crossAxisAlignment:
                                                   CrossAxisAlignment.start,
                                               children: <Widget>[
+                                                if (countdown !=
+                                                    null) ...<Widget>[
+                                                  Container(
+                                                    margin:
+                                                        const EdgeInsets.only(
+                                                          bottom: 4,
+                                                        ),
+                                                    padding:
+                                                        const EdgeInsets.symmetric(
+                                                          horizontal: 8,
+                                                          vertical: 2,
+                                                        ),
+                                                    decoration: BoxDecoration(
+                                                      color: event.isExam
+                                                          ? colors
+                                                                .errorContainer
+                                                          : colors
+                                                                .primaryContainer,
+                                                      borderRadius:
+                                                          AppRadius.pill,
+                                                      border: Border.all(
+                                                        color: event.isExam
+                                                            ? colors.error
+                                                                  .withValues(
+                                                                    alpha: 0.3,
+                                                                  )
+                                                            : colors.primary
+                                                                  .withValues(
+                                                                    alpha: 0.3,
+                                                                  ),
+                                                        width: 0.75,
+                                                      ),
+                                                    ),
+                                                    child: Text(
+                                                      event.isExam
+                                                          ? '🚨 Exam • $countdown'
+                                                          : '⚠️ Due • $countdown',
+                                                      style: textStyles
+                                                          .labelSmall
+                                                          ?.copyWith(
+                                                            color: event.isExam
+                                                                ? colors
+                                                                      .onErrorContainer
+                                                                : colors
+                                                                      .onPrimaryContainer,
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                          ),
+                                                    ),
+                                                  ),
+                                                ],
                                                 Text(
                                                   event.title,
                                                   style: textStyles.titleMedium
@@ -415,6 +468,51 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                                           ),
                                         ],
                                       ),
+                                      if (event.checklistItems.isNotEmpty) ...<Widget>[
+                                        const SizedBox(height: 6),
+                                        for (int i = 0; i < event.checklistItems.length; i++) ...<Widget>[
+                                          InkWell(
+                                            borderRadius: AppRadius.small,
+                                            onTap: () async {
+                                              final CalendarEvent updated = event.toggleChecklistItem(i);
+                                              await ref
+                                                  .read(calendarControllerProvider.notifier)
+                                                  .updateEvent(updated);
+                                            },
+                                            child: Padding(
+                                              padding: const EdgeInsets.symmetric(vertical: 2.5),
+                                              child: Row(
+                                                children: <Widget>[
+                                                  Icon(
+                                                    event.checklistItems[i].done
+                                                        ? Icons.check_box_rounded
+                                                        : Icons.check_box_outline_blank_rounded,
+                                                    size: 17,
+                                                    color: event.checklistItems[i].done
+                                                        ? colors.primary
+                                                        : colors.onSurfaceVariant,
+                                                  ),
+                                                  const SizedBox(width: 6),
+                                                  Expanded(
+                                                    child: Text(
+                                                      event.checklistItems[i].text,
+                                                      style: textStyles.bodySmall?.copyWith(
+                                                        decoration: event.checklistItems[i].done
+                                                            ? TextDecoration.lineThrough
+                                                            : null,
+                                                        color: event.checklistItems[i].done
+                                                            ? colors.onSurfaceVariant
+                                                            : colors.onSurface,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                        const SizedBox(height: 4),
+                                      ],
                                       Row(
                                         children: <Widget>[
                                           if (event.recurrence != 'none')
@@ -710,6 +808,9 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
 
     int durationMinutes = existingEvent?.durationMinutes ?? 60;
     String recurrence = existingEvent?.recurrence ?? 'none';
+    String eventType = existingEvent?.isExam == true
+        ? 'exam'
+        : (existingEvent?.isAssignment == true ? 'assignment' : 'general');
 
     await showModalBottomSheet<void>(
       context: context,
@@ -759,6 +860,43 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                             ),
                           ),
                         ],
+                      ),
+                      AppSpacing.gapMd,
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: <Widget>[
+                            ChoiceChip(
+                              label: const Text('General'),
+                              selected: eventType == 'general',
+                              onSelected: (_) =>
+                                  setModalState(() => eventType = 'general'),
+                            ),
+                            const SizedBox(width: 8),
+                            ChoiceChip(
+                              label: const Text('Class'),
+                              selected: eventType == 'class',
+                              onSelected: (_) =>
+                                  setModalState(() => eventType = 'class'),
+                            ),
+                            const SizedBox(width: 8),
+                            ChoiceChip(
+                              avatar: const Text('🚨'),
+                              label: const Text('Exam / Quiz'),
+                              selected: eventType == 'exam',
+                              onSelected: (_) =>
+                                  setModalState(() => eventType = 'exam'),
+                            ),
+                            const SizedBox(width: 8),
+                            ChoiceChip(
+                              avatar: const Text('⚠️'),
+                              label: const Text('Assignment'),
+                              selected: eventType == 'assignment',
+                              onSelected: (_) =>
+                                  setModalState(() => eventType = 'assignment'),
+                            ),
+                          ],
+                        ),
                       ),
                       AppSpacing.gapLg,
                       TextFormField(
@@ -913,16 +1051,36 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                       AppSpacing.gapMd,
                       TextFormField(
                         controller: notesController,
-                        maxLines: 2,
+                        maxLines: 3,
                         decoration: const InputDecoration(
-                          labelText: 'Notes (optional)',
-                          hintText: 'e.g. Bring lab coat and calculator',
+                          labelText: 'Notes & Checklist (optional)',
+                          hintText: 'e.g. - [ ] Bring calculator\n- [ ] Review formula sheet',
                           border: OutlineInputBorder(
                             borderRadius: AppRadius.medium,
                           ),
                         ),
                       ),
-                      AppSpacing.gapXl,
+                      const SizedBox(height: 4),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: TextButton.icon(
+                          onPressed: () {
+                            final String current = notesController.text;
+                            final String prefix = current.isEmpty || current.endsWith('\n') ? '' : '\n';
+                            notesController.text = '$current$prefix- [ ] ';
+                            notesController.selection = TextSelection.fromPosition(
+                              TextPosition(offset: notesController.text.length),
+                            );
+                            setModalState(() {});
+                          },
+                          icon: const Icon(Icons.add_task_rounded, size: 16),
+                          label: const Text(
+                            'Add checklist item',
+                            style: TextStyle(fontSize: 12),
+                          ),
+                        ),
+                      ),
+                      AppSpacing.gapLg,
                       SizedBox(
                         height: AppSizes.buttonHeight,
                         child: FilledButton(
@@ -936,6 +1094,18 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                               eventTime.minute,
                             );
 
+                            String? combinedNotes = notesController.text.trim().isNotEmpty
+                                ? notesController.text.trim()
+                                : null;
+                            if (eventType == 'exam' &&
+                                (combinedNotes == null || !combinedNotes.contains('#exam'))) {
+                              combinedNotes = combinedNotes == null ? '#exam' : '$combinedNotes\n#exam';
+                            } else if (eventType == 'assignment' &&
+                                (combinedNotes == null || !combinedNotes.contains('#assignment'))) {
+                              combinedNotes =
+                                  combinedNotes == null ? '#assignment' : '$combinedNotes\n#assignment';
+                            }
+
                             final CalendarEvent newEvent = CalendarEvent(
                               id: existingEvent?.id ?? 0,
                               title: titleController.text.trim(),
@@ -945,9 +1115,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                                   locationController.text.trim().isNotEmpty
                                   ? locationController.text.trim()
                                   : null,
-                              notes: notesController.text.trim().isNotEmpty
-                                  ? notesController.text.trim()
-                                  : null,
+                              notes: combinedNotes,
                               recurrence: recurrence,
                               recurrenceUntil: existingEvent?.recurrenceUntil,
                               reminderMinutes: existingEvent?.reminderMinutes,

@@ -34,13 +34,19 @@ class CalendarRepository {
   }
 
   /// The soonest upcoming occurrence across all events, for the home widget.
-  Future<({String title, DateTime startsAt})?> getNextEvent() async {
+  Future<({String title, DateTime startsAt, bool isExam, bool isAssignment})?>
+  getNextEvent() async {
     final DateTime now = DateTime.now();
-    ({String title, DateTime startsAt})? best;
+    ({String title, DateTime startsAt, bool isExam, bool isAssignment})? best;
     for (final CalendarEvent event in await getEvents()) {
       final DateTime? next = event.nextOccurrence(now);
       if (next != null && (best == null || next.isBefore(best.startsAt))) {
-        best = (title: event.title, startsAt: next);
+        best = (
+          title: event.title,
+          startsAt: next,
+          isExam: event.isExam,
+          isAssignment: event.isAssignment,
+        );
       }
     }
     return best;

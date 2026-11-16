@@ -73,7 +73,28 @@ Future<void> showNoteEditor(
                   maxLines: 6,
                   decoration: const InputDecoration(
                     labelText: 'Note content',
+                    hintText: 'Notes or active recall cards (e.g. Q: ... A: ...)',
                     border: OutlineInputBorder(borderRadius: AppRadius.medium),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton.icon(
+                    onPressed: () {
+                      final String text = bodyController.text;
+                      final String prefix =
+                          text.isEmpty || text.endsWith('\n') ? '' : '\n\n';
+                      bodyController.text = '$text${prefix}Q: \nA: ';
+                      bodyController.selection = TextSelection.fromPosition(
+                        TextPosition(offset: bodyController.text.length - 4),
+                      );
+                    },
+                    icon: const Icon(Icons.bolt_rounded, size: 16),
+                    label: const Text(
+                      'Add Q&A recall card',
+                      style: TextStyle(fontSize: 12),
+                    ),
                   ),
                 ),
                 AppSpacing.gapMd,
