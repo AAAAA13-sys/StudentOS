@@ -58,24 +58,34 @@ class FinanceController extends AsyncNotifier<FinanceState> {
     );
   }
 
-  /// Shows today's spending room on the home-screen widget. The app is the
+  /// Shows today's spending room on the Finance home-screen widget. The app is the
   /// only thing that computes it, so it is stamped with today's date and the
   /// widget hides it once that day is over.
   Future<void> _syncWidget(SafeToSpend value) async {
     try {
+      final NumberFormat peso = NumberFormat('#,##0');
+      final String days = value.untilAllowance
+          ? '${value.daysLeft} ${value.daysLeft == 1 ? 'day' : 'days'} until allowance'
+          : '${value.daysLeft} ${value.daysLeft == 1 ? 'day' : 'days'} left this month';
       await HomeWidget.saveWidgetData<String>(
-        'safe_spend',
-        value.hasFunds
-            ? '₱${NumberFormat('#,##0').format(value.leftToday)} safe to spend today'
-            : '',
+        'safe_spend_amount',
+        value.hasFunds ? '₱${peso.format(value.leftToday.floor())}' : '₱0',
+      );
+      await HomeWidget.saveWidgetData<String>(
+        'safe_spend_note',
+        <String>[
+          if (value.spentToday > 0)
+            '₱${peso.format(value.spentToday.ceil())} spent today',
+          if (value.hasFunds) days else 'Nothing left to spend today',
+        ].join(' · '),
       );
       await HomeWidget.saveWidgetData<String>(
         'safe_spend_date',
         DateFormat('yyyy-MM-dd').format(DateTime.now()),
       );
       await HomeWidget.updateWidget(
-        name: 'CalendarWidgetProvider',
-        androidName: 'CalendarWidgetProvider',
+        name: 'FinanceWidgetProvider',
+        androidName: 'FinanceWidgetProvider',
       );
     } catch (_) {
       // Best-effort: the widget may not be placed, or the platform is absent.

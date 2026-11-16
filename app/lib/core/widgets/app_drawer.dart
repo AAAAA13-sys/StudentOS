@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import '../../features/calendar/calendar_controller.dart';
 import '../../features/finance/finance_controller.dart';
 import '../../features/focus/focus_controller.dart';
+import '../../features/focus/focus_platform.dart';
 import '../../features/phone/phone_controller.dart';
 import '../../features/work/work_controller.dart';
 import '../../features/notes/notes_controller.dart';
@@ -154,6 +155,52 @@ class AppDrawer extends ConsumerWidget {
             subtitle: const Text('Replaces what is in the app now'),
             onTap: () => _restore(context, ref),
           ),
+          sectionLabel('HOME-SCREEN WIDGETS'),
+          for (final (String which, IconData icon, String title, String about)
+              in <(String, IconData, String, String)>[
+                (
+                  'calendar',
+                  Icons.calendar_month_outlined,
+                  'Calendar',
+                  'Your next event',
+                ),
+                (
+                  'finance',
+                  Icons.account_balance_wallet_outlined,
+                  'Money',
+                  'Safe to spend today',
+                ),
+                (
+                  'clock',
+                  Icons.alarm_outlined,
+                  'Clock',
+                  'Next alarm and focus',
+                ),
+              ])
+            ListTile(
+              leading: Icon(icon),
+              title: Text('Add $title widget'),
+              subtitle: Text(about),
+              onTap: () async {
+                final ScaffoldMessengerState messenger = ScaffoldMessenger.of(
+                  context,
+                );
+                Navigator.of(context).pop();
+                final bool ok = await ref
+                    .read(focusPlatformProvider)
+                    .pinWidget(which);
+                if (!ok) {
+                  messenger.showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                        'Your launcher cannot add it from here. Long-press '
+                        'the home screen, tap Widgets and find StudentOS.',
+                      ),
+                    ),
+                  );
+                }
+              },
+            ),
           sectionLabel('ABOUT'),
           const ListTile(
             leading: Icon(Icons.info_outline_rounded),

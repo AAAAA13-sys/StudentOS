@@ -60,6 +60,9 @@ class FakeFocusPlatform implements FocusPlatform {
 
   @override
   void onRouteWaiting(void Function() onRoute) {}
+
+  @override
+  Future<bool> pinWidget(String which) async => true;
 }
 
 void main() {

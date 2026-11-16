@@ -77,6 +77,7 @@ object FocusStore {
         prefs(ctx).edit().remove(KEY).apply()
         val nm = ctx.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         nm.cancel(NOTE_RUN)
+        ClockWidgetProvider.refresh(ctx)
     }
 
     private fun boundary(ctx: Context, index: Int): PendingIntent = PendingIntent.getBroadcast(
@@ -105,6 +106,7 @@ object FocusStore {
             }
         }
         showRunning(ctx)
+        ClockWidgetProvider.refresh(ctx)
     }
 
     private fun channels(ctx: Context) {
@@ -202,6 +204,7 @@ object FocusStore {
         } else {
             showRunning(ctx)
         }
+        ClockWidgetProvider.refresh(ctx)
     }
 }
 

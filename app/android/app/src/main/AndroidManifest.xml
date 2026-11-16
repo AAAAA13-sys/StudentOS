@@ -27,13 +27,36 @@
         android:icon="@mipmap/ic_launcher">
         <receiver
             android:name=".CalendarWidgetProvider"
-            android:exported="true">
+            android:exported="true"
+            android:label="StudentOS calendar">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/calendar_widget_info" />
+        </receiver>
+        <receiver
+            android:name=".FinanceWidgetProvider"
+            android:exported="true"
+            android:label="StudentOS money">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/finance_widget_info" />
+        </receiver>
+        <receiver
+            android:name=".ClockWidgetProvider"
+            android:exported="true"
+            android:label="StudentOS clock">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/clock_widget_info" />
         </receiver>
         <receiver
             android:name=".AlarmReceiver"

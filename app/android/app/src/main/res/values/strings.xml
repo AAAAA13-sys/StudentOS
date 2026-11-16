@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="focus_block_description">Used only during a strict focus session in StudentOS. When an app that is not on your allow list opens, StudentOS comes back to the front. It sees only which app opened, never what is on the screen, and nothing leaves the phone.</string>
+    <string name="finance_widget_info_description">How much you can spend today</string>
+    <string name="clock_widget_info_description">Your next alarm, and a focus timer you can start from here</string>
 </resources>

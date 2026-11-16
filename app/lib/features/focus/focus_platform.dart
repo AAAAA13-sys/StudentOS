@@ -83,6 +83,10 @@ abstract class FocusPlatform {
   /// the user back), taken once.
   Future<String?> takeRoute();
 
+  /// Asks the launcher to put one of the widgets (`calendar`, `finance` or
+  /// `clock`) on the home screen. False when the launcher cannot.
+  Future<bool> pinWidget(String which);
+
   /// Calls [onRoute] whenever Android has a route waiting while the app is
   /// already open; the route is then read with [takeRoute].
   void onRouteWaiting(void Function() onRoute);
@@ -175,6 +179,11 @@ class ChannelFocusPlatform implements FocusPlatform {
 
   @override
   Future<String?> takeRoute() => _call<String>('takeRoute');
+
+  @override
+  Future<bool> pinWidget(String which) async =>
+      await _call<bool>('pinWidget', <String, Object?>{'which': which}) ??
+      false;
 
   @override
   void onRouteWaiting(void Function() onRoute) {

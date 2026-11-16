@@ -389,3 +389,14 @@ Entries are appended, never edited. Corrections are new entries that reference t
 - Push: the owner asked in person to push; the 23 local commits since the local-only conversion went to `origin/main`.
 **Open items:** Surprise me not yet seen on a device; alarm after the app process is killed not yet proven on a real phone; snooze ringing again not yet seen.
 
+## Phase 30: Three home-screen widgets
+**Date:** 2026-11-16 (20:05 GMT+8)
+**Verified by:** lead-pm on `emulator-5554`
+**Evidence:** see the widgets row in `PROGRESS.md`. First time any StudentOS widget was seen on a home screen; this closes the Phase 24 open item for the spending figure (now its own widget).
+**Decisions:**
+- One widget per module, each added separately (owner: "all independent"): Calendar, Money, Clock. Notes has none.
+- The Clock widget reads the Android-side alarm and focus stores, so it is right without the app running; Android redraws it when alarms change, an alarm rings, or a focus phase starts or ends. Its countdown is a native chronometer and needs no updates.
+- Money rounds safe-to-spend down and spending up, so the widget never shows more room than the app.
+- Widget taps open routes (`calendar`, `finance`, `clock`, `timer`, `start_focus`); the old `OPEN_CALENDAR` action was never handled.
+**Open items:** Not checked on a real phone. The calendar widget still shows emoji for exams and assignments, against `DESIGN_SYSTEM.md`.
+

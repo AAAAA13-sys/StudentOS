@@ -44,13 +44,45 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar> {
     super.dispose();
   }
 
-  /// Opens the screen Android asked for, e.g. the timer after strict
-  /// lockdown sent the user back, or a tap on the focus notification.
+  /// Opens the screen Android asked for: a home-screen widget tap, the
+  /// focus notification, or strict lockdown sending the user back.
   Future<void> _followAndroid() async {
     final String? route = await ref.read(focusPlatformProvider).takeRoute();
-    if (!mounted || !isTimerRoute(route)) return;
-    ref.read(clockPanelProvider.notifier).show(ClockPanel.focus);
-    widget.navigationShell.goBranch(clockTabIndex);
+    if (!mounted || route == null) return;
+    final StatefulNavigationShell shell = widget.navigationShell;
+    switch (route) {
+      case 'calendar':
+        shell.goBranch(0);
+      case 'finance':
+        shell.goBranch(1);
+      case 'clock':
+        ref.read(clockPanelProvider.notifier).show(ClockPanel.alarm);
+        shell.goBranch(clockTabIndex);
+      case 'start_focus':
+        ref.read(clockPanelProvider.notifier).show(ClockPanel.focus);
+        shell.goBranch(clockTabIndex);
+        await _startFocusFromWidget();
+      default:
+        if (isTimerRoute(route)) {
+          ref.read(clockPanelProvider.notifier).show(ClockPanel.focus);
+          shell.goBranch(clockTabIndex);
+        }
+    }
+  }
+
+  /// The Clock widget's Start focus button. Starts a session with the saved
+  /// settings unless one is running, or strict lockdown is chosen but its
+  /// service is off (the timer panel then explains what to turn on).
+  Future<void> _startFocusFromWidget() async {
+    final FocusState focus = await ref.read(focusControllerProvider.future);
+    if (focus.session != null) return;
+    if (focus.settings.lockdown == Lockdown.strict) {
+      final PhoneReadiness ready = await ref
+          .read(focusPlatformProvider)
+          .readiness();
+      if (!ready.accessibility) return;
+    }
+    await ref.read(focusControllerProvider.notifier).start();
   }
 
   @override

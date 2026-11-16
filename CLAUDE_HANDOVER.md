@@ -36,12 +36,14 @@ Work shifts (2026-11-16, Phase 27): Calendar > More > Add a shift, or Finance > 
 Clock tab (2026-11-16, Phase 28): 4th bottom tab "Clock" with two panels, Alarm and Focus (named by the research reviewer; the owner found "Focus" wrong for a tab that is half alarms). Alarm: wake-up alarms plus the night's phone rest card. Focus: Pomodoro timer with Off / Light (screen pinning) / Strict (accessibility service) lockdown, plus screen time. Code: `app/lib/features/focus/` (`clock_screen.dart` is the tab) and `AlarmStore`, `AlarmReceiver`, `AlarmService`, `AlarmActivity`, `FocusStore`, `FocusBlockService`, `FocusChannel` in `app/android/app/src/main/kotlin/com/studentos/studentos/`. Do not rename `FocusBlockService` or the storage keys (see `ACCOMPLISHED.md` Phase 28 continued). The owner does not want school modules.
 Checked on the emulator: alarm rings with the screen off, maths and typed challenges, volume lock, wake-up check rings again when unanswered, light and strict lockdown, exit sentence, alarm unpins a pinned session. Still to check on a device: shake, snooze rescheduling, sound picker, ramp, phase-change chime, alarm after reboot, strict allow list.
 
+Widgets (Phase 30): three independent home-screen widgets, `CalendarWidgetProvider`, `FinanceWidgetProvider` ("StudentOS money") and `ClockWidgetProvider`, with layouts `widget_layout.xml`, `widget_finance.xml`, `widget_clock.xml`. Menu > Home-screen widgets adds them with Android's pin prompt. Checked on the emulator only.
+
 Still open, in suggested order:
 0. See the shift overlap warning on a device; add a payday date to the Work pay card.
 1. Import a timetable from an `.ics` file (Calendar menu; `file_picker` is already a dependency).
 2. ~~Grade "what-if" calculator~~ dropped: the owner rejected school modules.
 3. Event reminders as local notifications (`reminder_minutes` is stored but nothing fires; needs a notification package and permission).
-4. Widget: the spending line is stamped with its date and hidden once that day is over (the widget re-checks every 30 minutes), but it only reappears after the app is opened. Not yet viewed on a home screen. A true background recompute is still open.
+4. ~~Widget spending line~~ now its own Money widget, seen on a home screen (Phase 30). Old note: the spending line is stamped with its date and hidden once that day is over (the widget re-checks every 30 minutes), but it only reappears after the app is opened. Not yet viewed on a home screen. A true background recompute is still open.
 5. A repeating allowance schedule; notes pinning.
 
 Warning for whoever works next: on 2026-11-16 around 07:25 GMT+8 this file and `PROGRESS.md` were overwritten with their pre-shift text by something other than Claude's session. Re-read both before writing to them, and do not write a stale copy back.

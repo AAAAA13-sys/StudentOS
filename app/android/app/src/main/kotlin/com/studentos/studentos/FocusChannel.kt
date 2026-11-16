@@ -72,6 +72,7 @@ class FocusChannel(private val activity: MainActivity, messenger: BinaryMessenge
             }
             "launchableApps" -> result.success(launchableApps())
             "takeRoute" -> result.success(activity.takeRoute())
+            "pinWidget" -> result.success(pinWidget(call.argument<String>("which") ?: ""))
             else -> result.notImplemented()
         }
     }
@@ -209,6 +210,20 @@ class FocusChannel(private val activity: MainActivity, messenger: BinaryMessenge
             .filter { it.first != ctx.packageName }
             .distinctBy { it.first }
             .map { mapOf("package" to it.first, "label" to it.second) }
+    }
+
+    /** Android 8+: the launcher shows its own "Add to home screen" prompt. */
+    private fun pinWidget(which: String): Boolean {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return false
+        val provider = when (which) {
+            "calendar" -> CalendarWidgetProvider::class.java
+            "finance" -> FinanceWidgetProvider::class.java
+            "clock" -> ClockWidgetProvider::class.java
+            else -> return false
+        }
+        val manager = android.appwidget.AppWidgetManager.getInstance(ctx)
+        if (!manager.isRequestPinAppWidgetSupported) return false
+        return manager.requestPinAppWidget(android.content.ComponentName(ctx, provider), null, null)
     }
 
     companion object {

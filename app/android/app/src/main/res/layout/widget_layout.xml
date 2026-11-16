@@ -36,16 +36,5 @@
         android:textColor="#475569"
         android:textSize="13sp" />
 
-    <TextView
-        android:id="@+id/widget_safe_spend"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:textColor="#6D28D9"
-        android:textSize="13sp"
-        android:textStyle="bold"
-        android:maxLines="1"
-        android:ellipsize="end"
-        android:visibility="gone" />
 
 </LinearLayout>
