@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_theme.dart';
-import '../../core/widgets/app_top_bar.dart';
 import '../phone/phone_day.dart' show formatDuration;
 import '../phone/phone_controller.dart';
 import '../phone/phone_screen.dart';
@@ -17,126 +16,29 @@ import '../../core/widgets/ponpon.dart';
 
 const List<FontFeature> _tabular = <FontFeature>[FontFeature.tabularFigures()];
 
-/// The two panels of the Clock tab.
-enum ClockPanel { alarm, focus }
+/// The three views of the Calendar tab: the schedule, wake-up alarms and the
+/// focus timer.
+enum CalendarView { schedule, alarm, focus }
 
-/// Which panel of the Clock tab is showing; other screens can switch it
+/// Which view of the Calendar tab is showing; other screens can switch it
 /// (e.g. the focus banner opens the timer).
-final NotifierProvider<ClockPanelController, ClockPanel> clockPanelProvider =
-    NotifierProvider<ClockPanelController, ClockPanel>(
-      ClockPanelController.new,
-    );
+final NotifierProvider<CalendarViewController, CalendarView>
+calendarViewProvider = NotifierProvider<CalendarViewController, CalendarView>(
+  CalendarViewController.new,
+);
 
-class ClockPanelController extends Notifier<ClockPanel> {
+class CalendarViewController extends Notifier<CalendarView> {
   @override
-  ClockPanel build() => ClockPanel.alarm;
+  CalendarView build() => CalendarView.schedule;
 
-  void show(ClockPanel panel) => state = panel;
-}
-
-/// The fourth tab, "Clock": wake-up alarms (with the night's phone rest)
-/// and the focus timer (with screen time).
-class ClockScreen extends ConsumerStatefulWidget {
-  const ClockScreen({super.key});
-
-  @override
-  ConsumerState<ClockScreen> createState() => _ClockScreenState();
-}
-
-class _ClockScreenState extends ConsumerState<ClockScreen> {
-  late final AppLifecycleListener _lifecycle;
-
-  @override
-  void initState() {
-    super.initState();
-    // Back from Settings or from a ringing alarm: read Android again.
-    _lifecycle = AppLifecycleListener(
-      onResume: () {
-        ref.invalidate(readinessProvider);
-        ref.read(alarmControllerProvider.notifier).refresh();
-        ref.read(phoneControllerProvider.notifier).refresh();
-      },
-    );
-  }
-
-  @override
-  void dispose() {
-    _lifecycle.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final ClockPanel panel = ref.watch(clockPanelProvider);
-    final bool timerRunning =
-        ref.watch(focusControllerProvider).value?.session != null;
-
-    return Scaffold(
-      appBar: AppTopBar(
-        title: 'Clock',
-        actions: <Widget>[
-          if (panel == ClockPanel.focus && !timerRunning)
-            IconButton(
-              tooltip: 'Timer settings',
-              icon: const Icon(Icons.tune_rounded),
-              onPressed: () => showFocusSettings(context),
-            ),
-        ],
-      ),
-      floatingActionButton: panel == ClockPanel.alarm
-          ? FloatingActionButton(
-              tooltip: 'New alarm',
-              onPressed: () => showAlarmEditor(context),
-              child: const Icon(Icons.add_alarm_rounded),
-            )
-          : null,
-      body: Column(
-        children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.lg,
-              AppSpacing.xs,
-              AppSpacing.lg,
-              AppSpacing.md,
-            ),
-            child: SizedBox(
-              width: double.infinity,
-              child: SegmentedButton<ClockPanel>(
-                showSelectedIcon: false,
-                segments: const <ButtonSegment<ClockPanel>>[
-                  ButtonSegment<ClockPanel>(
-                    value: ClockPanel.alarm,
-                    icon: Icon(Icons.alarm_rounded),
-                    label: Text('Alarm'),
-                  ),
-                  ButtonSegment<ClockPanel>(
-                    value: ClockPanel.focus,
-                    icon: Icon(Icons.timer_outlined),
-                    label: Text('Focus'),
-                  ),
-                ],
-                selected: <ClockPanel>{panel},
-                onSelectionChanged: (Set<ClockPanel> s) =>
-                    ref.read(clockPanelProvider.notifier).show(s.first),
-              ),
-            ),
-          ),
-          Expanded(
-            child: switch (panel) {
-              ClockPanel.alarm => const _AlarmsView(),
-              ClockPanel.focus => const _TimerView(),
-            },
-          ),
-        ],
-      ),
-    );
-  }
+  void show(CalendarView view) => state = view;
 }
 
 // Alarms.
 
-class _AlarmsView extends ConsumerWidget {
-  const _AlarmsView();
+/// Wake-up alarms, with the night's phone rest.
+class AlarmsPanel extends ConsumerWidget {
+  const AlarmsPanel({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -352,8 +254,9 @@ class _ReadinessCard extends ConsumerWidget {
 
 // Timer.
 
-class _TimerView extends ConsumerWidget {
-  const _TimerView();
+/// The focus timer, with screen time.
+class FocusPanel extends ConsumerWidget {
+  const FocusPanel({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -387,6 +290,9 @@ class _TimerIdle extends ConsumerWidget {
       (Duration sum, (PhaseKind, Duration) p) => sum + p.$2,
     );
 
+    final PhoneState? phone = ref.watch(phoneControllerProvider).value;
+    final String? screenOn = phone == null ? null : screenOnToday(phone);
+
     return ListView(
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.lg,
@@ -395,10 +301,13 @@ class _TimerIdle extends ConsumerWidget {
         AppSpacing.xxl,
       ),
       children: <Widget>[
-        const Center(child: Ponpon(mood: PonponMood.focused, size: 104)),
-        AppSpacing.gapSm,
         Container(
-          padding: AppSpacing.card,
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.lg,
+            AppSpacing.md,
+            AppSpacing.md,
+            AppSpacing.xs,
+          ),
           decoration: BoxDecoration(
             color: colors.primaryContainer,
             borderRadius: AppRadius.large,
@@ -407,71 +316,91 @@ class _TimerIdle extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Text(
-                s.rounds == 1 ? 'One block' : '${s.rounds} rounds',
-                style: text.labelLarge?.copyWith(
-                  color: colors.onPrimaryContainer,
-                ),
-              ),
-              Text(
-                '${s.focusMinutes} min focus',
-                style: text.displaySmall?.copyWith(
-                  fontWeight: FontWeight.w700,
-                  fontFeatures: _tabular,
-                  color: colors.onPrimaryContainer,
-                ),
-              ),
-              Text(
-                <String>[
-                  if (s.rounds > 1 && s.shortBreakMinutes > 0)
-                    '${s.shortBreakMinutes} min breaks',
-                  if (s.rounds > s.longBreakEvery && s.longBreakMinutes > 0)
-                    '${s.longBreakMinutes} min long break every '
-                        '${s.longBreakEvery}',
-                  'about ${formatDuration(total)} in all',
-                ].join(' · '),
-                style: text.bodySmall?.copyWith(
-                  color: colors.onPrimaryContainer,
-                  fontFeatures: _tabular,
-                ),
-              ),
-              AppSpacing.gapMd,
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  Icon(
-                    s.lockdown == Lockdown.off
-                        ? Icons.lock_open_rounded
-                        : Icons.lock_rounded,
-                    size: AppSizes.iconSm,
-                    color: colors.onPrimaryContainer,
-                  ),
-                  AppSpacing.gapXs,
                   Expanded(
-                    child: Text(
-                      'Lockdown: ${s.lockdown.label}',
-                      style: text.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: colors.onPrimaryContainer,
-                      ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Text(
+                          s.rounds == 1 ? 'One block' : '${s.rounds} rounds',
+                          style: text.labelLarge?.copyWith(
+                            color: colors.onPrimaryContainer,
+                          ),
+                        ),
+                        Text(
+                          '${s.focusMinutes} min focus',
+                          style: text.headlineMedium?.copyWith(
+                            fontWeight: FontWeight.w700,
+                            fontFeatures: _tabular,
+                            color: colors.onPrimaryContainer,
+                          ),
+                        ),
+                        Text(
+                          <String>[
+                            if (s.rounds > 1 && s.shortBreakMinutes > 0)
+                              '${s.shortBreakMinutes} min breaks',
+                            if (s.rounds > s.longBreakEvery &&
+                                s.longBreakMinutes > 0)
+                              '${s.longBreakMinutes} min long break every '
+                                  '${s.longBreakEvery}',
+                            'about ${formatDuration(total)} in all',
+                          ].join(' · '),
+                          style: text.bodySmall?.copyWith(
+                            color: colors.onPrimaryContainer,
+                            fontFeatures: _tabular,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  TextButton(
-                    onPressed: () => showFocusSettings(context),
-                    child: const Text('Change'),
-                  ),
+                  AppSpacing.gapSm,
+                  const Ponpon(mood: PonponMood.focused, size: 56),
                 ],
               ),
-              Text(
-                s.lockdown.description,
-                style: text.bodySmall?.copyWith(
-                  color: colors.onPrimaryContainer,
+              InkWell(
+                borderRadius: AppRadius.small,
+                onTap: () => showFocusSettings(context),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    minHeight: AppSizes.minTouchTarget,
+                  ),
+                  child: Row(
+                    children: <Widget>[
+                      Icon(
+                        s.lockdown == Lockdown.off
+                            ? Icons.lock_open_rounded
+                            : Icons.lock_rounded,
+                        size: AppSizes.iconSm,
+                        color: colors.onPrimaryContainer,
+                      ),
+                      AppSpacing.gapSm,
+                      Text(
+                        'Lockdown: ${s.lockdown.label} · ',
+                        style: text.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: colors.onPrimaryContainer,
+                        ),
+                      ),
+                      Text(
+                        'Change',
+                        style: text.labelLarge?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: colors.primary,
+                          decoration: TextDecoration.underline,
+                          decorationColor: colors.primary,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
           ),
         ),
         if (needsService) ...<Widget>[AppSpacing.gapMd, _AccessibilityCard()],
-        AppSpacing.gapLg,
+        AppSpacing.gapMd,
         SizedBox(
           height: AppSizes.buttonHeight,
           child: FilledButton.icon(
@@ -482,37 +411,40 @@ class _TimerIdle extends ConsumerWidget {
                 : () => ref.read(focusControllerProvider.notifier).start(),
           ),
         ),
-        AppSpacing.gapLg,
+        AppSpacing.gapMd,
+        // Today in one card: the fix next to the problem.
         Card(
           margin: EdgeInsets.zero,
           child: Padding(
             padding: AppSpacing.card,
-            child: Row(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                Expanded(
-                  child: Text(
-                    'Focused today',
-                    style: text.bodyMedium?.copyWith(
-                      color: colors.onSurfaceVariant,
-                    ),
-                  ),
-                ),
                 Text(
-                  '${formatDuration(Duration(milliseconds: state.todayFocusMs))}'
+                  'Focused ${formatDuration(Duration(milliseconds: state.todayFocusMs))}'
                   ' · ${state.todayRounds} '
                   '${state.todayRounds == 1 ? 'round' : 'rounds'}',
-                  style: text.titleMedium?.copyWith(
+                  style: text.titleSmall?.copyWith(
                     fontWeight: FontWeight.w600,
                     fontFeatures: _tabular,
                   ),
                 ),
+                if (screenOn != null) ...<Widget>[
+                  AppSpacing.gapXs,
+                  Text(
+                    screenOn,
+                    style: text.bodySmall?.copyWith(
+                      color: colors.onSurfaceVariant,
+                      fontFeatures: _tabular,
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
         ),
-        // Screen time sits beside the timer: the problem next to the fix.
-        AppSpacing.gapMd,
-        const PhoneCards(rest: false, usage: true),
+        AppSpacing.gapSm,
+        const PhoneCards(rest: false, usage: true, compact: true),
       ],
     );
   }

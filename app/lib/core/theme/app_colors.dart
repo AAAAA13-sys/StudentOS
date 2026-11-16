@@ -4,32 +4,38 @@ import 'package:flutter/material.dart';
 /// read colours from `Theme.of(context).colorScheme` or [ModuleColors].
 abstract final class AppColors {
   // User Scheme: Midnight Lavender
-  static const Color midnightIndigo = Color(0xFF0B0720);    // Deepest Midnight/Indigo
-  static const Color darkPurple = Color(0xFF25134D);        // Dark Purple
-  static const Color vibrantViolet = Color(0xFF6A2FC8);      // Vibrant Violet (Primary Brand Accent)
-  static const Color mediumLavender = Color(0xFF9D71E8);    // Medium Lavender
-  static const Color lightLilac = Color(0xFFD1B8FF);        // Light Lilac
-  static const Color paleLavenderWhite = Color(0xFFF2E9FF); // Pale Lavender White (Canvas Surface)
+  static const Color midnightIndigo = Color(
+    0xFF0B0720,
+  ); // Deepest Midnight/Indigo
+  static const Color darkPurple = Color(0xFF25134D); // Dark Purple
+  static const Color vibrantViolet = Color(
+    0xFF6A2FC8,
+  ); // Vibrant Violet (Primary Brand Accent)
+  static const Color mediumLavender = Color(0xFF9D71E8); // Medium Lavender
+  static const Color lightLilac = Color(0xFFD1B8FF); // Light Lilac
+  static const Color paleLavenderWhite = Color(
+    0xFFF2E9FF,
+  ); // Pale Lavender White (Canvas Surface)
 
   // Lavender Palette (Mapped to User Scheme)
-  static const Color lavender950 = midnightIndigo;     // #0B0720
-  static const Color lavender900 = darkPurple;          // #25134D
+  static const Color lavender950 = midnightIndigo; // #0B0720
+  static const Color lavender900 = darkPurple; // #25134D
   static const Color lavender800 = Color(0xFF491F8E);
-  static const Color lavender700 = vibrantViolet;       // #6A2FC8
-  static const Color lavender600 = vibrantViolet;       // #6A2FC8
+  static const Color lavender700 = vibrantViolet; // #6A2FC8
+  static const Color lavender600 = vibrantViolet; // #6A2FC8
   static const Color lavender500 = Color(0xFF834FE0);
-  static const Color lavender400 = mediumLavender;      // #9D71E8
+  static const Color lavender400 = mediumLavender; // #9D71E8
   static const Color lavender300 = Color(0xFFB795F4);
-  static const Color lavender200 = lightLilac;          // #D1B8FF
+  static const Color lavender200 = lightLilac; // #D1B8FF
   static const Color lavender100 = Color(0xFFE2D1FF);
-  static const Color lavender50 = paleLavenderWhite;    // #F2E9FF
-  static const Color lavenderMist = paleLavenderWhite;  // #F2E9FF
+  static const Color lavender50 = paleLavenderWhite; // #F2E9FF
+  static const Color lavenderMist = paleLavenderWhite; // #F2E9FF
 
   // Hairlines & Surfaces
   static const Color hairlineLight = Color(0xFFE2D6F5);
-  static const Color hairlineDark = darkPurple;         // #25134D
-  static const Color obsidian950 = midnightIndigo;      // #0B0720
-  static const Color obsidian900 = darkPurple;          // #25134D
+  static const Color hairlineDark = darkPurple; // #25134D
+  static const Color obsidian950 = midnightIndigo; // #0B0720
+  static const Color obsidian900 = darkPurple; // #25134D
   static const Color obsidian800 = Color(0xFF1B0F3A);
 
   // Legacy Cyan (kept for backwards compatibility)

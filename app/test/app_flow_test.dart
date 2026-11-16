@@ -54,7 +54,7 @@ void main() {
 
     expect(find.text('Sign In'), findsNothing);
     expect(find.byType(NavigationBar), findsOneWidget);
-    expect(find.byType(NavigationDestination), findsNWidgets(4));
+    expect(find.byType(NavigationDestination), findsNWidgets(3));
     expect(find.text('Stored locally'), findsWidgets);
   });
 
@@ -310,7 +310,7 @@ void main() {
     }
 
     await settle();
-    await tester.tap(find.text('Add note'));
+    await tester.tap(find.byTooltip('Add note'));
     await settle();
 
     // Nothing is stored until the draft is saved.
@@ -323,7 +323,7 @@ void main() {
     await tester.tap(find.text('Save Note'));
     await settle();
 
-    expect(find.text('Open note'), findsOneWidget);
+    expect(find.byTooltip('Open note'), findsOneWidget);
     final CalendarEvent? event = await tester.runAsync(
       () async => (await CalendarRepository(database).getEvents()).single,
     );
@@ -467,11 +467,12 @@ void main() {
     expect(value.reserved, 0);
   });
 
-  testWidgets('Money can be set aside for bills from the card', (
+  testWidgets('The month card shows what is left this month', (
     WidgetTester tester,
   ) async {
-    await tester.runAsync(
-      () => FinanceRepository(database).createTransaction(
+    await tester.runAsync(() async {
+      final FinanceRepository repo = FinanceRepository(database);
+      await repo.createTransaction(
         Transaction(
           id: 0,
           type: 'income',
@@ -479,43 +480,34 @@ void main() {
           category: 'Allowance',
           occurredOn: DateTime.now(),
         ),
-      ),
-    );
+      );
+      await repo.createTransaction(
+        Transaction(
+          id: 0,
+          type: 'expense',
+          amount: 800,
+          category: 'Food',
+          occurredOn: DateTime.now(),
+        ),
+      );
+    });
     await tester.pumpWidget(
       ProviderScope(
         overrides: [appDatabaseProvider.overrideWithValue(database)],
         child: const MaterialApp(home: FinanceScreen()),
       ),
     );
-    Future<void> settle() async {
-      await tester.runAsync(
-        () => Future<void>.delayed(const Duration(milliseconds: 100)),
-      );
-      await tester.pumpAndSettle();
-    }
-
-    await settle();
-    await tester.tap(find.text('Set aside for bills'));
-    await tester.pumpAndSettle();
-    await tester.enterText(find.byType(TextField), '800');
-    await tester.tap(find.text('Save'));
-    await settle();
-
-    expect(find.text('₱800.00 set aside for bills'), findsOneWidget);
-    expect(
-      await tester.runAsync(
-        () => FinanceRepository(database).getReservedCents(),
-      ),
-      80000,
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 100)),
     );
-
-    // Emptying the field stops setting money aside.
-    await tester.tap(find.text('₱800.00 set aside for bills'));
     await tester.pumpAndSettle();
-    await tester.enterText(find.byType(TextField), '');
-    await tester.tap(find.text('Save'));
-    await settle();
-    expect(find.text('Set aside for bills'), findsOneWidget);
+
+    expect(find.text('Left this month'), findsOneWidget);
+    expect(find.text('₱2,200.00'), findsOneWidget);
+    expect(find.text('Income ₱3,000.00'), findsOneWidget);
+    expect(find.text('Spent ₱800.00'), findsOneWidget);
+    expect(find.text('Food ₱800'), findsOneWidget);
+    expect(find.text('Safe to spend today'), findsNothing);
   });
 
   testWidgets('Quick expense is logged in two taps', (
@@ -535,7 +527,7 @@ void main() {
     }
 
     await settle();
-    expect(find.text('Safe to spend today'), findsOneWidget);
+    expect(find.text('Left this month'), findsOneWidget);
 
     await tester.tap(find.byType(FloatingActionButton));
     await tester.pumpAndSettle();

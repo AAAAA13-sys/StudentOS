@@ -12,10 +12,18 @@ import 'finance_controller.dart';
 import 'finance_repository.dart';
 import 'transaction.dart';
 import 'widgets/quick_expense_sheet.dart';
-import 'widgets/reserve_dialog.dart';
-import 'widgets/safe_to_spend_card.dart';
 import '../work/work_pay_card.dart';
 import '../../core/widgets/ponpon.dart';
+
+const List<FontFeature> _tabular = <FontFeature>[FontFeature.tabularFigures()];
+
+final NumberFormat _peso = NumberFormat.currency(symbol: '₱', decimalDigits: 2);
+
+/// Whole pesos when there are no centavos: `₱50`, else `₱37.50`.
+String _short(double amount) => NumberFormat.currency(
+  symbol: '₱',
+  decimalDigits: amount == amount.roundToDouble() ? 0 : 2,
+).format(amount);
 
 class FinanceScreen extends ConsumerWidget {
   const FinanceScreen({super.key});
@@ -27,9 +35,6 @@ class FinanceScreen extends ConsumerWidget {
     );
     final ColorScheme colors = context.colors;
     final TextTheme textStyles = context.textStyles;
-    final currencyFormat = NumberFormat.currency(symbol: '₱', decimalDigits: 2);
-    final ModuleColors money =
-        Theme.of(context).extension<ModuleColors>() ?? ModuleColors.light;
 
     return Scaffold(
       appBar: const AppTopBar(title: 'Finance'),
@@ -52,12 +57,13 @@ class FinanceScreen extends ConsumerWidget {
           ),
         ),
         data: (FinanceState state) {
-          final FinanceSummary summary = state.summary;
-          final List<CategoryBreakdown> expenseCategories = summary.byCategory
-              .where((CategoryBreakdown c) => c.type == 'expense')
-              .toList();
           final DateTime currentMonthDate =
               DateTime.tryParse('${state.month}-01') ?? DateTime.now();
+          final bool thisMonth =
+              state.month == DateFormat('yyyy-MM').format(DateTime.now());
+          final List<MapEntry<DateTime, List<Transaction>>> days = _groupByDay(
+            state.transactions,
+          );
 
           return RefreshIndicator(
             onRefresh: () =>
@@ -70,9 +76,10 @@ class FinanceScreen extends ConsumerWidget {
                       AppSpacing.lg,
                       0,
                       AppSpacing.lg,
-                      AppSpacing.lg,
+                      AppSpacing.sm,
                     ),
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: <Widget>[
                         MonthSwitcher(
                           month: currentMonthDate,
@@ -80,206 +87,8 @@ class FinanceScreen extends ConsumerWidget {
                               .read(financeControllerProvider.notifier)
                               .setMonth(DateFormat('yyyy-MM').format(month)),
                         ),
-                        AppSpacing.gapMd,
-                        if (state.safeToSpend != null) ...<Widget>[
-                          SafeToSpendCard(
-                            value: state.safeToSpend!,
-                            onSetAllowanceDay: () async {
-                              final DateTime now = DateTime.now();
-                              final DateTime tomorrow = DateTime(
-                                now.year,
-                                now.month,
-                                now.day + 1,
-                              );
-                              final DateTime? picked = await showDatePicker(
-                                context: context,
-                                helpText: 'Next allowance day',
-                                initialDate: tomorrow,
-                                firstDate: tomorrow,
-                                lastDate: DateTime(now.year + 1, now.month),
-                              );
-                              if (picked != null) {
-                                await ref
-                                    .read(financeControllerProvider.notifier)
-                                    .setNextAllowance(picked);
-                              }
-                            },
-                            onSetReserved: () async {
-                              final double? amount = await showReserveDialog(
-                                context,
-                                current: state.safeToSpend!.reserved,
-                              );
-                              if (amount != null) {
-                                await ref
-                                    .read(financeControllerProvider.notifier)
-                                    .setReserved(amount);
-                              }
-                            },
-                          ),
-                          AppSpacing.gapMd,
-                          const WorkPayCard(),
-                          AppSpacing.gapMd,
-                        ],
-                        // Balance Summary Card
-                        Card(
-                          child: Padding(
-                            padding: AppSpacing.card,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: <Widget>[
-                                Text(
-                                  'Net Balance',
-                                  style: textStyles.bodyMedium?.copyWith(
-                                    color: colors.onSurfaceVariant,
-                                  ),
-                                ),
-                                AppSpacing.gapXs,
-                                Text(
-                                  currencyFormat.format(summary.balance),
-                                  style: textStyles.headlineMedium?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    fontFeatures: const <FontFeature>[
-                                      FontFeature.tabularFigures(),
-                                    ],
-                                    color: summary.balance >= 0
-                                        ? colors.primary
-                                        : colors.error,
-                                  ),
-                                ),
-                                AppSpacing.gapLg,
-                                Row(
-                                  children: <Widget>[
-                                    Expanded(
-                                      child: SizedBox(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: <Widget>[
-                                            Row(
-                                              children: <Widget>[
-                                                Icon(
-                                                  Icons.arrow_downward_rounded,
-                                                  size: 16,
-                                                  color: money.income,
-                                                ),
-                                                const SizedBox(width: 4),
-                                                Text(
-                                                  'Income',
-                                                  style: textStyles.labelSmall,
-                                                ),
-                                              ],
-                                            ),
-                                            AppSpacing.gapXs,
-                                            Text(
-                                              currencyFormat.format(
-                                                summary.totalIncome,
-                                              ),
-                                              style: textStyles.titleSmall?.copyWith(
-                                                fontWeight: FontWeight.bold,
-                                                fontFeatures: const <FontFeature>[
-                                                  FontFeature.tabularFigures(),
-                                                ],
-                                                color: money.income,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                    AppSpacing.gapMd,
-                                    Expanded(
-                                      child: SizedBox(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: <Widget>[
-                                            Row(
-                                              children: <Widget>[
-                                                Icon(
-                                                  Icons.arrow_upward_rounded,
-                                                  size: 16,
-                                                  color: colors.error,
-                                                ),
-                                                const SizedBox(width: 4),
-                                                Text(
-                                                  'Expenses',
-                                                  style: textStyles.labelSmall,
-                                                ),
-                                              ],
-                                            ),
-                                            AppSpacing.gapXs,
-                                            Text(
-                                              currencyFormat.format(
-                                                summary.totalExpenses,
-                                              ),
-                                              style: textStyles.titleSmall?.copyWith(
-                                                fontWeight: FontWeight.bold,
-                                                fontFeatures: const <FontFeature>[
-                                                  FontFeature.tabularFigures(),
-                                                ],
-                                                color: colors.error,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        if (expenseCategories.isNotEmpty) ...<Widget>[
-                          AppSpacing.gapLg,
-                          Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              'Where it went',
-                              style: textStyles.titleMedium?.copyWith(
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                          AppSpacing.gapSm,
-                          Align(
-                            alignment: Alignment.centerLeft,
-                            child: Wrap(
-                              spacing: AppSpacing.sm,
-                              runSpacing: AppSpacing.xs,
-                              children: expenseCategories.map((
-                                CategoryBreakdown cat,
-                              ) {
-                                final bool isIncome = cat.type == 'income';
-                                return Chip(
-                                  avatar: Icon(
-                                    isIncome
-                                        ? Icons.arrow_downward_rounded
-                                        : Icons.arrow_upward_rounded,
-                                    size: 14,
-                                    color: isIncome
-                                        ? money.income
-                                        : colors.error,
-                                  ),
-                                  label: Text(
-                                    '${cat.category}: ${currencyFormat.format(cat.total)}',
-                                    style: textStyles.labelSmall,
-                                  ),
-                                );
-                              }).toList(),
-                            ),
-                          ),
-                        ],
-                        AppSpacing.gapXl,
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            'Transactions',
-                            style: textStyles.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
+                        _MonthCard(summary: state.summary),
+                        if (thisMonth) const WorkPayRow(),
                       ],
                     ),
                   ),
@@ -317,88 +126,18 @@ class FinanceScreen extends ConsumerWidget {
                         BuildContext context,
                         int index,
                       ) {
-                        final Transaction tx = state.transactions[index];
-                        final bool isIncome = tx.type == 'income';
-
-                        return Card(
-                          margin: const EdgeInsets.only(bottom: AppSpacing.sm),
-                          clipBehavior: Clip.antiAlias,
-                          child: ListTile(
-                            onTap: () => _showAddTransactionDialog(
-                              context,
-                              ref,
-                              existing: tx,
-                            ),
-                            leading: CircleAvatar(
-                              backgroundColor: isIncome
-                                  ? money.income.withValues(alpha: 0.12)
-                                  : colors.errorContainer,
-                              child: Icon(
-                                isIncome
-                                    ? Icons.arrow_downward_rounded
-                                    : Icons.arrow_upward_rounded,
-                                color: isIncome
-                                    ? money.income
-                                    : colors.onErrorContainer,
-                                size: 20,
-                              ),
-                            ),
-                            title: Text(
-                              tx.category,
-                              style: textStyles.titleSmall?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            subtitle: Text(
-                              '${DateFormat('MMM d').format(tx.occurredOn)}${tx.note != null && tx.note!.isNotEmpty ? ' • ${tx.note}' : ''}',
-                              style: textStyles.bodySmall,
-                            ),
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: <Widget>[
-                                Text(
-                                  '${isIncome ? '+' : '-'}${currencyFormat.format(tx.amount)}',
-                                  style: textStyles.titleSmall?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    fontFeatures: const <FontFeature>[
-                                      FontFeature.tabularFigures(),
-                                    ],
-                                    color: isIncome
-                                        ? money.income
-                                        : colors.error,
-                                  ),
-                                ),
-                                IconButton(
-                                  icon: Icon(
-                                    Icons.delete_outline_rounded,
-                                    size: 20,
-                                    color: colors.onSurfaceVariant,
-                                  ),
-                                  tooltip: 'Delete',
-                                  onPressed: () async {
-                                    final bool
-                                    confirmed = await confirmDestructive(
-                                      context,
-                                      title: 'Delete transaction?',
-                                      message:
-                                          '${tx.category} '
-                                          '${currencyFormat.format(tx.amount)} '
-                                          'will be removed.',
-                                    );
-                                    if (confirmed) {
-                                      await ref
-                                          .read(
-                                            financeControllerProvider.notifier,
-                                          )
-                                          .deleteTransaction(tx.id);
-                                    }
-                                  },
-                                ),
-                              ],
-                            ),
+                        final MapEntry<DateTime, List<Transaction>> day =
+                            days[index];
+                        return _DayGroup(
+                          day: day.key,
+                          transactions: day.value,
+                          onOpen: (Transaction tx) => _showAddTransactionDialog(
+                            context,
+                            ref,
+                            existing: tx,
                           ),
                         );
-                      }, childCount: state.transactions.length),
+                      }, childCount: days.length),
                     ),
                   ),
               ],
@@ -411,6 +150,28 @@ class FinanceScreen extends ConsumerWidget {
         onPressed: () => _quickLog(context, ref),
         child: const Icon(Icons.add_rounded),
       ),
+    );
+  }
+
+  /// Transactions grouped by calendar day, newest day first.
+  static List<MapEntry<DateTime, List<Transaction>>> _groupByDay(
+    List<Transaction> all,
+  ) {
+    final Map<DateTime, List<Transaction>> byDay =
+        <DateTime, List<Transaction>>{};
+    for (final Transaction tx in all) {
+      final DateTime d = DateTime(
+        tx.occurredOn.year,
+        tx.occurredOn.month,
+        tx.occurredOn.day,
+      );
+      byDay.putIfAbsent(d, () => <Transaction>[]).add(tx);
+    }
+    return byDay.entries.toList()..sort(
+      (
+        MapEntry<DateTime, List<Transaction>> a,
+        MapEntry<DateTime, List<Transaction>> b,
+      ) => b.key.compareTo(a.key),
     );
   }
 
@@ -644,6 +405,32 @@ class FinanceScreen extends ConsumerWidget {
                           ),
                         ),
                       ),
+                      if (existing != null)
+                        TextButton.icon(
+                          style: TextButton.styleFrom(
+                            foregroundColor: ctx.colors.error,
+                            minimumSize: const Size.fromHeight(
+                              AppSizes.minTouchTarget,
+                            ),
+                          ),
+                          icon: const Icon(Icons.delete_outline_rounded),
+                          label: const Text('Delete transaction'),
+                          onPressed: () async {
+                            final bool confirmed = await confirmDestructive(
+                              ctx,
+                              title: 'Delete transaction?',
+                              message:
+                                  '${existing.category} '
+                                  '${_peso.format(existing.amount)} '
+                                  'will be removed.',
+                            );
+                            if (!confirmed) return;
+                            await ref
+                                .read(financeControllerProvider.notifier)
+                                .deleteTransaction(existing.id);
+                            if (ctx.mounted) Navigator.pop(ctx);
+                          },
+                        ),
                       AppSpacing.gapLg,
                     ],
                   ),
@@ -653,6 +440,240 @@ class FinanceScreen extends ConsumerWidget {
           },
         );
       },
+    );
+  }
+}
+
+/// The month's one hero: what is left, how much of the income is spent, and
+/// where the spending went.
+class _MonthCard extends StatelessWidget {
+  const _MonthCard({required this.summary});
+
+  final FinanceSummary summary;
+
+  @override
+  Widget build(BuildContext context) {
+    final ColorScheme colors = context.colors;
+    final TextTheme textStyles = context.textStyles;
+    final ModuleColors money =
+        Theme.of(context).extension<ModuleColors>() ?? ModuleColors.light;
+    final double spentShare = summary.totalIncome > 0
+        ? (summary.totalExpenses / summary.totalIncome).clamp(0.0, 1.0)
+        : (summary.totalExpenses > 0 ? 1.0 : 0.0);
+    final List<CategoryBreakdown> top =
+        summary.byCategory
+            .where((CategoryBreakdown c) => c.type == 'expense')
+            .toList()
+          ..sort(
+            (CategoryBreakdown a, CategoryBreakdown b) =>
+                b.total.compareTo(a.total),
+          );
+    final TextStyle? figure = textStyles.titleSmall?.copyWith(
+      fontWeight: FontWeight.w700,
+      fontFeatures: _tabular,
+    );
+
+    return Card(
+      margin: EdgeInsets.zero,
+      child: Padding(
+        padding: AppSpacing.card,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            Text(
+              'Left this month',
+              style: textStyles.labelLarge?.copyWith(
+                color: colors.onSurfaceVariant,
+              ),
+            ),
+            Text(
+              _peso.format(summary.balance),
+              style: textStyles.headlineMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+                fontFeatures: _tabular,
+                color: summary.balance >= 0 ? colors.primary : colors.error,
+              ),
+            ),
+            AppSpacing.gapSm,
+            ClipRRect(
+              borderRadius: AppRadius.pill,
+              child: LinearProgressIndicator(
+                value: spentShare,
+                minHeight: 6,
+                color: colors.error,
+                backgroundColor: money.income.withValues(alpha: 0.35),
+              ),
+            ),
+            AppSpacing.gapSm,
+            // Wraps onto two lines at large text sizes instead of cutting
+            // the figures off.
+            Wrap(
+              spacing: AppSpacing.lg,
+              runSpacing: AppSpacing.xs,
+              children: <Widget>[
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    Icon(
+                      Icons.arrow_downward_rounded,
+                      size: 16,
+                      color: money.income,
+                    ),
+                    const SizedBox(width: AppSpacing.xs),
+                    Text(
+                      'Income ${_peso.format(summary.totalIncome)}',
+                      style: figure?.copyWith(color: money.income),
+                    ),
+                  ],
+                ),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    Icon(
+                      Icons.arrow_upward_rounded,
+                      size: 16,
+                      color: colors.error,
+                    ),
+                    const SizedBox(width: AppSpacing.xs),
+                    Text(
+                      'Spent ${_peso.format(summary.totalExpenses)}',
+                      style: figure?.copyWith(color: colors.error),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            if (top.isNotEmpty) ...<Widget>[
+              AppSpacing.gapXs,
+              Text(
+                top
+                    .take(3)
+                    .map(
+                      (CategoryBreakdown c) =>
+                          '${c.category} ${_short(c.total)}',
+                    )
+                    .join(' · '),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: textStyles.bodySmall?.copyWith(
+                  color: colors.onSurfaceVariant,
+                  fontFeatures: _tabular,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// One day's transactions: a date header and a single hairline card.
+class _DayGroup extends StatelessWidget {
+  const _DayGroup({
+    required this.day,
+    required this.transactions,
+    required this.onOpen,
+  });
+
+  final DateTime day;
+  final List<Transaction> transactions;
+  final ValueChanged<Transaction> onOpen;
+
+  static String _label(DateTime day) {
+    final DateTime now = DateTime.now();
+    final DateTime today = DateTime(now.year, now.month, now.day);
+    if (day == today) return 'Today';
+    if (day == DateTime(today.year, today.month, today.day - 1)) {
+      return 'Yesterday';
+    }
+    return DateFormat('EEE, MMM d').format(day);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final ColorScheme colors = context.colors;
+    final TextTheme textStyles = context.textStyles;
+    final ModuleColors money =
+        Theme.of(context).extension<ModuleColors>() ?? ModuleColors.light;
+
+    return Padding(
+      padding: const EdgeInsets.only(top: AppSpacing.md),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          Padding(
+            padding: const EdgeInsets.only(
+              left: AppSpacing.xs,
+              bottom: AppSpacing.xs,
+            ),
+            child: Text(
+              _label(day),
+              style: textStyles.labelMedium?.copyWith(
+                color: colors.onSurfaceVariant,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+          Card(
+            margin: EdgeInsets.zero,
+            clipBehavior: Clip.antiAlias,
+            child: Column(
+              children: <Widget>[
+                for (int i = 0; i < transactions.length; i++) ...<Widget>[
+                  if (i > 0) Divider(height: 1, color: colors.outlineVariant),
+                  _row(transactions[i], colors, textStyles, money),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _row(
+    Transaction tx,
+    ColorScheme colors,
+    TextTheme textStyles,
+    ModuleColors money,
+  ) {
+    final bool isIncome = tx.type == 'income';
+    final bool hasNote = tx.note != null && tx.note!.isNotEmpty;
+    return ListTile(
+      minTileHeight: 56,
+      onTap: () => onOpen(tx),
+      leading: CircleAvatar(
+        radius: 18,
+        backgroundColor: isIncome
+            ? money.income.withValues(alpha: 0.12)
+            : colors.errorContainer,
+        child: Icon(
+          isIncome ? Icons.arrow_downward_rounded : Icons.arrow_upward_rounded,
+          color: isIncome ? money.income : colors.onErrorContainer,
+          size: 18,
+        ),
+      ),
+      title: Text(
+        tx.category,
+        style: textStyles.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+      ),
+      subtitle: hasNote
+          ? Text(
+              tx.note!,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: textStyles.bodySmall,
+            )
+          : null,
+      trailing: Text(
+        '${isIncome ? '+' : '-'}${_peso.format(tx.amount)}',
+        style: textStyles.titleSmall?.copyWith(
+          fontWeight: FontWeight.bold,
+          fontFeatures: _tabular,
+          color: isIncome ? money.income : colors.error,
+        ),
+      ),
     );
   }
 }

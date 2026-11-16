@@ -26,7 +26,7 @@ StudentOS is a high-utility productivity suite for students. It must feel calm, 
 - **Tactile, Snappy Micro-Interactions:** 
   - Button taps: **100ms–140ms** subtle lavender ripple.
   - Sheet and drawer transitions: **250ms–300ms** utilizing physics-based deceleration (`Curves.easeOutCubic`).
-- **Dual-Tier Ergonomics:** Thumb-friendly 4-destination bottom bar for frequent module switching, paired with a **Hamburger Drawer** for back up, restore, home-screen widgets and About (no account: the app is local-only).
+- **Dual-Tier Ergonomics:** Thumb-friendly 3-destination bottom bar for frequent module switching, paired with a **Hamburger Drawer** for back up, restore, home-screen widgets and About (no account: the app is local-only).
 
 ---
 
@@ -89,11 +89,10 @@ style: textTheme.headlineMedium?.copyWith(
 ## 4. Navigation Architecture: The Dual-Tier Standard
 
 ### 4.1 Tier 1: Bottom Navigation Bar (`NavigationBar`)
-Thumb-zone navigation for the 4 daily destinations (the 4th, Clock, was added on 2026-11-16 at the owner's request):
-1. **Calendar** (`Icons.calendar_today_rounded` / `Icons.calendar_month_rounded`)
-2. **Finance** (`Icons.account_balance_wallet_outlined` / `Icons.account_balance_wallet_rounded`)
-3. **Notes** (`Icons.article_outlined` / `Icons.article_rounded`)
-4. **Clock** (`Icons.alarm_outlined` / `Icons.alarm_rounded`): two panels in a segmented control, Alarm (default; alarms and the night's phone rest) and Focus (timer and screen time). A running focus session shows a 40dp banner above the bar on the other tabs. Sheets open on the root navigator so they cover the bottom bar. The ringing alarm screen is native Android, drawn in the Midnight Lavender colours.
+Thumb-zone navigation for the 3 daily destinations. On 2026-11-17 the owner asked for "the clock combined with the calendar", so the former Clock tab now lives inside Calendar:
+1. **Calendar** (`Icons.calendar_today_rounded` / `Icons.calendar_month_rounded`): a full-width segmented control under the app bar switches Schedule (default), Alarms and Focus. Each view owns its app-bar actions and FAB (Schedule: Today, More, add event; Alarms: add alarm; Focus: settings, no FAB). System Back on Alarms or Focus returns to Schedule. Schedule is one scrolling page: month grid, pinned day header, shifts, compact event rows (72dp minimum, note as a trailing icon, delete in the edit sheet or by long-press). Focus keeps the idle view to one screen (compact plan card, Start, Today card, collapsed week and top-apps tiles). A running focus session shows a 40dp banner above the bar everywhere except Calendar > Focus. The routes `/clock` and `/focus` redirect to `/calendar?view=alarm|focus`. Sheets open on the root navigator so they cover the bottom bar. The ringing alarm screen is native Android, drawn in the Midnight Lavender colours.
+2. **Finance** (`Icons.account_balance_wallet_outlined` / `Icons.account_balance_wallet_rounded`): one hero, the "Left this month" card (balance, spent-of-income bar, income and spent, top-3 categories); a 56dp Work pay row only when shifts exist; transactions grouped by day, one hairline card per day, delete inside the edit sheet. Safe-to-Spend was removed from the UI on 2026-11-17 (owner: "i dont need safe allowance"); its settings keys stay in the database and backups.
+3. **Notes** (`Icons.article_outlined` / `Icons.article_rounded`): compact cards with a 2-line preview and one meta row; delete by long-press or in the editor.
 
 **Design Details:**
 - Height: 68dp.
@@ -150,7 +149,7 @@ Before declaring any UI task done, verify:
 - [ ] No gradient backgrounds used as screen backdrops.
 - [ ] All borders are hairline thin (0.75px–1.0px) with subtle contrast.
 - [ ] No raw Unicode emojis used in place of icons.
-- [ ] Bottom navigation has exactly 4 destinations (Calendar, Finance, Notes, Clock).
+- [ ] Bottom navigation has exactly 3 destinations (Calendar, Finance, Notes); Clock lives in Calendar as the Alarms and Focus views.
 - [ ] The top bar has the tab name and at most two actions.
 - [ ] The menu opens smoothly and holds only non-tab items.
 - [ ] Money numbers use `FontFeature.tabularFigures()`.
@@ -172,5 +171,5 @@ Ponpon is an orange tabby puspin (pusang Pinoy), StudentOS's mascot. Use the `Po
 | `smug` | "Still awake?", a search with no match, a paused timer |
 | `focused` | The focus timer |
 
-Sizes: 56-64 in headers, 88-120 in empty states, 44dp in widget corners. Ponpon's colours do not follow the theme. Android-side images come from `tool/render_ponpon_test.dart`.
+Sizes: 56-64 in headers, 88-120 in empty states, 48-56dp centred at the end of each home-screen widget. Ponpon's colours do not follow the theme. Android-side images come from `tool/render_ponpon_test.dart`.
 

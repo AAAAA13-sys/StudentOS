@@ -4,7 +4,6 @@ import 'package:intl/intl.dart';
 
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_theme.dart';
-import 'add_shift_sheet.dart';
 import 'shift.dart';
 import 'work_controller.dart';
 
@@ -17,114 +16,73 @@ final NumberFormat _money = NumberFormat.currency(
 
 String _pesos(int cents) => _money.format(cents / 100);
 
-/// What the shifts worked so far should pay, and what is still ahead. The
-/// figure is only an estimate of pay not yet received, so it stays out of
-/// the balance until "I got paid" records the real amount.
-class WorkPayCard extends ConsumerWidget {
-  const WorkPayCard({super.key});
+/// One compact row for the Finance tab: what the shifts worked so far should
+/// pay, or what is still ahead. The figure is only an estimate of pay not yet
+/// received, so it stays out of the balance until "I got paid" records the
+/// real amount. Takes no space until a shift is logged.
+class WorkPayRow extends ConsumerWidget {
+  const WorkPayRow({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final List<Shift> shifts =
         ref.watch(workControllerProvider).value ?? const <Shift>[];
     final WorkSummary summary = WorkSummary.of(shifts, DateTime.now());
+    if (summary.isEmpty) return const SizedBox.shrink();
+    final bool waiting = summary.workedMinutes > 0;
+
+    return Padding(
+      padding: const EdgeInsets.only(top: AppSpacing.md),
+      child: _card(context, ref, summary, waiting),
+    );
+  }
+
+  Widget _card(
+    BuildContext context,
+    WidgetRef ref,
+    WorkSummary summary,
+    bool waiting,
+  ) {
     final ColorScheme colors = context.colors;
     final TextTheme textStyles = context.textStyles;
-    final ButtonStyle linkStyle = TextButton.styleFrom(
-      padding: EdgeInsets.zero,
-      visualDensity: VisualDensity.compact,
-    );
-
     return Card(
       margin: EdgeInsets.zero,
-      child: Container(
-        width: double.infinity,
-        padding: AppSpacing.card,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Text(
-              'Work pay',
-              style: textStyles.bodyMedium?.copyWith(
-                color: colors.onSurfaceVariant,
-              ),
-            ),
-            AppSpacing.gapXs,
-            if (summary.isEmpty)
-              Text(
-                'Log your shifts to see what your next pay should be.',
-                style: textStyles.bodyMedium,
-              )
-            else ...<Widget>[
-              if (summary.workedMinutes == 0)
-                Text(
-                  'Nothing waiting to be paid.',
-                  style: textStyles.bodyMedium,
-                )
-              else ...<Widget>[
-                Text(
-                  _pesos(summary.workedPayCents),
-                  style: textStyles.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    fontFeatures: _tabular,
-                  ),
-                ),
-                AppSpacing.gapXs,
-                Text(
-                  '${formatHours(summary.workedMinutes)} hrs worked, not paid '
-                  'yet. Before deductions.',
-                  style: textStyles.bodySmall?.copyWith(
-                    color: colors.onSurfaceVariant,
-                    fontFeatures: _tabular,
-                  ),
-                ),
-              ],
-              if (summary.upcomingMinutes > 0)
-                Text(
-                  '${formatHours(summary.upcomingMinutes)} hrs still to '
-                  'work · ${_pesos(summary.upcomingPayCents)}',
-                  style: textStyles.bodySmall?.copyWith(
-                    color: colors.onSurfaceVariant,
-                    fontFeatures: _tabular,
-                  ),
-                ),
-            ],
-            Wrap(
-              spacing: AppSpacing.lg,
-              children: <Widget>[
-                TextButton(
-                  style: linkStyle,
-                  onPressed: () => addShift(context, ref),
-                  child: const Text('Add a shift'),
-                ),
-                if (!summary.isEmpty)
-                  TextButton(
-                    style: linkStyle,
-                    onPressed: () => showShiftsSheet(context),
-                    child: const Text('Shifts'),
-                  ),
-                if (summary.workedMinutes > 0)
-                  TextButton(
-                    style: linkStyle,
-                    onPressed: () async {
-                      final double? amount = await showDialog<double>(
-                        context: context,
-                        builder: (BuildContext ctx) => _GotPaidDialog(
-                          expectedCents: summary.workedPayCents,
-                        ),
-                      );
-                      if (amount != null) {
-                        await ref
-                            .read(workControllerProvider.notifier)
-                            .gotPaid(amount);
-                      }
-                    },
-                    child: const Text('I got paid'),
-                  ),
-              ],
-            ),
-          ],
+      clipBehavior: Clip.antiAlias,
+      child: ListTile(
+        minTileHeight: 56,
+        onTap: () => showShiftsSheet(context),
+        leading: Icon(Icons.work_outline_rounded, color: colors.primary),
+        title: Text(
+          'Work pay',
+          style: textStyles.titleSmall?.copyWith(fontWeight: FontWeight.w700),
         ),
+        subtitle: Text(
+          waiting
+              ? '${_pesos(summary.workedPayCents)} waiting'
+              : '${formatHours(summary.upcomingMinutes)} hrs to work · '
+                    '${_pesos(summary.upcomingPayCents)}',
+          style: textStyles.bodySmall?.copyWith(
+            color: colors.onSurfaceVariant,
+            fontFeatures: _tabular,
+          ),
+        ),
+        trailing: waiting
+            ? TextButton(
+                onPressed: () async {
+                  final double? amount = await showDialog<double>(
+                    context: context,
+                    builder: (BuildContext ctx) =>
+                        _GotPaidDialog(expectedCents: summary.workedPayCents),
+                  );
+                  if (amount != null) {
+                    await ref
+                        .read(workControllerProvider.notifier)
+                        .gotPaid(amount);
+                  }
+                },
+                child: const Text('I got paid'),
+              )
+            : null,
       ),
     );
   }

@@ -420,3 +420,14 @@ Entries are appended, never edited. Corrections are new entries that reference t
 - App icon: adaptive icon (`mipmap-anydpi-v26/ic_launcher.xml`) with Ponpon's face as foreground on `#6A2FC8`; the PNG `ic_launcher` remains for older Android. The cat photo icon (`asdasd.jpg`) is retired.
 **Open items:** Alarm-editor day toggles are 48dp tall but about 40dp wide. Top-of-alarm-screen Ponpon can sit under the heads-up notification. The New Note sheet's Cancel sits close to the gesture bar. Nothing from this phase seen on the real phones.
 
+## Phase 33: Clock in Calendar, less scrolling, Finance without Safe-to-Spend, widgets fixed
+**Date:** 2026-11-17
+**Verified by:** agency-evidence-collector (two rounds) and lead-pm on `emulator-5554`
+**Evidence:** see the Phase 33 row in `PROGRESS.md`; screenshots in the session scratchpad (`qa/`, `r2_*`).
+**Decisions:**
+- 3 bottom tabs. Clock lives in Calendar as the Alarms and Focus views; `/clock` and `/focus` redirect.
+- Safe-to-Spend removed from the UI; data kept dormant, no schema change.
+- Two widgets: Today (on `CalendarWidgetProvider`, so placed Calendar widgets survive) and Money. Clock widget deleted.
+- Commits authored as the owner (`108907185+AAAAA13-sys@users.noreply.github.com`), no Claude co-author line. On 2026-11-17 the owner asked for the existing history to be rewritten the same way; it was force-pushed after a backup bundle was made.
+**Correction (references in earlier entries):** the rewrite changed every hash before this phase. Earlier entries cite `0fb3ab5` (now `814afe6`), `7e286de` (now `13bfc9c`) and `292ee29` (now `f0d4b22`).
+**Open items:** lockdown modes other than Off and a ringing alarm not re-checked after the merge; nothing from this phase seen on the real phones.

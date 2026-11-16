@@ -9,6 +9,11 @@ import '../../core/widgets/confirm_dialog.dart';
 import '../../core/widgets/month_switcher.dart';
 import 'calendar_controller.dart';
 import 'class_schedule_sheet.dart';
+import '../focus/alarm_editor_sheet.dart';
+import '../focus/clock_panels.dart';
+import '../focus/focus_controller.dart';
+import '../focus/focus_settings_sheet.dart';
+import '../phone/phone_controller.dart';
 import '../notes/note.dart';
 import '../notes/note_editor_sheet.dart';
 import '../notes/notes_controller.dart';
@@ -20,6 +25,10 @@ import '../work/shift.dart';
 import '../work/work_controller.dart';
 import '../../core/widgets/ponpon.dart';
 
+const List<FontFeature> _tabular = <FontFeature>[FontFeature.tabularFigures()];
+
+/// The first tab: the schedule, wake-up alarms and the focus timer, switched
+/// by one segmented control under the app bar.
 class CalendarScreen extends ConsumerStatefulWidget {
   const CalendarScreen({super.key});
 
@@ -42,6 +51,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
   late DateTime _selectedDate;
   late DateTime _viewMonth;
   bool _filterByDay = true;
+  late final AppLifecycleListener _lifecycle;
 
   @override
   void initState() {
@@ -49,6 +59,20 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     final DateTime now = DateTime.now();
     _selectedDate = DateTime(now.year, now.month, now.day);
     _viewMonth = DateTime(now.year, now.month, 1);
+    // Back from Settings or from a ringing alarm: read Android again.
+    _lifecycle = AppLifecycleListener(
+      onResume: () {
+        ref.invalidate(readinessProvider);
+        ref.read(alarmControllerProvider.notifier).refresh();
+        ref.read(phoneControllerProvider.notifier).refresh();
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _lifecycle.dispose();
+    super.dispose();
   }
 
   bool _isSameDay(DateTime a, DateTime b) {
@@ -68,6 +92,107 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
       calendarShowTodayProvider,
       (_, _) => _showMonth(DateTime.now()),
     );
+    final CalendarView view = ref.watch(calendarViewProvider);
+    final bool timerRunning =
+        ref.watch(focusControllerProvider).value?.session != null;
+
+    return Scaffold(
+      appBar: AppTopBar(
+        title: 'Calendar',
+        actions: <Widget>[
+          if (view == CalendarView.schedule) ...<Widget>[
+            IconButton(
+              icon: const Icon(Icons.today_rounded),
+              tooltip: 'Today',
+              onPressed: () => _showMonth(DateTime.now()),
+            ),
+            PopupMenuButton<void>(
+              icon: const Icon(Icons.more_vert_rounded),
+              tooltip: 'More',
+              itemBuilder: (BuildContext context) => <PopupMenuEntry<void>>[
+                PopupMenuItem<void>(
+                  onTap: _addClass,
+                  child: const Text('Add a class'),
+                ),
+                PopupMenuItem<void>(
+                  onTap: () => addShift(context, ref, day: _selectedDate),
+                  child: const Text('Add a shift'),
+                ),
+              ],
+            ),
+          ] else if (view == CalendarView.focus && !timerRunning)
+            IconButton(
+              tooltip: 'Timer settings',
+              icon: const Icon(Icons.tune_rounded),
+              onPressed: () => showFocusSettings(context),
+            ),
+        ],
+      ),
+      body: Column(
+        children: <Widget>[
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.lg,
+              AppSpacing.xs,
+              AppSpacing.lg,
+              AppSpacing.xs,
+            ),
+            child: SizedBox(
+              width: double.infinity,
+              child: SegmentedButton<CalendarView>(
+                showSelectedIcon: false,
+                segments: const <ButtonSegment<CalendarView>>[
+                  ButtonSegment<CalendarView>(
+                    value: CalendarView.schedule,
+                    icon: Icon(Icons.calendar_month_rounded),
+                    label: Text('Schedule'),
+                  ),
+                  ButtonSegment<CalendarView>(
+                    value: CalendarView.alarm,
+                    icon: Icon(Icons.alarm_rounded),
+                    label: Text('Alarms'),
+                  ),
+                  ButtonSegment<CalendarView>(
+                    value: CalendarView.focus,
+                    icon: Icon(Icons.timer_outlined),
+                    label: Text('Focus'),
+                  ),
+                ],
+                selected: <CalendarView>{view},
+                onSelectionChanged: (Set<CalendarView> s) =>
+                    ref.read(calendarViewProvider.notifier).show(s.first),
+              ),
+            ),
+          ),
+          Expanded(
+            child: switch (view) {
+              CalendarView.schedule => _buildSchedule(context),
+              CalendarView.alarm => const AlarmsPanel(),
+              CalendarView.focus => const FocusPanel(),
+            },
+          ),
+        ],
+      ),
+      floatingActionButton: switch (view) {
+        CalendarView.schedule => FloatingActionButton(
+          tooltip: 'Add Event',
+          onPressed: () =>
+              _showAddEventDialog(context, prefilledDate: _selectedDate),
+          child: const Icon(Icons.add_rounded),
+        ),
+        CalendarView.alarm => FloatingActionButton(
+          tooltip: 'New alarm',
+          onPressed: () => showAlarmEditor(context),
+          child: const Icon(Icons.add_alarm_rounded),
+        ),
+        CalendarView.focus => null,
+      },
+    );
+  }
+
+  /// The schedule: one scroll holding the month, the pinned day header and
+  /// the events, so the list gets the whole screen once the month is passed.
+  Widget _buildSchedule(BuildContext context) {
     final AsyncValue<List<CalendarEvent>> eventsState = ref.watch(
       calendarControllerProvider,
     );
@@ -80,616 +205,503 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
         DateTime(shift.startsAt.year, shift.startsAt.month, shift.startsAt.day),
     };
 
-    return Scaffold(
-      appBar: AppTopBar(
-        title: 'Calendar',
-        actions: <Widget>[
-          IconButton(
-            icon: const Icon(Icons.today_rounded),
-            tooltip: 'Today',
-            onPressed: () => _showMonth(DateTime.now()),
-          ),
-          PopupMenuButton<void>(
-            icon: const Icon(Icons.more_vert_rounded),
-            tooltip: 'More',
-            itemBuilder: (BuildContext context) => <PopupMenuEntry<void>>[
-              PopupMenuItem<void>(
-                onTap: _addClass,
-                child: const Text('Add a class'),
-              ),
-              PopupMenuItem<void>(
-                onTap: () => addShift(context, ref, day: _selectedDate),
-                child: const Text('Add a shift'),
-              ),
-            ],
-          ),
-        ],
-      ),
-      body: eventsState.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (Object err, _) => Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Icon(Icons.error_outline_rounded, size: 48, color: colors.error),
-              AppSpacing.gapMd,
-              Text('Failed to load events: $err'),
-              AppSpacing.gapLg,
-              FilledButton(
-                onPressed: () =>
-                    ref.read(calendarControllerProvider.notifier).refresh(),
-                child: const Text('Retry'),
-              ),
-            ],
-          ),
+    return eventsState.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (Object err, _) => Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Icon(Icons.error_outline_rounded, size: 48, color: colors.error),
+            AppSpacing.gapMd,
+            Text('Failed to load events: $err'),
+            AppSpacing.gapLg,
+            FilledButton(
+              onPressed: () =>
+                  ref.read(calendarControllerProvider.notifier).refresh(),
+              child: const Text('Retry'),
+            ),
+          ],
         ),
-        data: (List<CalendarEvent> allEvents) {
-          final List<CalendarEvent> dayEvents = _eventsForDate(
-            allEvents,
-            _selectedDate,
-          )..sort((a, b) => a.startsAt.compareTo(b.startsAt));
+      ),
+      data: (List<CalendarEvent> allEvents) {
+        final List<CalendarEvent> dayEvents = _eventsForDate(
+          allEvents,
+          _selectedDate,
+        )..sort((a, b) => a.startsAt.compareTo(b.startsAt));
 
-          final List<CalendarEvent> displayedEvents = _filterByDay
-              ? dayEvents
-              : (List<CalendarEvent>.from(allEvents)
-                  ..sort((a, b) => a.startsAt.compareTo(b.startsAt)));
+        final List<CalendarEvent> displayedEvents = _filterByDay
+            ? dayEvents
+            : (List<CalendarEvent>.from(allEvents)
+                ..sort((a, b) => a.startsAt.compareTo(b.startsAt)));
 
-          return Column(
-            children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
-                child: MonthSwitcher(month: _viewMonth, onChanged: _showMonth),
-              ),
-              // Interactive Digital Month Calendar Card
-              Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.lg,
-                  0,
-                  AppSpacing.lg,
-                  AppSpacing.xs,
-                ),
-                child: GestureDetector(
-                  onHorizontalDragEnd: (DragEndDetails details) {
-                    final double velocity = details.primaryVelocity ?? 0;
-                    if (velocity.abs() < 200) return;
-                    _showMonth(
-                      DateTime(
-                        _viewMonth.year,
-                        _viewMonth.month + (velocity < 0 ? 1 : -1),
+        return RefreshIndicator(
+          onRefresh: () =>
+              ref.read(calendarControllerProvider.notifier).refresh(),
+          child: CustomScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            slivers: <Widget>[
+              SliverToBoxAdapter(
+                child: Column(
+                  children: <Widget>[
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.sm,
                       ),
-                    );
-                  },
-                  child: Card(
-                    elevation: 0,
-                    color: colors.surfaceContainerLowest,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: AppRadius.large,
-                      side: BorderSide(
-                        color: colors.outlineVariant,
-                        width: 1.0,
+                      child: MonthSwitcher(
+                        month: _viewMonth,
+                        onChanged: _showMonth,
                       ),
                     ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.md,
-                        vertical: AppSpacing.sm,
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(
+                        AppSpacing.lg,
+                        0,
+                        AppSpacing.lg,
+                        AppSpacing.xs,
                       ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: <Widget>[
-                          // Weekday labels
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            children: const <Widget>[
-                              _WeekdayHeader('S'),
-                              _WeekdayHeader('M'),
-                              _WeekdayHeader('T'),
-                              _WeekdayHeader('W'),
-                              _WeekdayHeader('T'),
-                              _WeekdayHeader('F'),
-                              _WeekdayHeader('S'),
-                            ],
+                      child: GestureDetector(
+                        onHorizontalDragEnd: (DragEndDetails details) {
+                          final double velocity = details.primaryVelocity ?? 0;
+                          if (velocity.abs() < 200) return;
+                          _showMonth(
+                            DateTime(
+                              _viewMonth.year,
+                              _viewMonth.month + (velocity < 0 ? 1 : -1),
+                            ),
+                          );
+                        },
+                        child: Card(
+                          margin: EdgeInsets.zero,
+                          elevation: 0,
+                          color: colors.surfaceContainerLowest,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: AppRadius.large,
+                            side: BorderSide(
+                              color: colors.outlineVariant,
+                              width: 1.0,
+                            ),
                           ),
-                          const SizedBox(height: 6),
-                          const Divider(height: 1),
-                          const SizedBox(height: 6),
-                          // Days grid
-                          _buildMonthGrid(
-                            allEvents,
-                            shiftDays,
-                            today,
-                            colors,
-                            textStyles,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: AppSpacing.md,
+                              vertical: AppSpacing.xs,
+                            ),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: <Widget>[
+                                const Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceAround,
+                                  children: <Widget>[
+                                    _WeekdayHeader('S'),
+                                    _WeekdayHeader('M'),
+                                    _WeekdayHeader('T'),
+                                    _WeekdayHeader('W'),
+                                    _WeekdayHeader('T'),
+                                    _WeekdayHeader('F'),
+                                    _WeekdayHeader('S'),
+                                  ],
+                                ),
+                                const Divider(height: 1),
+                                _buildMonthGrid(
+                                  allEvents,
+                                  shiftDays,
+                                  today,
+                                  colors,
+                                  textStyles,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SliverPersistentHeader(
+                pinned: true,
+                delegate: _AgendaHeader(
+                  background: colors.surface,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.lg,
+                    ),
+                    child: Row(
+                      children: <Widget>[
+                        Expanded(
+                          child: Text(
+                            _filterByDay
+                                ? DateFormat('EEEE, MMM d')
+                                      .format(_selectedDate)
+                                : 'All events (${displayedEvents.length})',
+                            style: textStyles.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        FilterChip(
+                          label: const Text('This day'),
+                          selected: _filterByDay,
+                          // The tick would claim "today" for any other day.
+                          showCheckmark: _isSameDay(_selectedDate, today),
+                          visualDensity: VisualDensity.compact,
+                          onSelected: (bool selected) {
+                            setState(() => _filterByDay = selected);
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              if (_filterByDay)
+                SliverToBoxAdapter(child: DayShifts(day: _selectedDate)),
+              if (displayedEvents.isEmpty)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: AppSpacing.xl,
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        const Ponpon(mood: PonponMood.sleepy, size: 88),
+                        AppSpacing.gapMd,
+                        Text(
+                          _filterByDay
+                              ? (shiftDays.contains(_selectedDate)
+                                    ? 'No other events on ${DateFormat('MMM d').format(_selectedDate)}'
+                                    : 'No events on ${DateFormat('MMM d').format(_selectedDate)}')
+                              : 'No events scheduled',
+                          style: textStyles.titleMedium?.copyWith(
+                            color: colors.onSurfaceVariant,
+                          ),
+                        ),
+                        AppSpacing.gapSm,
+                        FilledButton.tonalIcon(
+                          icon: const Icon(Icons.add_rounded),
+                          label: Text(
+                            'Add Event for ${DateFormat('MMM d').format(_selectedDate)}',
+                          ),
+                          onPressed: () => _showAddEventDialog(
+                            context,
+                            prefilledDate: _selectedDate,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              else
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.lg,
+                    AppSpacing.xs,
+                    AppSpacing.lg,
+                    96,
+                  ),
+                  sliver: SliverList.separated(
+                    itemCount: displayedEvents.length,
+                    separatorBuilder: (_, _) => AppSpacing.gapSm,
+                    itemBuilder: (BuildContext context, int index) =>
+                        _eventRow(displayedEvents[index], today),
+                  ),
+                ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  /// One compact event: a time rail (a date pill in "All events"), the title
+  /// with place and badges, and the note button. Long-press deletes.
+  Widget _eventRow(CalendarEvent event, DateTime today) {
+    final ColorScheme colors = context.colors;
+    final TextTheme textStyles = context.textStyles;
+    final DateTime start = event.startsAt.toLocal();
+    final DateTime localStart = _filterByDay
+        ? DateTime(
+            _selectedDate.year,
+            _selectedDate.month,
+            _selectedDate.day,
+            start.hour,
+            start.minute,
+          )
+        : start;
+    final String? countdown = event.countdownBadge(today);
+    final bool hasLocation =
+        event.location != null && event.location!.isNotEmpty;
+    final String when = DateFormat('h:mm a').format(localStart);
+
+    final Widget lead = _filterByDay
+        ? Row(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Container(
+                width: 4,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: colors.primary,
+                  borderRadius: AppRadius.pill,
+                ),
+              ),
+              AppSpacing.gapSm,
+              SizedBox(
+                width: 64,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text(
+                      when,
+                      style: textStyles.labelLarge?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        fontFeatures: _tabular,
+                      ),
+                    ),
+                    Text(
+                      '${event.durationMinutes}m',
+                      style: textStyles.labelSmall?.copyWith(
+                        color: colors.onSurfaceVariant,
+                        fontFeatures: _tabular,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          )
+        : Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: colors.primaryContainer,
+              borderRadius: AppRadius.small,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Text(
+                  DateFormat('MMM').format(localStart).toUpperCase(),
+                  style: textStyles.labelSmall?.copyWith(
+                    color: colors.onPrimaryContainer,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  DateFormat('d').format(localStart),
+                  style: textStyles.titleMedium?.copyWith(
+                    color: colors.onPrimaryContainer,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          );
+
+    final List<String> details = <String>[
+      if (!_filterByDay) '$when (${event.durationMinutes}m)',
+      if (hasLocation) event.location!,
+    ];
+
+    return Card(
+      margin: EdgeInsets.zero,
+      elevation: 0,
+      color: colors.surfaceContainerLowest,
+      shape: RoundedRectangleBorder(
+        borderRadius: AppRadius.large,
+        side: BorderSide(color: colors.outlineVariant, width: 1.0),
+      ),
+      child: InkWell(
+        borderRadius: AppRadius.large,
+        onTap: () => _showAddEventDialog(context, existingEvent: event),
+        onLongPress: () => _confirmDelete(event),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: 72),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.md,
+              AppSpacing.sm,
+              AppSpacing.xs,
+              AppSpacing.sm,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: <Widget>[
+                    lead,
+                    AppSpacing.gapMd,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          if (countdown != null)
+                            Container(
+                              margin: const EdgeInsets.only(bottom: 2),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 1,
+                              ),
+                              decoration: BoxDecoration(
+                                color: event.isExam
+                                    ? colors.errorContainer
+                                    : colors.primaryContainer,
+                                borderRadius: AppRadius.pill,
+                                border: Border.all(
+                                  color:
+                                      (event.isExam
+                                              ? colors.error
+                                              : colors.primary)
+                                          .withValues(alpha: 0.3),
+                                  width: 0.75,
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: <Widget>[
+                                  Icon(
+                                    event.isExam
+                                        ? Icons.error_outline_rounded
+                                        : Icons.assignment_late_outlined,
+                                    size: 13,
+                                    color: event.isExam
+                                        ? colors.onErrorContainer
+                                        : colors.onPrimaryContainer,
+                                  ),
+                                  AppSpacing.gapXs,
+                                  Flexible(
+                                    child: Text(
+                                      event.isExam
+                                          ? 'Exam • $countdown'
+                                          : 'Due • $countdown',
+                                      style: textStyles.labelSmall?.copyWith(
+                                        color: event.isExam
+                                            ? colors.onErrorContainer
+                                            : colors.onPrimaryContainer,
+                                        fontWeight: FontWeight.bold,
+                                        fontFeatures: _tabular,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          Text(
+                            event.title,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: textStyles.titleSmall?.copyWith(
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          if (details.isNotEmpty)
+                            Text(
+                              details.join(' · '),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: textStyles.bodySmall?.copyWith(
+                                color: colors.onSurfaceVariant,
+                                fontFeatures: _tabular,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      icon: Icon(
+                        event.noteId != null
+                            ? Icons.article_rounded
+                            : Icons.note_add_outlined,
+                        size: 22,
+                        color: event.noteId != null
+                            ? colors.primary
+                            : colors.onSurfaceVariant,
+                      ),
+                      tooltip: event.noteId != null ? 'Open note' : 'Add note',
+                      onPressed: () => _openNote(event),
+                    ),
+                  ],
+                ),
+                for (int i = 0; i < event.checklistItems.length; i++)
+                  InkWell(
+                    borderRadius: AppRadius.small,
+                    onTap: () async {
+                      final CalendarEvent updated = event.toggleChecklistItem(
+                        i,
+                      );
+                      await ref
+                          .read(calendarControllerProvider.notifier)
+                          .updateEvent(updated);
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 2.5),
+                      child: Row(
+                        children: <Widget>[
+                          Icon(
+                            event.checklistItems[i].done
+                                ? Icons.check_box_rounded
+                                : Icons.check_box_outline_blank_rounded,
+                            size: 17,
+                            color: event.checklistItems[i].done
+                                ? colors.primary
+                                : colors.onSurfaceVariant,
+                          ),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              event.checklistItems[i].text,
+                              style: textStyles.bodySmall?.copyWith(
+                                decoration: event.checklistItems[i].done
+                                    ? TextDecoration.lineThrough
+                                    : null,
+                                color: event.checklistItems[i].done
+                                    ? colors.onSurfaceVariant
+                                    : colors.onSurface,
+                              ),
+                            ),
                           ),
                         ],
                       ),
                     ),
                   ),
-                ),
-              ),
-
-              // Agenda Section Header
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.lg,
-                  vertical: AppSpacing.xs,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: <Widget>[
-                    Expanded(
-                      child: Text(
-                        _filterByDay
-                            ? DateFormat('EEEE, MMM d').format(_selectedDate)
-                            : 'All events (${displayedEvents.length})',
-                        style: textStyles.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                if (event.recurrence != 'none')
+                  Padding(
+                    padding: const EdgeInsets.only(top: 2),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 1,
+                      ),
+                      decoration: BoxDecoration(
+                        borderRadius: AppRadius.pill,
+                        border: Border.all(color: colors.outlineVariant),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                          Icon(
+                            Icons.repeat_rounded,
+                            size: 13,
+                            color: colors.primary,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Repeats ${event.recurrence}',
+                            style: textStyles.labelSmall?.copyWith(
+                              color: colors.primary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    FilterChip(
-                      label: const Text('This day'),
-                      selected: _filterByDay,
-                      // The tick would claim "today" for any other day.
-                      showCheckmark: _isSameDay(_selectedDate, today),
-                      visualDensity: VisualDensity.compact,
-                      onSelected: (bool selected) {
-                        setState(() => _filterByDay = selected);
-                      },
-                    ),
-                  ],
-                ),
-              ),
-
-              if (_filterByDay) DayShifts(day: _selectedDate),
-
-              // Events List
-              Expanded(
-                child: displayedEvents.isEmpty
-                    ? Center(
-                        // Scrolls on short screens instead of overflowing.
-                        child: SingleChildScrollView(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: <Widget>[
-                              const Ponpon(mood: PonponMood.sleepy, size: 88),
-                              AppSpacing.gapMd,
-                              Text(
-                                _filterByDay
-                                    ? (shiftDays.contains(_selectedDate)
-                                          ? 'No other events on ${DateFormat('MMM d').format(_selectedDate)}'
-                                          : 'No events on ${DateFormat('MMM d').format(_selectedDate)}')
-                                    : 'No events scheduled',
-                                style: textStyles.titleMedium?.copyWith(
-                                  color: colors.onSurfaceVariant,
-                                ),
-                              ),
-                              AppSpacing.gapSm,
-                              FilledButton.tonalIcon(
-                                icon: const Icon(Icons.add_rounded),
-                                label: Text(
-                                  'Add Event for ${DateFormat('MMM d').format(_selectedDate)}',
-                                ),
-                                onPressed: () => _showAddEventDialog(
-                                  context,
-                                  prefilledDate: _selectedDate,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      )
-                    : RefreshIndicator(
-                        onRefresh: () => ref
-                            .read(calendarControllerProvider.notifier)
-                            .refresh(),
-                        child: ListView.separated(
-                          padding: const EdgeInsets.fromLTRB(
-                            AppSpacing.lg,
-                            AppSpacing.sm,
-                            AppSpacing.lg,
-                            96,
-                          ),
-                          itemCount: displayedEvents.length,
-                          separatorBuilder: (_, _) => AppSpacing.gapMd,
-                          itemBuilder: (BuildContext context, int index) {
-                            final CalendarEvent event = displayedEvents[index];
-                            final DateTime start = event.startsAt.toLocal();
-                            final DateTime localStart = _filterByDay
-                                ? DateTime(
-                                    _selectedDate.year,
-                                    _selectedDate.month,
-                                    _selectedDate.day,
-                                    start.hour,
-                                    start.minute,
-                                  )
-                                : start;
-                            final String? countdown = event.countdownBadge(
-                              today,
-                            );
-
-                            return Card(
-                              elevation: 0,
-                              color: colors.surfaceContainerLowest,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: AppRadius.large,
-                                side: BorderSide(
-                                  color: colors.outlineVariant,
-                                  width: 1.0,
-                                ),
-                              ),
-                              child: InkWell(
-                                borderRadius: AppRadius.large,
-                                onTap: () => _showAddEventDialog(
-                                  context,
-                                  existingEvent: event,
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.fromLTRB(
-                                    AppSpacing.lg,
-                                    AppSpacing.lg,
-                                    AppSpacing.sm,
-                                    AppSpacing.xs,
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: <Widget>[
-                                      Row(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: <Widget>[
-                                          // Lavender Date Pill
-                                          Container(
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 10,
-                                              vertical: 6,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              color: colors.primaryContainer,
-                                              borderRadius: AppRadius.small,
-                                            ),
-                                            child: Column(
-                                              children: <Widget>[
-                                                Text(
-                                                  DateFormat('MMM')
-                                                      .format(localStart)
-                                                      .toUpperCase(),
-                                                  style: textStyles.labelSmall
-                                                      ?.copyWith(
-                                                        color: colors
-                                                            .onPrimaryContainer,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                      ),
-                                                ),
-                                                Text(
-                                                  DateFormat('d')
-                                                      .format(localStart),
-                                                  style: textStyles.titleMedium
-                                                      ?.copyWith(
-                                                        color: colors
-                                                            .onPrimaryContainer,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                      ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          AppSpacing.gapMd,
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: <Widget>[
-                                                if (countdown !=
-                                                    null) ...<Widget>[
-                                                  Container(
-                                                    margin:
-                                                        const EdgeInsets.only(
-                                                          bottom: 4,
-                                                        ),
-                                                    padding:
-                                                        const EdgeInsets.symmetric(
-                                                          horizontal: 8,
-                                                          vertical: 2,
-                                                        ),
-                                                    decoration: BoxDecoration(
-                                                      color: event.isExam
-                                                          ? colors
-                                                                .errorContainer
-                                                          : colors
-                                                                .primaryContainer,
-                                                      borderRadius:
-                                                          AppRadius.pill,
-                                                      border: Border.all(
-                                                        color: event.isExam
-                                                            ? colors.error
-                                                                  .withValues(
-                                                                    alpha: 0.3,
-                                                                  )
-                                                            : colors.primary
-                                                                  .withValues(
-                                                                    alpha: 0.3,
-                                                                  ),
-                                                        width: 0.75,
-                                                      ),
-                                                    ),
-                                                    child: Row(
-                                                      mainAxisSize:
-                                                          MainAxisSize.min,
-                                                      children: <Widget>[
-                                                        Icon(
-                                                          event.isExam
-                                                              ? Icons
-                                                                    .error_outline_rounded
-                                                              : Icons
-                                                                    .assignment_late_outlined,
-                                                          size: 14,
-                                                          color: event.isExam
-                                                              ? colors
-                                                                    .onErrorContainer
-                                                              : colors
-                                                                    .onPrimaryContainer,
-                                                        ),
-                                                        AppSpacing.gapXs,
-                                                        Flexible(
-                                                          child: Text(
-                                                            event.isExam
-                                                                ? 'Exam • $countdown'
-                                                                : 'Due • $countdown',
-                                                            style: textStyles
-                                                                .labelSmall
-                                                                ?.copyWith(
-                                                                  color:
-                                                                      event
-                                                                          .isExam
-                                                                      ? colors
-                                                                            .onErrorContainer
-                                                                      : colors
-                                                                            .onPrimaryContainer,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold,
-                                                                  fontFeatures:
-                                                                      const <
-                                                                        FontFeature
-                                                                      >[
-                                                                        FontFeature.tabularFigures(),
-                                                                      ],
-                                                                ),
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                ],
-                                                Text(
-                                                  event.title,
-                                                  style: textStyles.titleMedium
-                                                      ?.copyWith(
-                                                        fontWeight:
-                                                            FontWeight.w700,
-                                                      ),
-                                                ),
-                                                AppSpacing.gapXs,
-                                                Row(
-                                                  children: <Widget>[
-                                                    Icon(
-                                                      Icons.access_time_rounded,
-                                                      size: 15,
-                                                      color: colors
-                                                          .onSurfaceVariant,
-                                                    ),
-                                                    const SizedBox(width: 4),
-                                                    Text(
-                                                      '${DateFormat('h:mm a').format(localStart)} (${event.durationMinutes}m)',
-                                                      style: textStyles
-                                                          .bodySmall
-                                                          ?.copyWith(
-                                                            color: colors
-                                                                .onSurfaceVariant,
-                                                          ),
-                                                    ),
-                                                  ],
-                                                ),
-                                                if (event.location != null &&
-                                                    event
-                                                        .location!
-                                                        .isNotEmpty) ...<
-                                                  Widget
-                                                >[
-                                                  AppSpacing.gapXs,
-                                                  Row(
-                                                    children: <Widget>[
-                                                      Icon(
-                                                        Icons
-                                                            .location_on_outlined,
-                                                        size: 15,
-                                                        color: colors
-                                                            .onSurfaceVariant,
-                                                      ),
-                                                      const SizedBox(width: 4),
-                                                      Expanded(
-                                                        child: Text(
-                                                          event.location!,
-                                                          style: textStyles
-                                                              .bodySmall
-                                                              ?.copyWith(
-                                                                color: colors
-                                                                    .onSurfaceVariant,
-                                                              ),
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ],
-                                              ],
-                                            ),
-                                          ),
-                                          IconButton(
-                                            icon: Icon(
-                                              Icons.delete_outline_rounded,
-                                              size: 20,
-                                              color: colors.onSurfaceVariant,
-                                            ),
-                                            tooltip: 'Delete',
-                                            onPressed: () =>
-                                                _confirmDelete(event),
-                                          ),
-                                        ],
-                                      ),
-                                      if (event
-                                          .checklistItems
-                                          .isNotEmpty) ...<Widget>[
-                                        const SizedBox(height: 6),
-                                        for (
-                                          int i = 0;
-                                          i < event.checklistItems.length;
-                                          i++
-                                        ) ...<Widget>[
-                                          InkWell(
-                                            borderRadius: AppRadius.small,
-                                            onTap: () async {
-                                              final CalendarEvent updated =
-                                                  event.toggleChecklistItem(i);
-                                              await ref
-                                                  .read(
-                                                    calendarControllerProvider
-                                                        .notifier,
-                                                  )
-                                                  .updateEvent(updated);
-                                            },
-                                            child: Padding(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                    vertical: 2.5,
-                                                  ),
-                                              child: Row(
-                                                children: <Widget>[
-                                                  Icon(
-                                                    event.checklistItems[i].done
-                                                        ? Icons
-                                                              .check_box_rounded
-                                                        : Icons
-                                                              .check_box_outline_blank_rounded,
-                                                    size: 17,
-                                                    color:
-                                                        event
-                                                            .checklistItems[i]
-                                                            .done
-                                                        ? colors.primary
-                                                        : colors
-                                                              .onSurfaceVariant,
-                                                  ),
-                                                  const SizedBox(width: 6),
-                                                  Expanded(
-                                                    child: Text(
-                                                      event
-                                                          .checklistItems[i]
-                                                          .text,
-                                                      style: textStyles.bodySmall?.copyWith(
-                                                        decoration:
-                                                            event
-                                                                .checklistItems[i]
-                                                                .done
-                                                            ? TextDecoration
-                                                                  .lineThrough
-                                                            : null,
-                                                        color:
-                                                            event
-                                                                .checklistItems[i]
-                                                                .done
-                                                            ? colors
-                                                                  .onSurfaceVariant
-                                                            : colors.onSurface,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                        const SizedBox(height: 4),
-                                      ],
-                                      Row(
-                                        children: <Widget>[
-                                          if (event.recurrence != 'none')
-                                            Container(
-                                              margin: const EdgeInsets.only(
-                                                right: AppSpacing.sm,
-                                              ),
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                    horizontal: 8,
-                                                    vertical: 2,
-                                                  ),
-                                              decoration: BoxDecoration(
-                                                borderRadius: AppRadius.pill,
-                                                border: Border.all(
-                                                  color: colors.outlineVariant,
-                                                ),
-                                              ),
-                                              child: Row(
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: <Widget>[
-                                                  Icon(
-                                                    Icons.repeat_rounded,
-                                                    size: 13,
-                                                    color: colors.primary,
-                                                  ),
-                                                  const SizedBox(width: 4),
-                                                  Text(
-                                                    'Repeats ${event.recurrence}',
-                                                    style: textStyles.labelSmall
-                                                        ?.copyWith(
-                                                          color: colors.primary,
-                                                          fontWeight:
-                                                              FontWeight.w600,
-                                                        ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          const Spacer(),
-                                          TextButton.icon(
-                                            style: TextButton.styleFrom(
-                                              visualDensity:
-                                                  VisualDensity.compact,
-                                            ),
-                                            onPressed: () => _openNote(event),
-                                            icon: const Icon(
-                                              Icons.article_outlined,
-                                              size: 18,
-                                            ),
-                                            label: Text(
-                                              event.noteId != null
-                                                  ? 'Open note'
-                                                  : 'Add note',
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-              ),
-            ],
-          );
-        },
-      ),
-      floatingActionButton: FloatingActionButton(
-        tooltip: 'Add Event',
-        onPressed: () =>
-            _showAddEventDialog(context, prefilledDate: _selectedDate),
-        child: const Icon(Icons.add_rounded),
+                  ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -764,7 +776,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
       mainAxisSize: MainAxisSize.min,
       children: List<Widget>.generate(rowCount, (int rowIndex) {
         return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 2),
+          padding: EdgeInsets.zero,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: List<Widget>.generate(7, (int colIndex) {
@@ -804,6 +816,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                     });
                   },
                   child: AnimatedContainer(
+                    margin: const EdgeInsets.all(2),
                     duration: const Duration(milliseconds: 150),
                     curve: Curves.easeOutCubic,
                     decoration: BoxDecoration(
@@ -894,7 +907,8 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     });
   }
 
-  Future<void> _confirmDelete(CalendarEvent event) async {
+  /// Asks, then deletes [event]. True when it was deleted.
+  Future<bool> _confirmDelete(CalendarEvent event) async {
     final bool repeats = event.recurrence != 'none';
     final bool confirmed = await confirmDestructive(
       context,
@@ -907,6 +921,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     if (confirmed) {
       await ref.read(calendarControllerProvider.notifier).deleteEvent(event.id);
     }
+    return confirmed;
   }
 
   Future<void> _showAddEventDialog(
@@ -1264,6 +1279,23 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                           ),
                         ),
                       ),
+                      if (existingEvent != null)
+                        TextButton.icon(
+                          style: TextButton.styleFrom(
+                            foregroundColor: ctx.colors.error,
+                            minimumSize: const Size.fromHeight(
+                              AppSizes.minTouchTarget,
+                            ),
+                          ),
+                          icon: const Icon(Icons.delete_outline_rounded),
+                          label: const Text('Delete event'),
+                          onPressed: () async {
+                            if (await _confirmDelete(existingEvent) &&
+                                ctx.mounted) {
+                              Navigator.pop(ctx);
+                            }
+                          },
+                        ),
                     ],
                   ),
                 ),
@@ -1295,4 +1327,36 @@ class _WeekdayHeader extends StatelessWidget {
       ),
     );
   }
+}
+
+/// The pinned "day title + This day" strip above the event list.
+class _AgendaHeader extends SliverPersistentHeaderDelegate {
+  const _AgendaHeader({required this.background, required this.child});
+
+  final Color background;
+  final Widget child;
+
+  static const double _height = 48;
+
+  @override
+  double get minExtent => _height;
+
+  @override
+  double get maxExtent => _height;
+
+  @override
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
+    return ColoredBox(
+      color: background,
+      child: Align(alignment: Alignment.centerLeft, child: child),
+    );
+  }
+
+  @override
+  bool shouldRebuild(_AgendaHeader oldDelegate) =>
+      oldDelegate.background != background || oldDelegate.child != child;
 }

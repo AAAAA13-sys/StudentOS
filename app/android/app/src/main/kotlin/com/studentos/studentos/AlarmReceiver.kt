@@ -26,7 +26,7 @@ class AlarmReceiver : BroadcastReceiver() {
         }
 
         // The next alarm on the Clock widget has moved on.
-        ClockWidgetProvider.refresh(context)
+        CalendarWidgetProvider.refresh(context)
 
         val service = Intent(context, AlarmService::class.java)
             .setAction(AlarmService.ACTION_START)

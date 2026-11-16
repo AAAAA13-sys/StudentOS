@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../features/calendar/calendar_screen.dart';
 import '../../features/finance/finance_screen.dart';
 import '../../features/notes/notes_screen.dart';
-import '../../features/focus/clock_screen.dart';
+import '../../features/focus/clock_panels.dart';
 import '../widgets/scaffold_with_nav_bar.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>(
@@ -17,6 +17,9 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((ref) {
     navigatorKey: _rootNavigatorKey,
     initialLocation: '/calendar',
     routes: <RouteBase>[
+      // The old Clock and Focus pages now live inside the Calendar tab.
+      GoRoute(path: '/clock', redirect: (_, _) => '/calendar?view=alarm'),
+      GoRoute(path: '/focus', redirect: (_, _) => '/calendar?view=focus'),
       StatefulShellRoute.indexedStack(
         builder:
             (
@@ -32,7 +35,10 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: '/calendar',
                 builder: (BuildContext context, GoRouterState state) =>
-                    const CalendarScreen(),
+                    _ViewFromQuery(
+                      view: state.uri.queryParameters['view'],
+                      child: const CalendarScreen(),
+                    ),
               ),
             ],
           ),
@@ -54,17 +60,49 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((ref) {
               ),
             ],
           ),
-          StatefulShellBranch(
-            routes: <RouteBase>[
-              GoRoute(
-                path: '/clock',
-                builder: (BuildContext context, GoRouterState state) =>
-                    const ClockScreen(),
-              ),
-            ],
-          ),
         ],
       ),
     ],
   );
 });
+
+/// Opens the Calendar tab on the view named by `?view=` (`alarm`, `focus`).
+class _ViewFromQuery extends ConsumerStatefulWidget {
+  const _ViewFromQuery({required this.view, required this.child});
+
+  final String? view;
+  final Widget child;
+
+  @override
+  ConsumerState<_ViewFromQuery> createState() => _ViewFromQueryState();
+}
+
+class _ViewFromQueryState extends ConsumerState<_ViewFromQuery> {
+  @override
+  void initState() {
+    super.initState();
+    _apply();
+  }
+
+  @override
+  void didUpdateWidget(_ViewFromQuery old) {
+    super.didUpdateWidget(old);
+    if (old.view != widget.view) _apply();
+  }
+
+  void _apply() {
+    final CalendarView? view = switch (widget.view) {
+      'alarm' => CalendarView.alarm,
+      'focus' => CalendarView.focus,
+      'schedule' => CalendarView.schedule,
+      _ => null,
+    };
+    if (view == null) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) ref.read(calendarViewProvider.notifier).show(view);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
+}

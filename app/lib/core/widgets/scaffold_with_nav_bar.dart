@@ -6,13 +6,10 @@ import '../../features/calendar/calendar_screen.dart';
 import '../../features/focus/focus_controller.dart';
 import '../../features/focus/focus_plan.dart';
 import '../../features/focus/focus_platform.dart';
-import '../../features/focus/clock_screen.dart';
+import '../../features/focus/clock_panels.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_theme.dart';
 import 'app_drawer.dart';
-
-/// Index of the Clock tab in the bottom bar.
-const int clockTabIndex = 3;
 
 class ScaffoldWithNavBar extends ConsumerStatefulWidget {
   const ScaffoldWithNavBar({required this.navigationShell, super.key});
@@ -53,21 +50,22 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar> {
     final StatefulNavigationShell shell = widget.navigationShell;
     switch (route) {
       case 'calendar':
+        ref.read(calendarViewProvider.notifier).show(CalendarView.schedule);
         ref.read(calendarShowTodayProvider.notifier).request();
         shell.goBranch(0);
       case 'finance':
         shell.goBranch(1);
       case 'clock':
-        ref.read(clockPanelProvider.notifier).show(ClockPanel.alarm);
-        shell.goBranch(clockTabIndex);
+        ref.read(calendarViewProvider.notifier).show(CalendarView.alarm);
+        shell.goBranch(0);
       case 'start_focus':
-        ref.read(clockPanelProvider.notifier).show(ClockPanel.focus);
-        shell.goBranch(clockTabIndex);
+        ref.read(calendarViewProvider.notifier).show(CalendarView.focus);
+        shell.goBranch(0);
         await _startFocusFromWidget();
       default:
         if (isTimerRoute(route)) {
-          ref.read(clockPanelProvider.notifier).show(ClockPanel.focus);
-          shell.goBranch(clockTabIndex);
+          ref.read(calendarViewProvider.notifier).show(CalendarView.focus);
+          shell.goBranch(0);
         }
     }
   }
@@ -96,60 +94,69 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar> {
         .value
         ?.session;
 
-    return Scaffold(
-      drawer: const AppDrawer(),
-      body: shell,
-      bottomNavigationBar: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          if (session != null && shell.currentIndex != clockTabIndex)
-            _FocusBanner(
-              session: session,
-              onTap: () {
-                ref.read(clockPanelProvider.notifier).show(ClockPanel.focus);
-                shell.goBranch(clockTabIndex);
-              },
-            ),
-          Container(
-            decoration: BoxDecoration(
-              color: colors.surfaceContainerLowest,
-              border: Border(
-                top: BorderSide(color: colors.outlineVariant, width: 1.0),
+    final CalendarView view = ref.watch(calendarViewProvider);
+    final bool onCalendar = shell.currentIndex == 0;
+
+    // Back on the Alarms or Focus view returns to the Schedule first.
+    return PopScope(
+      canPop: !(onCalendar && view != CalendarView.schedule),
+      onPopInvokedWithResult: (bool didPop, Object? _) {
+        if (!didPop) {
+          ref.read(calendarViewProvider.notifier).show(CalendarView.schedule);
+        }
+      },
+      child: Scaffold(
+        drawer: const AppDrawer(),
+        body: shell,
+        bottomNavigationBar: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            if (session != null && !(onCalendar && view == CalendarView.focus))
+              _FocusBanner(
+                session: session,
+                onTap: () {
+                  ref
+                      .read(calendarViewProvider.notifier)
+                      .show(CalendarView.focus);
+                  shell.goBranch(0);
+                },
+              ),
+            Container(
+              decoration: BoxDecoration(
+                color: colors.surfaceContainerLowest,
+                border: Border(
+                  top: BorderSide(color: colors.outlineVariant, width: 1.0),
+                ),
+              ),
+              child: NavigationBar(
+                selectedIndex: shell.currentIndex,
+                onDestinationSelected: (int index) {
+                  shell.goBranch(
+                    index,
+                    initialLocation: index == shell.currentIndex,
+                  );
+                },
+                destinations: const <NavigationDestination>[
+                  NavigationDestination(
+                    icon: Icon(Icons.calendar_month_outlined),
+                    selectedIcon: Icon(Icons.calendar_month_rounded),
+                    label: 'Calendar',
+                  ),
+                  NavigationDestination(
+                    icon: Icon(Icons.account_balance_wallet_outlined),
+                    selectedIcon: Icon(Icons.account_balance_wallet_rounded),
+                    label: 'Finance',
+                  ),
+                  NavigationDestination(
+                    icon: Icon(Icons.article_outlined),
+                    selectedIcon: Icon(Icons.article_rounded),
+                    label: 'Notes',
+                  ),
+                ],
               ),
             ),
-            child: NavigationBar(
-              selectedIndex: shell.currentIndex,
-              onDestinationSelected: (int index) {
-                shell.goBranch(
-                  index,
-                  initialLocation: index == shell.currentIndex,
-                );
-              },
-              destinations: const <NavigationDestination>[
-                NavigationDestination(
-                  icon: Icon(Icons.calendar_month_outlined),
-                  selectedIcon: Icon(Icons.calendar_month_rounded),
-                  label: 'Calendar',
-                ),
-                NavigationDestination(
-                  icon: Icon(Icons.account_balance_wallet_outlined),
-                  selectedIcon: Icon(Icons.account_balance_wallet_rounded),
-                  label: 'Finance',
-                ),
-                NavigationDestination(
-                  icon: Icon(Icons.article_outlined),
-                  selectedIcon: Icon(Icons.article_rounded),
-                  label: 'Notes',
-                ),
-                NavigationDestination(
-                  icon: Icon(Icons.alarm_outlined),
-                  selectedIcon: Icon(Icons.alarm_rounded),
-                  label: 'Clock',
-                ),
-              ],
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

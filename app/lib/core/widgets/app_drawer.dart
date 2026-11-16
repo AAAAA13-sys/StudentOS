@@ -185,20 +185,14 @@ class AppDrawer extends ConsumerWidget {
                 (
                   'calendar',
                   Icons.calendar_month_outlined,
-                  'Calendar',
-                  'Your next event',
+                  'Today',
+                  'Next class, alarm and focus timer',
                 ),
                 (
                   'finance',
                   Icons.account_balance_wallet_outlined,
                   'Money',
-                  'Safe to spend today',
-                ),
-                (
-                  'clock',
-                  Icons.alarm_outlined,
-                  'Clock',
-                  'Next alarm and focus',
+                  'Spent today and left this month',
                 ),
               ])
             ListTile(

@@ -132,7 +132,7 @@ void main() {
     await tester.pump();
     await tester.pumpAndSettle();
 
-    expect(find.text('Net Balance'), findsOneWidget);
+    expect(find.text('Left this month'), findsOneWidget);
     expect(find.textContaining('Lunch at cafeteria'), findsOneWidget);
     expect(find.textContaining('Weekly allowance'), findsOneWidget);
     expect(find.byType(FloatingActionButton), findsOneWidget);

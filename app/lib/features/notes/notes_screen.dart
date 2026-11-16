@@ -177,195 +177,10 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
                                   96,
                                 ),
                                 itemCount: state.notes.length,
-                                separatorBuilder: (_, _) => AppSpacing.gapMd,
+                                separatorBuilder: (_, _) => AppSpacing.gapSm,
                                 itemBuilder: (BuildContext context, int index) {
                                   final Note note = state.notes[index];
-                                  final DateTime? updated = note.updatedAt
-                                      ?.toLocal();
-
-                                  return Card(
-                                    child: InkWell(
-                                      borderRadius: AppRadius.large,
-                                      onTap: () =>
-                                          showNoteEditor(context, ref, note),
-                                      child: Padding(
-                                        padding: AppSpacing.card,
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: <Widget>[
-                                            Row(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: <Widget>[
-                                                Expanded(
-                                                  child: Text(
-                                                    note.title,
-                                                    style: textStyles
-                                                        .titleMedium
-                                                        ?.copyWith(
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                        ),
-                                                  ),
-                                                ),
-                                                IconButton(
-                                                  icon: Icon(
-                                                    Icons
-                                                        .delete_outline_rounded,
-                                                    size: 20,
-                                                    color:
-                                                        colors.onSurfaceVariant,
-                                                  ),
-                                                  tooltip: 'Delete',
-                                                  onPressed: () async {
-                                                    final bool confirmed =
-                                                        await confirmDestructive(
-                                                          context,
-                                                          title: 'Delete note?',
-                                                          message:
-                                                              '"${note.title}" will be removed.',
-                                                        );
-                                                    if (confirmed) {
-                                                      await ref
-                                                          .read(
-                                                            notesControllerProvider
-                                                                .notifier,
-                                                          )
-                                                          .deleteNote(note.id);
-                                                    }
-                                                  },
-                                                ),
-                                              ],
-                                            ),
-                                            if (note
-                                                .body
-                                                .isNotEmpty) ...<Widget>[
-                                              AppSpacing.gapSm,
-                                              Text(
-                                                note.body,
-                                                maxLines: 3,
-                                                overflow: TextOverflow.ellipsis,
-                                                style: textStyles.bodyMedium
-                                                    ?.copyWith(
-                                                      color: colors
-                                                          .onSurfaceVariant,
-                                                    ),
-                                              ),
-                                            ],
-                                            if (note
-                                                .recallCards
-                                                .isNotEmpty) ...<Widget>[
-                                              AppSpacing.gapSm,
-                                              InkWell(
-                                                borderRadius: AppRadius.pill,
-                                                onTap: () => showQuizSheet(
-                                                  context,
-                                                  note,
-                                                ),
-                                                child: Container(
-                                                  padding:
-                                                      const EdgeInsets.symmetric(
-                                                        horizontal: 10,
-                                                        vertical: 4,
-                                                      ),
-                                                  decoration: BoxDecoration(
-                                                    color:
-                                                        colors.primaryContainer,
-                                                    borderRadius:
-                                                        AppRadius.pill,
-                                                    border: Border.all(
-                                                      color: colors.primary
-                                                          .withValues(
-                                                            alpha: 0.3,
-                                                          ),
-                                                      width: 0.75,
-                                                    ),
-                                                  ),
-                                                  child: Row(
-                                                    mainAxisSize:
-                                                        MainAxisSize.min,
-                                                    children: <Widget>[
-                                                      Icon(
-                                                        Icons.bolt_rounded,
-                                                        size: 15,
-                                                        color: colors.primary,
-                                                      ),
-                                                      const SizedBox(width: 4),
-                                                      Text(
-                                                        '${note.recallCards.length} ${note.recallCards.length == 1 ? 'card' : 'cards'} • Practice Recall',
-                                                        style: textStyles
-                                                            .labelSmall
-                                                            ?.copyWith(
-                                                              color: colors
-                                                                  .onPrimaryContainer,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                            ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                            // Nothing between the title and
-                                            // the stamp: no gap to speak of.
-                                            if (note.body.isNotEmpty ||
-                                                note.recallCards.isNotEmpty)
-                                              AppSpacing.gapMd
-                                            else
-                                              AppSpacing.gapXs,
-                                            Row(
-                                              children: <Widget>[
-                                                if (updated != null)
-                                                  Text(
-                                                    DateFormat('MMM d, h:mm a')
-                                                        .format(updated),
-                                                    style: textStyles.labelSmall
-                                                        ?.copyWith(
-                                                          color: colors
-                                                              .onSurfaceVariant,
-                                                        ),
-                                                  ),
-                                                const Spacer(),
-                                                if (note.tags.isNotEmpty)
-                                                  Wrap(
-                                                    spacing: 4,
-                                                    children: note.tags.map((
-                                                      String t,
-                                                    ) {
-                                                      return Container(
-                                                        padding:
-                                                            const EdgeInsets.symmetric(
-                                                              horizontal: 6,
-                                                              vertical: 2,
-                                                            ),
-                                                        decoration: BoxDecoration(
-                                                          color: colors
-                                                              .secondaryContainer,
-                                                          borderRadius:
-                                                              AppRadius.small,
-                                                        ),
-                                                        child: Text(
-                                                          '#$t',
-                                                          style: textStyles
-                                                              .labelSmall
-                                                              ?.copyWith(
-                                                                color: colors
-                                                                    .onSecondaryContainer,
-                                                              ),
-                                                        ),
-                                                      );
-                                                    }).toList(),
-                                                  ),
-                                              ],
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  );
+                                  return _NoteCard(note: note);
                                 },
                               ),
                             ),
@@ -391,6 +206,144 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
       Note(id: 0, title: '', body: '', tags: const <String>[]),
       onCreate: (Note draft) =>
           ref.read(notesControllerProvider.notifier).addNote(draft),
+    );
+  }
+}
+
+/// One note in the list: title, a two-line preview, and one meta row with the
+/// date, the recall-card chip and the tags. Long-press deletes; the editor
+/// sheet has a delete button too.
+class _NoteCard extends ConsumerWidget {
+  const _NoteCard({required this.note});
+
+  final Note note;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final ColorScheme colors = context.colors;
+    final TextTheme textStyles = context.textStyles;
+    final DateTime? updated = note.updatedAt?.toLocal();
+
+    return Card(
+      margin: EdgeInsets.zero,
+      child: InkWell(
+        borderRadius: AppRadius.large,
+        onTap: () => showNoteEditor(context, ref, note),
+        onLongPress: () async {
+          final bool confirmed = await confirmDestructive(
+            context,
+            title: 'Delete note?',
+            message: '"${note.title}" will be removed.',
+          );
+          if (confirmed) {
+            await ref
+                .read(notesControllerProvider.notifier)
+                .deleteNote(note.id);
+          }
+        },
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.lg,
+            vertical: AppSpacing.md,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Text(
+                note.title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: textStyles.titleSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              if (note.body.isNotEmpty) ...<Widget>[
+                const SizedBox(height: AppSpacing.xs),
+                Text(
+                  note.body,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: textStyles.bodyMedium?.copyWith(
+                    color: colors.onSurfaceVariant,
+                  ),
+                ),
+              ],
+              const SizedBox(height: AppSpacing.sm),
+              Wrap(
+                spacing: AppSpacing.sm,
+                runSpacing: AppSpacing.xs,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: <Widget>[
+                  if (updated != null)
+                    Text(
+                      DateFormat('MMM d, h:mm a').format(updated),
+                      style: textStyles.labelSmall?.copyWith(
+                        color: colors.onSurfaceVariant,
+                        fontFeatures: const <FontFeature>[
+                          FontFeature.tabularFigures(),
+                        ],
+                      ),
+                    ),
+                  if (note.recallCards.isNotEmpty)
+                    InkWell(
+                      borderRadius: AppRadius.pill,
+                      onTap: () => showQuizSheet(context, note),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: colors.primaryContainer,
+                          borderRadius: AppRadius.pill,
+                          border: Border.all(
+                            color: colors.primary.withValues(alpha: 0.3),
+                            width: 0.75,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: <Widget>[
+                            Icon(
+                              Icons.bolt_rounded,
+                              size: 14,
+                              color: colors.primary,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              '${note.recallCards.length} ${note.recallCards.length == 1 ? 'card' : 'cards'} • Practice Recall',
+                              style: textStyles.labelSmall?.copyWith(
+                                color: colors.onPrimaryContainer,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  for (final String t in note.tags)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: colors.secondaryContainer,
+                        borderRadius: AppRadius.small,
+                      ),
+                      child: Text(
+                        '#$t',
+                        style: textStyles.labelSmall?.copyWith(
+                          color: colors.onSecondaryContainer,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

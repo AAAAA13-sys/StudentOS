@@ -120,7 +120,7 @@ object AlarmStore {
             val at = a.nextTrigger(now)
             if (at == null) cancel(ctx, a.id, KIND_MAIN) else schedule(ctx, a.id, KIND_MAIN, at)
         }
-        ClockWidgetProvider.refresh(ctx)
+        CalendarWidgetProvider.refresh(ctx)
     }
 
     /** After a one-time alarm rings it is off until the app turns it on. */

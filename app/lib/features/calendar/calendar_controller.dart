@@ -1,8 +1,8 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:home_widget/home_widget.dart';
-import 'package:intl/intl.dart';
 
 import 'calendar_repository.dart';
 import 'event.dart';
@@ -64,32 +64,38 @@ class CalendarController extends AsyncNotifier<List<CalendarEvent>> {
     unawaited(syncWidget());
   }
 
+  /// Writes the next few occurrences across all events as epoch millis, so
+  /// the native widget can drop passed events and say "Today"/"Tomorrow"
+  /// itself without the app running.
   Future<void> syncWidget() async {
     try {
-      final ({String title, DateTime startsAt, bool isExam, bool isAssignment})?
-      nextEvent = await _repo.getNextEvent();
-      if (nextEvent != null) {
-        final String prefix = nextEvent.isExam
+      final DateTime now = DateTime.now();
+      final List<({String t, int s})> upcoming = <({String t, int s})>[];
+      for (final CalendarEvent event in await _repo.getEvents()) {
+        final String prefix = event.isExam
             ? 'Exam: '
-            : (nextEvent.isAssignment ? 'Due: ' : '');
-        await HomeWidget.saveWidgetData<String>(
-          'event_title',
-          '$prefix${nextEvent.title}',
-        );
-        await HomeWidget.saveWidgetData<String>(
-          'event_time',
-          DateFormat('EEE, MMM d • h:mm a').format(nextEvent.startsAt),
-        );
-      } else {
-        await HomeWidget.saveWidgetData<String>(
-          'event_title',
-          'No upcoming events',
-        );
-        await HomeWidget.saveWidgetData<String>(
-          'event_time',
-          'Enjoy your free time!',
-        );
+            : (event.isAssignment ? 'Due: ' : '');
+        DateTime from = now;
+        for (int i = 0; i < 6; i++) {
+          final DateTime? next = event.nextOccurrence(from);
+          if (next == null) break;
+          upcoming.add((
+            t: '$prefix${event.title}',
+            s: next.millisecondsSinceEpoch,
+          ));
+          from = next.add(const Duration(minutes: 1));
+        }
       }
+      upcoming.sort((a, b) => a.s.compareTo(b.s));
+      await HomeWidget.saveWidgetData<String>(
+        'upcoming_events',
+        jsonEncode(<Map<String, Object>>[
+          for (final ({String t, int s}) e in upcoming.take(20))
+            <String, Object>{'t': e.t, 's': e.s},
+        ]),
+      );
+      await HomeWidget.saveWidgetData<String>('event_title', null);
+      await HomeWidget.saveWidgetData<String>('event_time', null);
       await HomeWidget.updateWidget(
         name: 'CalendarWidgetProvider',
         androidName: 'CalendarWidgetProvider',

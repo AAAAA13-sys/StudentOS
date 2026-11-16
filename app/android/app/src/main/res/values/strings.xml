@@ -1,6 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="focus_block_description">Used only during a strict focus session in StudentOS. When an app that is not on your allow list opens, StudentOS comes back to the front. It sees only which app opened, never what is on the screen, and nothing leaves the phone.</string>
-    <string name="finance_widget_info_description">How much you can spend today</string>
-    <string name="clock_widget_info_description">Your next alarm, and a focus timer you can start from here</string>
+    <string name="today_widget_label">StudentOS today</string>
+    <string name="money_widget_label">StudentOS money</string>
+    <string name="today_widget_description">Your next class, alarm and focus timer</string>
+    <string name="money_widget_description">What you\'ve spent today and what\'s left this month</string>
+    <string name="widget_next_up">Next up</string>
+    <string name="widget_no_events">No upcoming events</string>
+    <string name="widget_free_time">Enjoy your free time!</string>
+    <string name="widget_no_alarm">No alarm set</string>
+    <string name="widget_start_focus">Start focus</string>
+    <string name="widget_start_focus_short">Focus</string>
+    <string name="widget_spent_today">Spent today</string>
+    <string name="widget_month_left">This month: %1$s left</string>
+    <string name="widget_month_over">This month: %1$s over</string>
+    <string name="widget_month_new">New month · ₱0</string>
+    <string name="widget_short_left">%1$s left</string>
+    <string name="widget_short_over">%1$s over</string>
+    <string name="widget_short_new">New month</string>
+    <string name="widget_alarm_at">%1$s</string>
+    <string name="widget_alarm_short">alarm %1$s</string>
+    <string name="widget_focus_open">Open to continue</string>
+    <string name="widget_preview_amount" translatable="false">₱120</string>
 </resources>

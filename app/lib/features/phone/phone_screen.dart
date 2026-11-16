@@ -97,9 +97,29 @@ List<Widget> phoneCards(
   PhoneState state, {
   required bool rest,
   required bool usage,
+  bool compact = false,
 }) {
   if (!state.hasAccess) {
     return usage ? <Widget>[const _AccessCard()] : <Widget>[];
+  }
+  if (compact) {
+    // The detail cards only: the caller shows today's figure itself.
+    return <Widget>[
+      if (rest) ...<Widget>[_RestCard(state: state), AppSpacing.gapSm],
+      if (usage) ...<Widget>[
+        _WeekCard(state: state, compact: true),
+        AppSpacing.gapSm,
+        _AppsCard(state: state, compact: true),
+        AppSpacing.gapSm,
+        Text(
+          'Read from this phone only. Nothing leaves it.',
+          textAlign: TextAlign.center,
+          style: context.textStyles.bodySmall?.copyWith(
+            color: context.colors.onSurfaceVariant,
+          ),
+        ),
+      ],
+    ];
   }
   return <Widget>[
     if (usage) ...<Widget>[_TodayCard(state: state), AppSpacing.gapMd],
@@ -123,10 +143,18 @@ List<Widget> phoneCards(
 /// Screen-time cards to place inside another list (no scrolling of their
 /// own). Shows nothing while loading or when Android will not answer.
 class PhoneCards extends ConsumerWidget {
-  const PhoneCards({required this.rest, required this.usage, super.key});
+  const PhoneCards({
+    required this.rest,
+    required this.usage,
+    this.compact = false,
+    super.key,
+  });
 
   final bool rest;
   final bool usage;
+
+  /// Week and top apps as collapsed rows, without the today card.
+  final bool compact;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -134,9 +162,30 @@ class PhoneCards extends ConsumerWidget {
     if (state == null) return const SizedBox.shrink();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: phoneCards(context, state, rest: rest, usage: usage),
+      children: phoneCards(
+        context,
+        state,
+        rest: rest,
+        usage: usage,
+        compact: compact,
+      ),
     );
   }
+}
+
+/// "Screen on 14h 53m · more than your usual" for today, or null when this
+/// phone's usage cannot be read.
+String? screenOnToday(PhoneState state) {
+  if (!state.hasAccess) return null;
+  final DateTime now = DateTime.now();
+  final PhoneDay? day = state.dayFor(DateTime(now.year, now.month, now.day));
+  final String? usual = day == null
+      ? null
+      : comparedWithUsual(day.screenOnMs, _TodayCard._averageSoFar(state, now));
+  return <String>[
+    'Screen on ${formatDuration(Duration(milliseconds: day?.screenOnMs ?? 0))}',
+    ?usual,
+  ].join(' · ');
 }
 
 class _AccessCard extends ConsumerWidget {
@@ -350,9 +399,10 @@ class _RestCard extends StatelessWidget {
 }
 
 class _WeekCard extends ConsumerWidget {
-  const _WeekCard({required this.state});
+  const _WeekCard({required this.state, this.compact = false});
 
   final PhoneState state;
+  final bool compact;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -370,6 +420,99 @@ class _WeekCard extends ConsumerWidget {
     final TextTheme textStyles = context.textStyles;
     final ColorScheme colors = context.colors;
     const double chartHeight = 96;
+
+    final Widget chart = Row(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: <Widget>[
+        for (final DateTime d in week)
+          Expanded(
+            child: Semantics(
+              button: true,
+              label:
+                  '${DateFormat('EEEE').format(d)}, '
+                  '${formatDuration(Duration(milliseconds: state.dayFor(d)?.screenOnMs ?? 0))}',
+              child: InkWell(
+                borderRadius: AppRadius.small,
+                onTap: () =>
+                    ref.read(phoneControllerProvider.notifier).select(d),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.xs,
+                  ),
+                  child: Column(
+                    children: <Widget>[
+                      SizedBox(
+                        height: chartHeight,
+                        child: Align(
+                          alignment: Alignment.bottomCenter,
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 250),
+                            curve: Curves.easeOutCubic,
+                            height: state.dayFor(d) == null
+                                ? 2
+                                : (chartHeight *
+                                          state.dayFor(d)!.screenOnMs /
+                                          highest)
+                                      .clamp(2, chartHeight),
+                            decoration: BoxDecoration(
+                              color: d == state.selected
+                                  ? colors.primary
+                                  : colors.primaryContainer,
+                              borderRadius: AppRadius.small,
+                              border: Border.all(
+                                color: colors.outlineVariant,
+                                width: 0.75,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      AppSpacing.gapXs,
+                      Text(
+                        DateFormat('E').format(d).substring(0, 1),
+                        style: textStyles.labelSmall?.copyWith(
+                          fontWeight: d == state.selected
+                              ? FontWeight.bold
+                              : FontWeight.normal,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+
+    if (compact) {
+      return Card(
+        margin: EdgeInsets.zero,
+        clipBehavior: Clip.antiAlias,
+        child: ExpansionTile(
+          shape: const Border(),
+          collapsedShape: const Border(),
+          tilePadding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+          childrenPadding: const EdgeInsets.fromLTRB(
+            AppSpacing.lg,
+            0,
+            AppSpacing.lg,
+            AppSpacing.lg,
+          ),
+          title: Text(
+            average == null
+                ? 'Last 7 days'
+                : 'Last 7 days · avg '
+                      '${formatDuration(Duration(milliseconds: average))}',
+            style: textStyles.bodyMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+              fontFeatures: _tabular,
+            ),
+          ),
+          children: <Widget>[chart],
+        ),
+      );
+    }
 
     return Card(
       margin: EdgeInsets.zero,
@@ -393,70 +536,7 @@ class _WeekCard extends ConsumerWidget {
                 ),
               ),
             AppSpacing.gapMd,
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: <Widget>[
-                for (final DateTime d in week)
-                  Expanded(
-                    child: Semantics(
-                      button: true,
-                      label:
-                          '${DateFormat('EEEE').format(d)}, '
-                          '${formatDuration(Duration(milliseconds: state.dayFor(d)?.screenOnMs ?? 0))}',
-                      child: InkWell(
-                        borderRadius: AppRadius.small,
-                        onTap: () => ref
-                            .read(phoneControllerProvider.notifier)
-                            .select(d),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: AppSpacing.xs,
-                          ),
-                          child: Column(
-                            children: <Widget>[
-                              SizedBox(
-                                height: chartHeight,
-                                child: Align(
-                                  alignment: Alignment.bottomCenter,
-                                  child: AnimatedContainer(
-                                    duration: const Duration(milliseconds: 250),
-                                    curve: Curves.easeOutCubic,
-                                    height: state.dayFor(d) == null
-                                        ? 2
-                                        : (chartHeight *
-                                                  state.dayFor(d)!.screenOnMs /
-                                                  highest)
-                                              .clamp(2, chartHeight),
-                                    decoration: BoxDecoration(
-                                      color: d == state.selected
-                                          ? colors.primary
-                                          : colors.primaryContainer,
-                                      borderRadius: AppRadius.small,
-                                      border: Border.all(
-                                        color: colors.outlineVariant,
-                                        width: 0.75,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              AppSpacing.gapXs,
-                              Text(
-                                DateFormat('E').format(d).substring(0, 1),
-                                style: textStyles.labelSmall?.copyWith(
-                                  fontWeight: d == state.selected
-                                      ? FontWeight.bold
-                                      : FontWeight.normal,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
+            chart,
           ],
         ),
       ),
@@ -465,9 +545,10 @@ class _WeekCard extends ConsumerWidget {
 }
 
 class _AppsCard extends StatelessWidget {
-  const _AppsCard({required this.state});
+  const _AppsCard({required this.state, this.compact = false});
 
   final PhoneState state;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
@@ -483,6 +564,81 @@ class _AppsCard extends StatelessWidget {
     final TextTheme textStyles = context.textStyles;
     final ColorScheme colors = context.colors;
 
+    final String heading = isToday
+        ? 'Top apps today'
+        : 'Top apps on ${DateFormat('EEE, MMM d').format(state.selected)}';
+    final List<Widget> rows = <Widget>[
+      if (top.isEmpty)
+        Text(
+          state.dayFor(state.selected) == null
+              ? 'No record for this day.'
+              : 'No app time yet.',
+          style: textStyles.bodyMedium,
+        )
+      else
+        for (final AppUsage app in top)
+          Padding(
+            padding: const EdgeInsets.only(bottom: AppSpacing.md),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: Text(
+                        app.label,
+                        overflow: TextOverflow.ellipsis,
+                        style: textStyles.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    Text(
+                      formatDuration(Duration(milliseconds: app.ms)),
+                      style: textStyles.bodyMedium?.copyWith(
+                        fontFeatures: _tabular,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.xs),
+                ClipRRect(
+                  borderRadius: AppRadius.pill,
+                  child: LinearProgressIndicator(
+                    value: app.ms / most,
+                    minHeight: 4,
+                    color: colors.primary,
+                    backgroundColor: colors.primaryContainer,
+                  ),
+                ),
+              ],
+            ),
+          ),
+    ];
+
+    if (compact) {
+      return Card(
+        margin: EdgeInsets.zero,
+        clipBehavior: Clip.antiAlias,
+        child: ExpansionTile(
+          shape: const Border(),
+          collapsedShape: const Border(),
+          tilePadding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+          childrenPadding: const EdgeInsets.fromLTRB(
+            AppSpacing.lg,
+            0,
+            AppSpacing.lg,
+            AppSpacing.sm,
+          ),
+          title: Text(
+            heading,
+            style: textStyles.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+          ),
+          children: rows,
+        ),
+      );
+    }
+
     return Card(
       margin: EdgeInsets.zero,
       child: Padding(
@@ -491,60 +647,13 @@ class _AppsCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             Text(
-              isToday
-                  ? 'Top apps today'
-                  : 'Top apps on ${DateFormat('EEE, MMM d').format(state.selected)}',
+              heading,
               style: textStyles.bodyMedium?.copyWith(
                 color: colors.onSurfaceVariant,
               ),
             ),
             AppSpacing.gapMd,
-            if (top.isEmpty)
-              Text(
-                state.dayFor(state.selected) == null
-                    ? 'No record for this day.'
-                    : 'No app time yet.',
-                style: textStyles.bodyMedium,
-              )
-            else
-              for (final AppUsage app in top)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: AppSpacing.md),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Row(
-                        children: <Widget>[
-                          Expanded(
-                            child: Text(
-                              app.label,
-                              overflow: TextOverflow.ellipsis,
-                              style: textStyles.bodyMedium?.copyWith(
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                          Text(
-                            formatDuration(Duration(milliseconds: app.ms)),
-                            style: textStyles.bodyMedium?.copyWith(
-                              fontFeatures: _tabular,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: AppSpacing.xs),
-                      ClipRRect(
-                        borderRadius: AppRadius.pill,
-                        child: LinearProgressIndicator(
-                          value: app.ms / most,
-                          minHeight: 4,
-                          color: colors.primary,
-                          backgroundColor: colors.primaryContainer,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+            ...rows,
           ],
         ),
       ),

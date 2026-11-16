@@ -9,7 +9,7 @@ import 'package:studentos/features/focus/focus_controller.dart';
 import 'package:studentos/features/focus/focus_plan.dart';
 import 'package:studentos/features/focus/focus_platform.dart';
 import 'package:studentos/features/focus/focus_repository.dart';
-import 'package:studentos/features/focus/clock_screen.dart';
+import 'package:studentos/features/calendar/calendar_screen.dart';
 
 /// Records what the app asks of Android.
 class FakeFocusPlatform implements FocusPlatform {
@@ -302,7 +302,7 @@ void main() {
     });
   });
 
-  testWidgets('The Clock tab lists alarms and opens the focus timer', (
+  testWidgets('The Calendar tab switches between alarms and the focus timer', (
     WidgetTester tester,
   ) async {
     final FakeFocusPlatform platform = FakeFocusPlatform();
@@ -315,9 +315,15 @@ void main() {
           appDatabaseProvider.overrideWithValue(database),
           focusPlatformProvider.overrideWithValue(platform),
         ],
-        child: const MaterialApp(home: ClockScreen()),
+        child: const MaterialApp(home: CalendarScreen()),
       ),
     );
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 100)),
+    );
+    await tester.pump();
+    await tester.tap(find.text('Alarms'));
+    await tester.pump();
     await tester.runAsync(
       () => Future<void>.delayed(const Duration(milliseconds: 100)),
     );
@@ -327,6 +333,7 @@ void main() {
     expect(find.textContaining('3 medium sums'), findsOneWidget);
 
     await tester.tap(find.text('Focus'));
+    await tester.pump();
     await tester.runAsync(
       () => Future<void>.delayed(const Duration(milliseconds: 100)),
     );

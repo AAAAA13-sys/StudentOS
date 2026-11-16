@@ -1,11 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:home_widget/home_widget.dart';
 import 'package:intl/intl.dart';
 
 import 'finance_repository.dart';
-import 'safe_to_spend.dart';
+import 'money_widget_sync.dart';
 import 'transaction.dart';
 
 class FinanceState {
@@ -14,16 +13,12 @@ class FinanceState {
     required this.transactions,
     required this.summary,
     required this.categories,
-    this.safeToSpend,
   });
 
   final String month;
   final List<Transaction> transactions;
   final FinanceSummary summary;
   final List<String> categories;
-
-  /// Today's spending room; set only while the current month is shown.
-  final SafeToSpend? safeToSpend;
 }
 
 class FinanceController extends AsyncNotifier<FinanceState> {
@@ -40,75 +35,27 @@ class FinanceController extends AsyncNotifier<FinanceState> {
       month: month,
     );
     final FinanceSummary summary = await _repo.getSummary(month: month);
-    final DateTime today = DateTime.now();
-    final SafeToSpend? safeToSpend =
-        month == DateFormat('yyyy-MM').format(today)
-        ? await _repo.getSafeToSpend(today)
-        : null;
-    if (safeToSpend != null) {
-      unawaited(_syncWidget(safeToSpend));
-    }
+    _syncWidget();
 
     return FinanceState(
       month: month,
       transactions: transactions,
       summary: summary,
       categories: FinanceRepository.categories,
-      safeToSpend: safeToSpend,
     );
   }
 
-  /// Shows today's spending room on the Finance home-screen widget. The app is the
-  /// only thing that computes it, so it is stamped with today's date and the
-  /// widget hides it once that day is over.
-  Future<void> _syncWidget(SafeToSpend value) async {
-    try {
-      final NumberFormat peso = NumberFormat('#,##0');
-      final String days = value.untilAllowance
-          ? '${value.daysLeft} ${value.daysLeft == 1 ? 'day' : 'days'} until allowance'
-          : '${value.daysLeft} ${value.daysLeft == 1 ? 'day' : 'days'} left this month';
-      await HomeWidget.saveWidgetData<String>(
-        'safe_spend_amount',
-        value.hasFunds ? '₱${peso.format(value.leftToday.floor())}' : '₱0',
-      );
-      await HomeWidget.saveWidgetData<String>(
-        'safe_spend_note',
-        <String>[
-          if (value.spentToday > 0)
-            '₱${peso.format(value.spentToday.ceil())} spent today',
-          if (value.hasFunds) days else 'Nothing left to spend today',
-        ].join(' · '),
-      );
-      await HomeWidget.saveWidgetData<String>(
-        'safe_spend_date',
-        DateFormat('yyyy-MM-dd').format(DateTime.now()),
-      );
-      await HomeWidget.updateWidget(
-        name: 'FinanceWidgetProvider',
-        androidName: 'FinanceWidgetProvider',
-      );
-    } catch (_) {
-      // Best-effort: the widget may not be placed, or the platform is absent.
-    }
+  /// Refreshes the home-screen Money widget; best-effort, never blocks the UI.
+  void _syncWidget() {
+    unawaited(
+      syncMoneyWidget(_repo).catchError((Object _) {
+        // The widget may not be placed, or the platform is absent.
+      }),
+    );
   }
 
   Future<void> setMonth(String month) async {
     state = const AsyncLoading();
-    state = await AsyncValue.guard(() => _loadMonth(month));
-  }
-
-  Future<void> setNextAllowance(DateTime day) async {
-    await _repo.setNextAllowance(day);
-    final String month =
-        state.value?.month ?? DateFormat('yyyy-MM').format(DateTime.now());
-    state = await AsyncValue.guard(() => _loadMonth(month));
-  }
-
-  /// Sets the money kept aside for fixed bills; zero clears it.
-  Future<void> setReserved(double amount) async {
-    await _repo.setReservedCents((amount * 100).round());
-    final String month =
-        state.value?.month ?? DateFormat('yyyy-MM').format(DateTime.now());
     state = await AsyncValue.guard(() => _loadMonth(month));
   }
 

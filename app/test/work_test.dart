@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:studentos/core/db/app_database.dart';
 import 'package:studentos/core/db/backup.dart';
+import 'package:studentos/features/calendar/calendar_screen.dart';
 import 'package:studentos/features/calendar/event.dart';
 import 'package:studentos/features/finance/finance_repository.dart';
 import 'package:studentos/features/finance/finance_screen.dart';
@@ -222,15 +223,9 @@ void main() {
     expect(after.leftToday, 338);
   });
 
-  testWidgets('A shift added from Finance shows on the Work pay card', (
+  testWidgets('A shift added from the Calendar shows as Work pay on Finance', (
     WidgetTester tester,
   ) async {
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [appDatabaseProvider.overrideWithValue(database)],
-        child: const MaterialApp(home: FinanceScreen()),
-      ),
-    );
     Future<void> settle() async {
       await tester.runAsync(
         () => Future<void>.delayed(const Duration(milliseconds: 100)),
@@ -238,8 +233,25 @@ void main() {
       await tester.pumpAndSettle();
     }
 
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [appDatabaseProvider.overrideWithValue(database)],
+        child: const MaterialApp(home: FinanceScreen()),
+      ),
+    );
     await settle();
-    expect(find.text('Work pay'), findsOneWidget);
+    // No shifts yet: the row stays out of the way.
+    expect(find.text('Work pay'), findsNothing);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [appDatabaseProvider.overrideWithValue(database)],
+        child: const MaterialApp(home: CalendarScreen()),
+      ),
+    );
+    await settle();
+    await tester.tap(find.byTooltip('More'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Add a shift'));
     await tester.pumpAndSettle();
     await tester.enterText(
@@ -259,6 +271,14 @@ void main() {
     expect(saved!.single.job, 'Jollibee');
     expect(saved.single.hourlyRateCents, 9500);
     expect(saved.single.durationMinutes, 240);
-    expect(find.text('Shifts'), findsOneWidget);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [appDatabaseProvider.overrideWithValue(database)],
+        child: const MaterialApp(home: FinanceScreen()),
+      ),
+    );
+    await settle();
+    expect(find.text('Work pay'), findsOneWidget);
   });
 }

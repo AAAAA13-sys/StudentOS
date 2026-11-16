@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/confirm_dialog.dart';
 import 'note.dart';
 import 'notes_controller.dart';
 
@@ -159,6 +160,26 @@ Future<void> showNoteEditor(
                   onPressed: () => Navigator.pop(ctx),
                   child: const Text('Cancel'),
                 ),
+                if (onCreate == null)
+                  TextButton.icon(
+                    style: TextButton.styleFrom(
+                      foregroundColor: ctx.colors.error,
+                    ),
+                    icon: const Icon(Icons.delete_outline_rounded),
+                    label: const Text('Delete note'),
+                    onPressed: () async {
+                      final bool confirmed = await confirmDestructive(
+                        ctx,
+                        title: 'Delete note?',
+                        message: '"${note.title}" will be removed.',
+                      );
+                      if (!confirmed) return;
+                      await ref
+                          .read(notesControllerProvider.notifier)
+                          .deleteNote(note.id);
+                      if (ctx.mounted) Navigator.pop(ctx);
+                    },
+                  ),
                 AppSpacing.gapSm,
               ],
             ),

@@ -218,7 +218,6 @@ class FocusChannel(private val activity: MainActivity, messenger: BinaryMessenge
         val provider = when (which) {
             "calendar" -> CalendarWidgetProvider::class.java
             "finance" -> FinanceWidgetProvider::class.java
-            "clock" -> ClockWidgetProvider::class.java
             else -> return false
         }
         val manager = android.appwidget.AppWidgetManager.getInstance(ctx)
