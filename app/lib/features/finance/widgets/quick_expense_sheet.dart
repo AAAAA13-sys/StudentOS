@@ -34,6 +34,7 @@ const List<(String, IconData)> _categories = <(String, IconData)>[
 Future<QuickExpenseResult?> showQuickExpenseSheet(BuildContext context) {
   return showModalBottomSheet<QuickExpenseResult>(
     context: context,
+    useRootNavigator: true,
     showDragHandle: true,
     isScrollControlled: true,
     builder: (BuildContext ctx) => Padding(

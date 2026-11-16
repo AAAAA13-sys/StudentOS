@@ -24,6 +24,7 @@ Future<void> addShift(
 
   final List<Shift>? shifts = await showModalBottomSheet<List<Shift>>(
     context: context,
+    useRootNavigator: true,
     isScrollControlled: true,
     showDragHandle: true,
     builder: (BuildContext ctx) => _AddShiftSheet(

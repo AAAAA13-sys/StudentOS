@@ -27,6 +27,17 @@ class CalendarScreen extends ConsumerStatefulWidget {
   ConsumerState<CalendarScreen> createState() => _CalendarScreenState();
 }
 
+/// Bumped to ask the Calendar tab to jump back to today (a widget tap).
+final NotifierProvider<CalendarShowToday, int> calendarShowTodayProvider =
+    NotifierProvider<CalendarShowToday, int>(CalendarShowToday.new);
+
+class CalendarShowToday extends Notifier<int> {
+  @override
+  int build() => 0;
+
+  void request() => state++;
+}
+
 class _CalendarScreenState extends ConsumerState<CalendarScreen> {
   late DateTime _selectedDate;
   late DateTime _viewMonth;
@@ -53,6 +64,10 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<int>(
+      calendarShowTodayProvider,
+      (_, _) => _showMonth(DateTime.now()),
+    );
     final AsyncValue<List<CalendarEvent>> eventsState = ref.watch(
       calendarControllerProvider,
     );
@@ -215,6 +230,8 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                     FilterChip(
                       label: const Text('This day'),
                       selected: _filterByDay,
+                      // The tick would claim "today" for any other day.
+                      showCheckmark: _isSameDay(_selectedDate, today),
                       visualDensity: VisualDensity.compact,
                       onSelected: (bool selected) {
                         setState(() => _filterByDay = selected);
@@ -399,21 +416,52 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                                                         width: 0.75,
                                                       ),
                                                     ),
-                                                    child: Text(
-                                                      event.isExam
-                                                          ? '🚨 Exam • $countdown'
-                                                          : '⚠️ Due • $countdown',
-                                                      style: textStyles
-                                                          .labelSmall
-                                                          ?.copyWith(
-                                                            color: event.isExam
-                                                                ? colors
-                                                                      .onErrorContainer
-                                                                : colors
-                                                                      .onPrimaryContainer,
-                                                            fontWeight:
-                                                                FontWeight.bold,
+                                                    child: Row(
+                                                      mainAxisSize:
+                                                          MainAxisSize.min,
+                                                      children: <Widget>[
+                                                        Icon(
+                                                          event.isExam
+                                                              ? Icons
+                                                                    .error_outline_rounded
+                                                              : Icons
+                                                                    .assignment_late_outlined,
+                                                          size: 14,
+                                                          color: event.isExam
+                                                              ? colors
+                                                                    .onErrorContainer
+                                                              : colors
+                                                                    .onPrimaryContainer,
+                                                        ),
+                                                        AppSpacing.gapXs,
+                                                        Flexible(
+                                                          child: Text(
+                                                            event.isExam
+                                                                ? 'Exam • $countdown'
+                                                                : 'Due • $countdown',
+                                                            style: textStyles
+                                                                .labelSmall
+                                                                ?.copyWith(
+                                                                  color:
+                                                                      event
+                                                                          .isExam
+                                                                      ? colors
+                                                                            .onErrorContainer
+                                                                      : colors
+                                                                            .onPrimaryContainer,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold,
+                                                                  fontFeatures:
+                                                                      const <
+                                                                        FontFeature
+                                                                      >[
+                                                                        FontFeature.tabularFigures(),
+                                                                      ],
+                                                                ),
                                                           ),
+                                                        ),
+                                                      ],
                                                     ),
                                                   ),
                                                 ],
@@ -895,6 +943,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
 
     await showModalBottomSheet<void>(
       context: context,
+      useRootNavigator: true,
       isScrollControlled: true,
       showDragHandle: true,
       builder: (BuildContext ctx) {
@@ -1154,9 +1203,9 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                             setModalState(() {});
                           },
                           icon: const Icon(Icons.add_task_rounded, size: 16),
-                          label: const Text(
+                          label: Text(
                             'Add checklist item',
-                            style: TextStyle(fontSize: 12),
+                            style: Theme.of(context).textTheme.labelMedium,
                           ),
                         ),
                       ),

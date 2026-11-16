@@ -324,8 +324,8 @@ class _MinutesRow extends StatelessWidget {
           icon: const Icon(Icons.remove_rounded),
           onPressed: value - step < min ? null : () => onChanged(value - step),
         ),
-        SizedBox(
-          width: 84,
+        ConstrainedBox(
+          constraints: const BoxConstraints(minWidth: 84),
           child: Text(
             value == 0 && unit == ' min' ? 'None' : '$value$unit',
             textAlign: TextAlign.center,

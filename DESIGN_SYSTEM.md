@@ -26,7 +26,7 @@ StudentOS is a high-utility productivity suite for students. It must feel calm, 
 - **Tactile, Snappy Micro-Interactions:** 
   - Button taps: **100ms–140ms** subtle lavender ripple.
   - Sheet and drawer transitions: **250ms–300ms** utilizing physics-based deceleration (`Curves.easeOutCubic`).
-- **Dual-Tier Ergonomics:** Thumb-friendly 4-destination bottom bar for frequent module switching, paired with an elegant **Hamburger Drawer** for account profile, offline sync status, and secondary utilities.
+- **Dual-Tier Ergonomics:** Thumb-friendly 4-destination bottom bar for frequent module switching, paired with a **Hamburger Drawer** for back up, restore, home-screen widgets and About (no account: the app is local-only).
 
 ---
 
@@ -150,7 +150,7 @@ Before declaring any UI task done, verify:
 - [ ] No gradient backgrounds used as screen backdrops.
 - [ ] All borders are hairline thin (0.75px–1.0px) with subtle contrast.
 - [ ] No raw Unicode emojis used in place of icons.
-- [ ] Bottom navigation has exactly 3 destinations (Calendar, Finance, Notes).
+- [ ] Bottom navigation has exactly 4 destinations (Calendar, Finance, Notes, Clock).
 - [ ] The top bar has the tab name and at most two actions.
 - [ ] The menu opens smoothly and holds only non-tab items.
 - [ ] Money numbers use `FontFeature.tabularFigures()`.

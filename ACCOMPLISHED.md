@@ -410,3 +410,13 @@ Entries are appended, never edited. Corrections are new entries that reference t
 - Moods carry meaning: sleepy = nothing on or a break, yelling = ringing, smug = checking on you or nothing found, focused = timer.
 **Open items:** App icon not changed to Ponpon (the owner picked the photo icon earlier; asked). The alarm notification pop-up covers Ponpon on the alarm screen for a few seconds.
 
+## Phase 32: UI/UX review with QA; Ponpon becomes the app icon
+**Date:** 2026-11-16 (21:10 GMT+8)
+**Verified by:** qa-verifier on `emulator-5554` (two rounds), lead-pm
+**Evidence:** see the review row in `PROGRESS.md`. QA screenshots were kept in the session scratch folder, not in the repo.
+**Decisions:**
+- Review ran as two agents at once: QA on the device (read-only), the UI/UX developer on the code (no device), then one merged fix list and a device re-check.
+- Left as is on purpose: calendar day cells stay 40dp (changing them changes the grid; owner decision); the Money widget keeps whole pesos rounded down; the alarm notification pop-up may still cover Ponpon for a few seconds (Android's, not the layout).
+- App icon: adaptive icon (`mipmap-anydpi-v26/ic_launcher.xml`) with Ponpon's face as foreground on `#6A2FC8`; the PNG `ic_launcher` remains for older Android. The cat photo icon (`asdasd.jpg`) is retired.
+**Open items:** Alarm-editor day toggles are 48dp tall but about 40dp wide. Top-of-alarm-screen Ponpon can sit under the heads-up notification. The New Note sheet's Cancel sits close to the gesture bar. Nothing from this phase seen on the real phones.
+

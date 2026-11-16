@@ -211,7 +211,7 @@ class _TodayCard extends StatelessWidget {
         ? null
         : comparedWithUsual(day.screenOnMs, _averageSoFar(state, now));
     final List<String> details = <String>[
-      if (day != null)
+      if (day != null && day.unlocks > 0)
         '${day.unlocks} ${day.unlocks == 1 ? 'unlock' : 'unlocks'}',
       if (day?.firstPickup != null)
         'first at ${DateFormat('h:mm a').format(day!.firstPickup!)}',
@@ -474,7 +474,11 @@ class _AppsCard extends StatelessWidget {
     final DateTime now = DateTime.now();
     final bool isToday =
         state.selected == DateTime(now.year, now.month, now.day);
-    final List<AppUsage> top = state.apps.take(5).toList();
+    // Under a minute reads as "0m" and is not worth a row.
+    final List<AppUsage> top = state.apps
+        .where((AppUsage a) => a.ms >= 60000)
+        .take(5)
+        .toList();
     final int most = top.isEmpty ? 1 : top.first.ms;
     final TextTheme textStyles = context.textStyles;
     final ColorScheme colors = context.colors;

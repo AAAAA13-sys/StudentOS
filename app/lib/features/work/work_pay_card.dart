@@ -226,6 +226,7 @@ class _GotPaidDialogState extends State<_GotPaidDialog> {
 Future<void> showShiftsSheet(BuildContext context) {
   return showModalBottomSheet<void>(
     context: context,
+    useRootNavigator: true,
     isScrollControlled: true,
     showDragHandle: true,
     builder: (BuildContext ctx) => const _ShiftsSheet(),

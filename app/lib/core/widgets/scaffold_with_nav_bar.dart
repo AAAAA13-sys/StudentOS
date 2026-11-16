@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/calendar/calendar_screen.dart';
 import '../../features/focus/focus_controller.dart';
 import '../../features/focus/focus_plan.dart';
 import '../../features/focus/focus_platform.dart';
@@ -52,6 +53,7 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar> {
     final StatefulNavigationShell shell = widget.navigationShell;
     switch (route) {
       case 'calendar':
+        ref.read(calendarShowTodayProvider.notifier).request();
         shell.goBranch(0);
       case 'finance':
         shell.goBranch(1);
@@ -172,7 +174,7 @@ class _FocusBanner extends ConsumerWidget {
       child: InkWell(
         onTap: onTap,
         child: Container(
-          height: 40,
+          constraints: const BoxConstraints(minHeight: AppSizes.minTouchTarget),
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
           decoration: BoxDecoration(
             border: Border(top: BorderSide(color: colors.outlineVariant)),

@@ -48,6 +48,12 @@ class ClockWidgetProvider : AppWidgetProvider() {
                             .joinToString(" · "),
                     )
                 }
+                // The whole card opens Clock; the button and countdown below
+                // have their own targets.
+                setOnClickPendingIntent(
+                    R.id.clock_root,
+                    WidgetSupport.openApp(context, "clock", 25),
+                )
                 setOnClickPendingIntent(
                     R.id.clock_alarm_area,
                     WidgetSupport.openApp(context, "clock", 22),

@@ -19,6 +19,7 @@ import android.view.KeyEvent
 import android.view.View
 import android.view.WindowManager
 import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
@@ -53,7 +54,7 @@ class AlarmActivity : Activity(), SensorEventListener {
         root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER_HORIZONTAL
-            setPadding(dp(24), dp(32), dp(24), dp(32))
+            setPadding(dp(24), dp(72), dp(24), dp(32))
         }
         val scroll = ScrollView(this).apply {
             setBackgroundColor(BG)
@@ -108,9 +109,9 @@ class AlarmActivity : Activity(), SensorEventListener {
                 )
                 contentDescription = "Ponpon the cat"
             },
-            LinearLayout.LayoutParams(dp(150), dp(150)),
+            LinearLayout.LayoutParams(dp(120), dp(120)),
         )
-        root.addView(text(SimpleDateFormat("h:mm", Locale.getDefault()).format(Date()), 64f, bold = true))
+        root.addView(text(SimpleDateFormat("h:mm", Locale.getDefault()).format(Date()), 56f, bold = true))
         root.addView(text(spec.label.ifBlank { "Wake up" }, 22f, color = LILAC))
         root.addView(space(28))
 
@@ -168,7 +169,14 @@ class AlarmActivity : Activity(), SensorEventListener {
             input.setText("")
         }
         fun check() {
-            val given = input.text.toString().trim().toLongOrNull()
+            val typed = input.text.toString().trim()
+            // Close the keyboard after each answer so Snooze stays in view.
+            (getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager)
+                .hideSoftInputFromWindow(input.windowToken, 0)
+            // An empty field is not an answer (also stops a second submit
+            // right after a correct one from counting as wrong).
+            if (typed.isEmpty()) return
+            val given = typed.toLongOrNull()
             if (given == answer) {
                 problemsLeft--
                 feedback.text = ""
@@ -179,7 +187,12 @@ class AlarmActivity : Activity(), SensorEventListener {
                 next()
             }
         }
-        input.setOnEditorActionListener { _, _, _ -> check(); true }
+        // The keyboard's Done key arrives with no event; a hardware Enter
+        // arrives twice (down and up), so the key-down is ignored.
+        input.setOnEditorActionListener { _, _, event ->
+            if (event?.action != KeyEvent.ACTION_DOWN) check()
+            true
+        }
         root.addView(progress)
         root.addView(question)
         root.addView(space(16))
@@ -188,7 +201,6 @@ class AlarmActivity : Activity(), SensorEventListener {
         root.addView(space(12))
         root.addView(button("Check", primary = true) { check() })
         next()
-        input.requestFocus()
     }
 
     private fun problem(difficulty: String): Pair<String, Long> {
@@ -236,7 +248,6 @@ class AlarmActivity : Activity(), SensorEventListener {
             if (input.text.toString().trim() == phrase) done()
             else feedback.text = "Not quite. Every letter counts."
         })
-        input.requestFocus()
     }
 
     // Shaking.

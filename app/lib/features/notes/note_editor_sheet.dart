@@ -31,6 +31,7 @@ Future<void> showNoteEditor(
 
   await showModalBottomSheet<void>(
     context: context,
+    useRootNavigator: true,
     isScrollControlled: true,
     // A stray tap outside must not throw away what was typed.
     isDismissible: false,
@@ -73,8 +74,10 @@ Future<void> showNoteEditor(
                   controller: bodyController,
                   focusNode: bodyFocus,
                   maxLines: 6,
+                  textAlignVertical: TextAlignVertical.top,
                   decoration: const InputDecoration(
                     labelText: 'Note content',
+                    alignLabelWithHint: true,
                     hintText:
                         'Notes or active recall cards (e.g. Q: ... A: ...)',
                     border: OutlineInputBorder(borderRadius: AppRadius.medium),
@@ -98,9 +101,9 @@ Future<void> showNoteEditor(
                       bodyFocus.requestFocus();
                     },
                     icon: const Icon(Icons.bolt_rounded, size: 16),
-                    label: const Text(
+                    label: Text(
                       'Add Q&A recall card',
-                      style: TextStyle(fontSize: 12),
+                      style: Theme.of(ctx).textTheme.labelMedium,
                     ),
                   ),
                 ),

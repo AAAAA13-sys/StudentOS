@@ -44,6 +44,7 @@ List<CalendarEvent> buildClassSchedule({
 Future<List<CalendarEvent>?> showClassScheduleSheet(BuildContext context) {
   return showModalBottomSheet<List<CalendarEvent>>(
     context: context,
+    useRootNavigator: true,
     isScrollControlled: true,
     showDragHandle: true,
     builder: (BuildContext ctx) => const _ClassScheduleSheet(),

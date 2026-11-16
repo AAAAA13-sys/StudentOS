@@ -177,9 +177,12 @@ class UsageChannel(private val context: Context, messenger: BinaryMessenger) :
     /** The launcher, the system UI and this app are not "phone time". */
     private fun skippedPackages(): Set<String> {
         val skip = mutableSetOf(context.packageName, "com.android.systemui")
+        // Every home-screen app, not just the default one (the default can
+        // resolve to Android's chooser when more than one is installed).
         val home = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)
-        context.packageManager.resolveActivity(home, PackageManager.MATCH_DEFAULT_ONLY)
-            ?.activityInfo?.packageName?.let { skip.add(it) }
+        @Suppress("DEPRECATION")
+        context.packageManager.queryIntentActivities(home, 0)
+            .forEach { skip.add(it.activityInfo.packageName) }
         return skip
     }
 

@@ -50,8 +50,12 @@ class SafeToSpendCard extends StatelessWidget {
 
     final ButtonStyle linkStyle = TextButton.styleFrom(
       padding: EdgeInsets.zero,
-      visualDensity: VisualDensity.compact,
-      foregroundColor: colors.primary,
+      alignment: Alignment.centerLeft,
+      foregroundColor: colors.onPrimaryContainer,
+      textStyle: textStyles.labelLarge?.copyWith(
+        fontWeight: FontWeight.w700,
+        decoration: TextDecoration.underline,
+      ),
     );
 
     return Container(
@@ -88,8 +92,9 @@ class SafeToSpendCard extends StatelessWidget {
               color: colors.onPrimaryContainer,
             ),
           ),
-          Wrap(
-            spacing: AppSpacing.lg,
+          // Stacked, so the two actions never read as one link.
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               TextButton(
                 style: linkStyle,

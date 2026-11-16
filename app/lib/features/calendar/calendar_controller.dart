@@ -66,16 +66,12 @@ class CalendarController extends AsyncNotifier<List<CalendarEvent>> {
 
   Future<void> syncWidget() async {
     try {
-      final ({
-        String title,
-        DateTime startsAt,
-        bool isExam,
-        bool isAssignment,
-      })? nextEvent = await _repo.getNextEvent();
+      final ({String title, DateTime startsAt, bool isExam, bool isAssignment})?
+      nextEvent = await _repo.getNextEvent();
       if (nextEvent != null) {
         final String prefix = nextEvent.isExam
-            ? '🚨 '
-            : (nextEvent.isAssignment ? '⚠️ ' : '');
+            ? 'Exam: '
+            : (nextEvent.isAssignment ? 'Due: ' : '');
         await HomeWidget.saveWidgetData<String>(
           'event_title',
           '$prefix${nextEvent.title}',

@@ -11,6 +11,7 @@ Future<void> showQuizSheet(BuildContext context, Note note) async {
 
   await showModalBottomSheet<void>(
     context: context,
+    useRootNavigator: true,
     isScrollControlled: true,
     showDragHandle: true,
     builder: (BuildContext ctx) {

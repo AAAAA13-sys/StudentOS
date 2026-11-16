@@ -295,7 +295,8 @@ class FinanceScreen extends ConsumerWidget {
                           AppSpacing.gapMd,
                           Text(
                             'No transactions this month',
-                            style: textStyles.bodyMedium?.copyWith(
+                            textAlign: TextAlign.center,
+                            style: textStyles.titleMedium?.copyWith(
                               color: colors.onSurfaceVariant,
                             ),
                           ),
@@ -477,6 +478,7 @@ class FinanceScreen extends ConsumerWidget {
 
     await showModalBottomSheet<void>(
       context: context,
+      useRootNavigator: true,
       isScrollControlled: true,
       builder: (BuildContext ctx) {
         return StatefulBuilder(

@@ -187,6 +187,23 @@ abstract final class AppTheme {
           textStyle: textTheme.labelLarge?.copyWith(color: scheme.primary),
         ),
       ),
+      segmentedButtonTheme: SegmentedButtonThemeData(
+        style: ButtonStyle(
+          backgroundColor: WidgetStateProperty.resolveWith<Color?>(
+            (Set<WidgetState> states) => states.contains(WidgetState.selected)
+                ? scheme.primaryContainer
+                : Colors.transparent,
+          ),
+          foregroundColor: WidgetStateProperty.resolveWith<Color?>(
+            (Set<WidgetState> states) => states.contains(WidgetState.selected)
+                ? scheme.onPrimaryContainer
+                : scheme.onSurfaceVariant,
+          ),
+          side: WidgetStatePropertyAll<BorderSide>(
+            BorderSide(color: scheme.outlineVariant),
+          ),
+        ),
+      ),
       iconButtonTheme: IconButtonThemeData(
         style: IconButton.styleFrom(
           minimumSize: const Size(

@@ -53,6 +53,7 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
                 suffixIcon: _searchController.text.isNotEmpty
                     ? IconButton(
                         icon: const Icon(Icons.clear_rounded),
+                        tooltip: 'Clear search',
                         onPressed: () {
                           _searchController.clear();
                           ref.read(notesControllerProvider.notifier).search('');
@@ -156,7 +157,8 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
                                     state.searchQuery.isNotEmpty
                                         ? 'No notes match "${state.searchQuery}"'
                                         : 'No notes yet',
-                                    style: textStyles.bodyMedium?.copyWith(
+                                    textAlign: TextAlign.center,
+                                    style: textStyles.titleMedium?.copyWith(
                                       color: colors.onSurfaceVariant,
                                     ),
                                   ),
@@ -307,7 +309,13 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
                                                 ),
                                               ),
                                             ],
-                                            AppSpacing.gapMd,
+                                            // Nothing between the title and
+                                            // the stamp: no gap to speak of.
+                                            if (note.body.isNotEmpty ||
+                                                note.recallCards.isNotEmpty)
+                                              AppSpacing.gapMd
+                                            else
+                                              AppSpacing.gapXs,
                                             Row(
                                               children: <Widget>[
                                                 if (updated != null)
@@ -316,7 +324,8 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
                                                         .format(updated),
                                                     style: textStyles.labelSmall
                                                         ?.copyWith(
-                                                          color: colors.outline,
+                                                          color: colors
+                                                              .onSurfaceVariant,
                                                         ),
                                                   ),
                                                 const Spacer(),

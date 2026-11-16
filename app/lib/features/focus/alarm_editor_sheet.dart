@@ -423,27 +423,33 @@ class _DayPicker extends StatelessWidget {
             selected: days & (1 << i) != 0,
             button: true,
             child: InkWell(
-              customBorder: const CircleBorder(),
+              borderRadius: AppRadius.medium,
               onTap: () => onChanged(days ^ (1 << i)),
-              child: AnimatedContainer(
-                duration: AppDurations.fast,
-                width: 40,
-                height: 40,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: days & (1 << i) != 0
-                      ? colors.primary
-                      : Colors.transparent,
-                  border: Border.all(color: colors.outlineVariant),
-                ),
-                child: Text(
-                  letters[i],
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    color: days & (1 << i) != 0
-                        ? colors.onPrimary
-                        : colors.onSurface,
+              // A 48dp-tall tap area around the 40dp circle.
+              child: SizedBox(
+                height: AppSizes.minTouchTarget,
+                child: Center(
+                  child: AnimatedContainer(
+                    duration: AppDurations.fast,
+                    width: 40,
+                    height: 40,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: days & (1 << i) != 0
+                          ? colors.primary
+                          : Colors.transparent,
+                      border: Border.all(color: colors.outlineVariant),
+                    ),
+                    child: Text(
+                      letters[i],
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        color: days & (1 << i) != 0
+                            ? colors.onPrimary
+                            : colors.onSurface,
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -569,8 +575,8 @@ class _Stepper extends StatelessWidget {
           icon: const Icon(Icons.remove_rounded),
           onPressed: value - step < min ? null : () => onChanged(value - step),
         ),
-        SizedBox(
-          width: 32,
+        ConstrainedBox(
+          constraints: const BoxConstraints(minWidth: 32),
           child: Text(
             '$value',
             textAlign: TextAlign.center,

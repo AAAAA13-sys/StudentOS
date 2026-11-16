@@ -13,7 +13,7 @@ import '../../features/phone/phone_controller.dart';
 import '../../features/work/work_controller.dart';
 import '../../features/notes/notes_controller.dart';
 import '../db/backup.dart';
-import '../theme/app_colors.dart';
+import '../theme/app_spacing.dart';
 import '../theme/app_theme.dart';
 import 'confirm_dialog.dart';
 import 'ponpon.dart';
@@ -99,14 +99,18 @@ class AppDrawer extends ConsumerWidget {
     final TextTheme textStyles = context.textStyles;
 
     Widget sectionLabel(String text) => Padding(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 4),
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.xl,
+        AppSpacing.lg,
+        AppSpacing.xl,
+        AppSpacing.xs,
+      ),
       child: Text(
         text,
-        style: const TextStyle(
-          fontSize: 11,
+        style: textStyles.labelSmall?.copyWith(
           fontWeight: FontWeight.w700,
           letterSpacing: 1.2,
-          color: AppColors.slate500,
+          color: colors.onSurfaceVariant,
         ),
       ),
     );
@@ -116,7 +120,12 @@ class AppDrawer extends ConsumerWidget {
         padding: EdgeInsets.zero,
         children: <Widget>[
           Container(
-            padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.xl,
+              AppSpacing.xl,
+              AppSpacing.xl,
+              AppSpacing.xl,
+            ),
             decoration: BoxDecoration(
               color: colors.primaryContainer.withValues(alpha: 0.4),
               border: Border(bottom: BorderSide(color: colors.outlineVariant)),
@@ -126,7 +135,7 @@ class AppDrawer extends ConsumerWidget {
               child: Row(
                 children: <Widget>[
                   const Ponpon(size: 64),
-                  const SizedBox(width: 12),
+                  AppSpacing.gapMd,
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -137,7 +146,7 @@ class AppDrawer extends ConsumerWidget {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const SizedBox(height: 4),
+                        AppSpacing.gapXs,
                         Text(
                           'Everything is stored on this device.',
                           style: textStyles.bodySmall?.copyWith(
