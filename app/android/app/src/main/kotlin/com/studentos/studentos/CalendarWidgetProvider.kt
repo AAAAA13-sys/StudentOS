@@ -70,6 +70,8 @@ class CalendarWidgetProvider : AppWidgetProvider() {
         val whenText: String,
         val smallSub: String,
         val alarmText: String,
+        /** Time only, for the 2-column layout where a weekday does not fit. */
+        val narrowAlarm: String,
         val mood: Int,
         val phase: FocusPhaseSpec?,
         val rounds: Int,
@@ -96,6 +98,8 @@ class CalendarWidgetProvider : AppWidgetProvider() {
                     R.string.widget_alarm_at,
                     (if (dayDiff(alarm, now) == 0) "" else alarmDay(alarm) + " ") + time.format(Date(alarm)),
                 )
+                val narrowAlarm = if (alarm == null) ctx.getString(R.string.widget_no_alarm)
+                else time.format(Date(alarm))
                 val smallAlarm = alarm?.let {
                     ctx.getString(R.string.widget_alarm_short, time.format(Date(it)))
                 }
@@ -119,7 +123,7 @@ class CalendarWidgetProvider : AppWidgetProvider() {
                     WidgetSupport.nextMidnight(now),
                 ).filter { it > now }.min()
                 return TodayModel(
-                    title, whenText, smallSub, alarmText, mood, phase,
+                    title, whenText, smallSub, alarmText, narrowAlarm, mood, phase,
                     phases.count { it.kind == "focus" }, now, tick,
                 )
             }
@@ -172,7 +176,10 @@ class CalendarWidgetProvider : AppWidgetProvider() {
             val small = layoutId == R.layout.widget_today_small
             views.setTextViewText(R.id.today_title, m.title)
             views.setTextViewText(R.id.today_when, if (small) m.smallSub else m.whenText)
-            views.setTextViewText(R.id.today_alarm, m.alarmText)
+            views.setTextViewText(
+                R.id.today_alarm,
+                if (layoutId == R.layout.widget_today_narrow) m.narrowAlarm else m.alarmText,
+            )
             views.setImageViewResource(R.id.widget_ponpon, m.mood)
 
             val calendar = WidgetSupport.openApp(ctx, "calendar", 20)
