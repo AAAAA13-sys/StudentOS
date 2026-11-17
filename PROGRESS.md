@@ -4,7 +4,7 @@
 Phase 41: Payday on the Work pay row (2026-11-18)
 
 > **Direction (owner, 2026-11-15):** local, single-user app with no login and no server. See `AGENTS.md` Part 0.
-> Pushed to `origin` on 2026-11-17 at the owner's request ("commit and push the new update"), up to Phase 38.
+> Pushed to `origin` on 2026-11-18 at the owner's request ("commit and push as me"), up to Phase 41.
 > Latest build on `emulator-5554` is the x86_64 release APK from the last commit. Test data is still on it.
 
 ## Completed Tasks
