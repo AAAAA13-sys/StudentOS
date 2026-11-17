@@ -9,6 +9,8 @@ import '../../core/widgets/confirm_dialog.dart';
 import '../../core/widgets/month_switcher.dart';
 import 'calendar_controller.dart';
 import 'class_schedule_sheet.dart';
+import 'ics_import.dart';
+import 'ics_import_sheet.dart';
 import 'reminder_field.dart';
 import '../focus/alarm_editor_sheet.dart';
 import '../focus/clock_panels.dart';
@@ -132,6 +134,10 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                 PopupMenuItem<void>(
                   onTap: _addClass,
                   child: const Text('Add a class'),
+                ),
+                PopupMenuItem<void>(
+                  onTap: _importIcs,
+                  child: const Text('Import .ics file'),
                 ),
                 PopupMenuItem<void>(
                   onTap: () => addShift(context, ref, day: _selectedDate),
@@ -737,6 +743,44 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
           content: Text(
             'Added ${events.first.title} on ${events.length} '
             '${events.length == 1 ? 'day' : 'days'} a week',
+          ),
+        ),
+      );
+  }
+
+  Future<void> _importIcs() async {
+    final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
+    final CalendarController controller = ref.read(
+      calendarControllerProvider.notifier,
+    );
+    final List<CalendarEvent> existing =
+        ref.read(calendarControllerProvider).value ?? <CalendarEvent>[];
+    String? text;
+    try {
+      text = await ref.read(icsFilePickerProvider)();
+    } catch (_) {
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Could not read that file')),
+      );
+      return;
+    }
+    if (text == null || !mounted) return;
+    final IcsPreview preview = buildIcsPreview(parseIcs(text), existing);
+    final bool confirmed = await showIcsImportSheet(context, preview);
+    if (!confirmed || preview.fresh.isEmpty || !mounted) return;
+    await controller.addEvents(preview.fresh);
+    if (!mounted) return;
+    final DateTime first = preview.fresh
+        .map((CalendarEvent e) => e.startsAt)
+        .reduce((DateTime a, DateTime b) => a.isBefore(b) ? a : b);
+    _showDay(first);
+    messenger
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(
+            'Imported ${preview.fresh.length} '
+            '${preview.fresh.length == 1 ? 'event' : 'events'}',
           ),
         ),
       );

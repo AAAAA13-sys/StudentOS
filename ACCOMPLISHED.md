@@ -442,3 +442,15 @@ Entries are appended, never edited. Corrections are new entries that reference t
 - Tapping a reminder opens Calendar > Schedule on that day (`day:` route).
 - Alarm cards show "Snoozed until h:mm" while an alarm waits out a snooze (`AlarmStore` `snoozed_until`, cleared when it rings or is dismissed).
 **Open items:** a reminder beyond 14 days ahead is only scheduled once the app is opened within 14 days of it. Reboot, the snooze line and the notifications-off hint not seen on a device.
+
+## Phase 35: Import a timetable from an `.ics` file
+**Date:** 2026-11-17
+**Verified by:** lead-pm on `emulator-5554`
+**Evidence:** see the Phase 35 row in `PROGRESS.md`.
+**Decisions:**
+- Own parser (`lib/features/calendar/ics_import.dart`), no package, no network. Preview sheet before anything is saved (`ics_import_sheet.dart`).
+- Mapping: DAILY/WEEKLY/MONTHLY with INTERVAL 1; UNTIL and COUNT become the end date; a weekly rule with several BYDAY days becomes one weekly event per day, like Add a class. `Z` times become local; `TZID` times are read as local wall time.
+- Duplicates (same title, case-insensitive, and same start) are skipped, so importing twice adds nothing.
+- Skipped and counted: INTERVAL above 1, BYMONTHDAY/BYSETPOS, other frequencies, cancelled events, edited single occurrences. EXDATE is ignored with a warning (those dates still show).
+- Timed events get the 10 min reminder (exams 1 day); all-day events get none.
+**Open items:** the file picker is not filtered to `.ics`. A TZID other than the phone's zone is not converted. Not seen on the real phones.

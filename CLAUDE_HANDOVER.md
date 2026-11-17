@@ -44,7 +44,7 @@ Mascot (Phase 31): Ponpon, an orange puspin, drawn in `lib/core/widgets/ponpon.d
 
 Still open, in suggested order:
 0. See the shift overlap warning on a device; add a payday date to the Work pay card.
-1. Import a timetable from an `.ics` file (Calendar menu; `file_picker` is already a dependency).
+1. ~~Import a timetable from an `.ics` file~~ done in Phase 35 (Calendar > More > Import .ics file; `ics_import.dart`, `ics_import_sheet.dart`).
 2. ~~Grade "what-if" calculator~~ dropped: the owner rejected school modules.
 3. ~~Event reminders as local notifications~~ done in Phase 34 without a package: `reminder_schedule.dart` computes the next 14 days, `ReminderStore.kt` fires them with exact alarms, a tap opens that day.
 4. ~~Widget spending line~~ now its own Money widget, seen on a home screen (Phase 30). Old note: the spending line is stamped with its date and hidden once that day is over (the widget re-checks every 30 minutes), but it only reappears after the app is opened. Not yet viewed on a home screen. A true background recompute is still open.
