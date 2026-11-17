@@ -2,18 +2,33 @@ import 'package:intl/intl.dart';
 
 import '../../core/widgets/ponpon.dart';
 
-/// One thing Ponpon can say: a short sentence, the mood that goes with it and
-/// a priority (lower is said first).
+/// What a tip's small text button does.
+enum PonponAction {
+  /// Open the quiz of a note that has recall cards.
+  quizNotes('Quiz me'),
+
+  /// Open Calendar > Focus.
+  startFocus('Focus');
+
+  const PonponAction(this.label);
+
+  final String label;
+}
+
+/// One thing Ponpon can say: a short sentence, the mood that goes with it, a
+/// priority (lower is said first) and an optional [action].
 class PonponInsight {
   const PonponInsight({
     required this.text,
     required this.priority,
     this.mood = PonponMood.happy,
+    this.action,
   });
 
   final String text;
   final PonponMood mood;
   final int priority;
+  final PonponAction? action;
 
   @override
   String toString() => 'PonponInsight($priority, $mood, $text)';

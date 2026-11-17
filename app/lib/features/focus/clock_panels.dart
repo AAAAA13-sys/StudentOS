@@ -1,17 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:intl/intl.dart';
+
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_theme.dart';
 import '../phone/phone_day.dart' show formatDuration;
 import '../phone/phone_controller.dart';
 import '../phone/phone_screen.dart';
+import '../calendar/calendar_controller.dart';
+import '../calendar/event.dart';
 import 'alarm.dart';
 import 'alarm_editor_sheet.dart';
 import 'focus_controller.dart';
 import 'focus_plan.dart';
 import 'focus_platform.dart';
 import 'focus_settings_sheet.dart';
+import 'wake_plan.dart';
 import '../../core/widgets/ponpon.dart';
 
 const List<FontFeature> _tabular = <FontFeature>[FontFeature.tabularFigures()];
@@ -49,10 +54,27 @@ class AlarmsPanel extends ConsumerWidget {
 
     return alarms.when(
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (Object e, _) => Center(child: Text('Could not load alarms: $e')),
+      error: (Object _, _) => Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            const Text("Couldn't load your alarms."),
+            AppSpacing.gapMd,
+            FilledButton(
+              onPressed: () =>
+                  ref.read(alarmControllerProvider.notifier).refresh(),
+              child: const Text('Retry'),
+            ),
+          ],
+        ),
+      ),
       data: (List<Alarm> list) => ListView(
         padding: const EdgeInsets.fromLTRB(AppSpacing.lg, 0, AppSpacing.lg, 96),
         children: <Widget>[
+          if (_gapFor(ref, list) case final AlarmGap gap) ...<Widget>[
+            _NoAlarmCard(gap: gap),
+            AppSpacing.gapMd,
+          ],
           if (ready != null && !ready.alarmsReady) ...<Widget>[
             _ReadinessCard(ready: ready),
             AppSpacing.gapMd,
@@ -68,6 +90,67 @@ class AlarmsPanel extends ConsumerWidget {
           AppSpacing.gapMd,
           const PhoneCards(rest: true, usage: false),
         ],
+      ),
+    );
+  }
+}
+
+/// The first event a missing alarm leaves the owner oversleeping, if any.
+AlarmGap? _gapFor(WidgetRef ref, List<Alarm> alarms) => alarmGapFor(
+  events:
+      ref.watch(calendarControllerProvider).value ?? const <CalendarEvent>[],
+  alarms: alarms,
+  now: DateTime.now(),
+);
+
+/// "No alarm before Physics 101 at 8:00 AM", with a way to add one.
+class _NoAlarmCard extends StatelessWidget {
+  const _NoAlarmCard({required this.gap});
+
+  final AlarmGap gap;
+
+  @override
+  Widget build(BuildContext context) {
+    final ColorScheme colors = context.colors;
+    final TextTheme text = context.textStyles;
+    final String at = DateFormat('h:mm a').format(gap.start);
+    return Card(
+      margin: EdgeInsets.zero,
+      color: colors.errorContainer,
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.md),
+        child: Row(
+          children: <Widget>[
+            Icon(Icons.alarm_off_rounded, color: colors.onErrorContainer),
+            AppSpacing.gapMd,
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(
+                    'No alarm before ${gap.event.title} at $at',
+                    style: text.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: colors.onErrorContainer,
+                    ),
+                  ),
+                  Text(
+                    gap.isToday ? 'Today' : 'Tomorrow',
+                    style: text.bodySmall?.copyWith(
+                      color: colors.onErrorContainer,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            AppSpacing.gapSm,
+            FilledButton.tonal(
+              onPressed: () =>
+                  showAlarmEditor(context, alarm: suggestedAlarm(gap)),
+              child: const Text('Add alarm'),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -276,8 +359,19 @@ class FocusPanel extends ConsumerWidget {
     final AsyncValue<FocusState> focus = ref.watch(focusControllerProvider);
     return focus.when(
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (Object e, _) =>
-          Center(child: Text('Could not load the timer: $e')),
+      error: (Object _, _) => Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            const Text("Couldn't load the timer."),
+            AppSpacing.gapMd,
+            FilledButton(
+              onPressed: () => ref.invalidate(focusControllerProvider),
+              child: const Text('Retry'),
+            ),
+          ],
+        ),
+      ),
       data: (FocusState state) => state.session == null
           ? _TimerIdle(state: state)
           : _TimerRunning(session: state.session!),

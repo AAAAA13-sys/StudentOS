@@ -11,8 +11,11 @@ import '../../core/widgets/confirm_dialog.dart';
 import '../../core/widgets/month_switcher.dart';
 import 'finance_controller.dart';
 import 'finance_repository.dart';
+import 'amount_validation.dart';
+import 'quick_again.dart';
 import 'transaction.dart';
 import 'widgets/quick_expense_sheet.dart';
+import '../work/work_controller.dart';
 import '../work/work_pay_card.dart';
 import '../../core/widgets/ponpon.dart';
 import '../insights/insights_providers.dart';
@@ -46,7 +49,7 @@ class FinanceScreen extends ConsumerWidget {
         appBar: const AppTopBar(title: 'Finance'),
         body: financeState.when(
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (Object err, _) => Center(
+          error: (Object _, StackTrace _) => Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
@@ -56,7 +59,7 @@ class FinanceScreen extends ConsumerWidget {
                   color: colors.error,
                 ),
                 AppSpacing.gapMd,
-                Text('Error loading finance data: $err'),
+                const Text('Couldn’t load your finances.'),
                 AppSpacing.gapLg,
                 FilledButton(
                   onPressed: () =>
@@ -192,7 +195,15 @@ class FinanceScreen extends ConsumerWidget {
   }
 
   Future<void> _quickLog(BuildContext context, WidgetRef ref) async {
-    final QuickExpenseResult? result = await showQuickExpenseSheet(context);
+    final QuickExpenseResult? result = await showQuickExpenseSheet(
+      context,
+      again: ref
+          .read(financeRepositoryProvider)
+          .getTransactions()
+          .then(
+            (List<Transaction> all) => frequentExpenses(all, DateTime.now()),
+          ),
+    );
     if (!context.mounted) return;
     switch (result) {
       case QuickExpense(:final double amount, :final String category):
@@ -218,6 +229,10 @@ class FinanceScreen extends ConsumerWidget {
           ..hideCurrentSnackBar()
           ..showSnackBar(
             SnackBar(
+              behavior: SnackBarBehavior.floating,
+              // Clear of the + button: its height, its margin and some air.
+              margin: const EdgeInsets.fromLTRB(16, 0, 16, 56 + 16 + 16),
+              duration: const Duration(seconds: 2),
               content: Text(
                 'Logged ${NumberFormat.currency(symbol: '₱', decimalDigits: amount == amount.roundToDouble() ? 0 : 2).format(amount)} · $category',
               ),
@@ -276,8 +291,8 @@ class FinanceScreen extends ConsumerWidget {
                     children: <Widget>[
                       Text(
                         existing == null
-                            ? 'Add Transaction'
-                            : 'Edit Transaction',
+                            ? 'New transaction'
+                            : 'Edit transaction',
                         style: ctx.textStyles.titleLarge?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
@@ -322,14 +337,7 @@ class FinanceScreen extends ConsumerWidget {
                           ),
                         ),
                         validator: (String? val) {
-                          if (val == null || val.trim().isEmpty) {
-                            return 'Enter amount';
-                          }
-                          final double? amt = double.tryParse(val.trim());
-                          if (amt == null || amt <= 0) {
-                            return 'Must be greater than 0';
-                          }
-                          return null;
+                          return validateAmount(val);
                         },
                       ),
                       AppSpacing.gapMd,
@@ -416,8 +424,8 @@ class FinanceScreen extends ConsumerWidget {
                           },
                           child: Text(
                             existing == null
-                                ? 'Save Transaction'
-                                : 'Update Transaction',
+                                ? 'Add transaction'
+                                : 'Save changes',
                           ),
                         ),
                       ),
@@ -441,6 +449,9 @@ class FinanceScreen extends ConsumerWidget {
                                   'will be removed.',
                             );
                             if (!confirmed) return;
+                            await ref
+                                .read(workControllerProvider.notifier)
+                                .unpayForDeletedIncome(existing);
                             await ref
                                 .read(financeControllerProvider.notifier)
                                 .deleteTransaction(existing.id);

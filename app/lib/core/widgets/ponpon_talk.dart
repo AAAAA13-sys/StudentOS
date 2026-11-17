@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../features/insights/ponpon_insight.dart';
+import '../theme/app_spacing.dart';
 import '../theme/app_theme.dart';
 import 'ponpon.dart';
 
@@ -63,10 +64,18 @@ class _BubbleBorder extends ShapeBorder {
 /// "Ponpon says": Ponpon on the left and a speech bubble with one insight.
 /// Tap the bubble for the next one; the close button calls [onClose].
 class PonponTalk extends StatefulWidget {
-  const PonponTalk({required this.insights, required this.onClose, super.key});
+  const PonponTalk({
+    required this.insights,
+    required this.onClose,
+    this.onAction,
+    super.key,
+  });
 
   final List<PonponInsight> insights;
   final VoidCallback onClose;
+
+  /// Called when the small action button of a tip is pressed.
+  final void Function(PonponAction action)? onAction;
 
   @override
   State<PonponTalk> createState() => _PonponTalkState();
@@ -126,30 +135,42 @@ class _PonponTalkState extends State<PonponTalk> {
                 onTap: total > 1 ? _next : null,
                 child: Padding(
                   padding: const EdgeInsets.only(
-                    left: _BubbleBorder.tailWidth + 12,
-                    top: 4,
-                    bottom: 4,
+                    left: _BubbleBorder.tailWidth + AppSpacing.md,
+                    top: AppSpacing.xs,
+                    bottom: AppSpacing.xs,
                   ),
                   child: Row(
                     children: <Widget>[
                       Expanded(
-                        child: ExcludeSemantics(
-                          child: AnimatedSwitcher(
-                            duration: fade,
-                            switchInCurve: Curves.easeOutCubic,
-                            layoutBuilder:
-                                (Widget? current, List<Widget> previous) =>
-                                    Stack(
-                                      alignment: Alignment.centerLeft,
-                                      children: <Widget>[...previous, ?current],
-                                    ),
-                            child: Text(
-                              insight.text,
-                              key: ValueKey<String>(insight.text),
-                              style: style,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
+                        child: AnimatedSwitcher(
+                          duration: fade,
+                          switchInCurve: Curves.easeOutCubic,
+                          layoutBuilder:
+                              (Widget? current, List<Widget> previous) => Stack(
+                                alignment: Alignment.centerLeft,
+                                children: <Widget>[...previous, ?current],
+                              ),
+                          child: Column(
+                            key: ValueKey<String>(insight.text),
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              ExcludeSemantics(
+                                child: Text(
+                                  insight.text,
+                                  style: style,
+                                  maxLines: 4,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              if (insight.action != null &&
+                                  widget.onAction != null)
+                                _ActionButton(
+                                  label: insight.action!.label,
+                                  onPressed: () =>
+                                      widget.onAction!(insight.action!),
+                                ),
+                            ],
                           ),
                         ),
                       ),
@@ -171,6 +192,39 @@ class _PonponTalkState extends State<PonponTalk> {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// The small text button inside a bubble. It is not wrapped in the bubble's
+/// semantics (which are excluded for the text), so it announces itself.
+class _ActionButton extends StatelessWidget {
+  const _ActionButton({required this.label, required this.onPressed});
+
+  final String label;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final ColorScheme colors = context.colors;
+    return Semantics(
+      button: true,
+      label: label,
+      excludeSemantics: true,
+      child: TextButton(
+        onPressed: onPressed,
+        style: TextButton.styleFrom(
+          foregroundColor: colors.onPrimaryContainer,
+          minimumSize: const Size(AppSizes.minTouchTarget, 36),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          textStyle: context.textStyles.labelLarge?.copyWith(
+            fontWeight: FontWeight.w700,
+            decoration: TextDecoration.underline,
+          ),
+        ),
+        child: Text(label),
+      ),
     );
   }
 }

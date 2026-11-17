@@ -30,7 +30,7 @@ abstract final class AppTheme {
         onErrorContainer: AppColors.red900,
         surface: AppColors.paleLavenderWhite,
         onSurface: AppColors.midnightIndigo,
-        onSurfaceVariant: AppColors.darkPurple,
+        onSurfaceVariant: AppColors.mutedLight,
         surfaceContainerLowest: AppColors.white,
         surfaceContainerLow: AppColors.paleLavenderWhite,
         surfaceContainer: const Color(0xFFEADBFF),
@@ -68,7 +68,7 @@ abstract final class AppTheme {
         surface: AppColors.midnightIndigo,
         onSurface: AppColors.paleLavenderWhite,
         onSurfaceVariant: AppColors.lightLilac,
-        surfaceContainerLowest: AppColors.midnightIndigo,
+        surfaceContainerLowest: AppColors.cardDark,
         surfaceContainerLow: AppColors.darkPurple,
         surfaceContainer: const Color(0xFF1E103E),
         surfaceContainerHigh: const Color(0xFF2B1854),
@@ -120,11 +120,12 @@ abstract final class AppTheme {
       ),
       drawerTheme: DrawerThemeData(
         backgroundColor: scheme.surfaceContainerLowest,
-        elevation: 1,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.horizontal(
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: const BorderRadius.horizontal(
             right: Radius.circular(AppRadius.lg),
           ),
+          side: BorderSide(color: scheme.outlineVariant),
         ),
       ),
       navigationBarTheme: NavigationBarThemeData(
@@ -263,8 +264,11 @@ abstract final class AppTheme {
       ),
       dialogTheme: DialogThemeData(
         backgroundColor: scheme.surfaceContainerLowest,
-        elevation: 3,
-        shape: const RoundedRectangleBorder(borderRadius: AppRadius.extraLarge),
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: AppRadius.extraLarge,
+          side: BorderSide(color: scheme.outlineVariant),
+        ),
         titleTextStyle: textTheme.titleLarge,
         contentTextStyle: textTheme.bodyLarge?.copyWith(
           color: scheme.onSurfaceVariant,
@@ -272,13 +276,14 @@ abstract final class AppTheme {
       ),
       bottomSheetTheme: BottomSheetThemeData(
         backgroundColor: scheme.surfaceContainerLowest,
-        elevation: 3,
+        elevation: 0,
         showDragHandle: true,
         dragHandleColor: scheme.onSurfaceVariant.withValues(alpha: 0.4),
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(
+        shape: RoundedRectangleBorder(
+          borderRadius: const BorderRadius.vertical(
             top: Radius.circular(AppRadius.xl),
           ),
+          side: BorderSide(color: scheme.outlineVariant),
         ),
       ),
       snackBarTheme: SnackBarThemeData(

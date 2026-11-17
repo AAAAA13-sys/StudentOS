@@ -403,6 +403,8 @@ class _DayPicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Sunday first, like the month grid. Bit 0 of the mask is Monday.
+    const List<int> order = <int>[6, 0, 1, 2, 3, 4, 5];
     const List<String> letters = <String>['M', 'T', 'W', 'T', 'F', 'S', 'S'];
     const List<String> names = <String>[
       'Monday',
@@ -417,7 +419,7 @@ class _DayPicker extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: <Widget>[
-        for (int i = 0; i < 7; i++)
+        for (final int i in order)
           Semantics(
             label: names[i],
             selected: days & (1 << i) != 0,

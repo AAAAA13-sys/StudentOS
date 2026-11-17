@@ -260,7 +260,7 @@ void main() {
     await tester.tap(find.text('Add a class'));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Save class'));
+    await tester.tap(find.text('Add class'));
     await tester.pumpAndSettle();
     expect(find.text('Subject required'), findsOneWidget);
     expect(find.text('Pick at least one day'), findsOneWidget);
@@ -269,8 +269,8 @@ void main() {
     await tester.tap(find.text('Tue'));
     await tester.tap(find.text('Thu'));
     await tester.pump();
-    await tester.ensureVisible(find.text('Save class'));
-    await tester.tap(find.text('Save class'));
+    await tester.ensureVisible(find.text('Add class'));
+    await tester.tap(find.text('Add class'));
     await settle();
 
     final List<CalendarEvent>? saved = await tester.runAsync(
@@ -316,13 +316,13 @@ void main() {
     await settle();
 
     // Nothing is stored until the draft is saved.
-    expect(find.text('New Note'), findsOneWidget);
+    expect(find.text('New note'), findsOneWidget);
     expect(
       await tester.runAsync(() => NotesRepository(database).getNotes()),
       isEmpty,
     );
-    await tester.ensureVisible(find.text('Save Note'));
-    await tester.tap(find.text('Save Note'));
+    await tester.ensureVisible(find.text('Save note'));
+    await tester.tap(find.text('Save note'));
     await settle();
 
     expect(find.byTooltip('Open note'), findsOneWidget);
@@ -615,11 +615,11 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.textContaining('Typo'));
     await tester.pumpAndSettle();
-    expect(find.text('Edit Transaction'), findsOneWidget);
+    expect(find.text('Edit transaction'), findsOneWidget);
 
     await tester.enterText(find.byType(TextFormField).first, '50');
-    await tester.ensureVisible(find.text('Update Transaction'));
-    await tester.tap(find.text('Update Transaction'));
+    await tester.ensureVisible(find.text('Save changes'));
+    await tester.tap(find.text('Save changes'));
     await settle();
 
     final List<Transaction>? saved = await tester.runAsync(

@@ -18,6 +18,7 @@ import android.os.Build
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
+import java.text.SimpleDateFormat
 import android.os.PowerManager
 import android.os.VibrationEffect
 import android.os.Vibrator
@@ -110,7 +111,7 @@ class AlarmService : Service() {
     private fun goForeground(s: AlarmSpec) {
         val title = if (isCheck) "Still awake?" else s.label.ifBlank { "Alarm" }
         val text = if (isCheck) "Tap to answer, or the alarm rings again"
-        else String.format("%d:%02d · solve it to turn it off", s.hour, s.minute)
+        else clockText(this, s.hour, s.minute) + " · solve it to turn it off"
         @Suppress("DEPRECATION")
         val b = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) Notification.Builder(this, channel())
         else Notification.Builder(this).setPriority(Notification.PRIORITY_MAX)
@@ -356,6 +357,16 @@ class AlarmService : Service() {
     }
 
     companion object {
+        /** "8:00 PM" or "20:00", following the phone's 12/24-hour setting. */
+        fun clockText(ctx: Context, hour: Int, minute: Int): String {
+            val cal = java.util.Calendar.getInstance().apply {
+                set(java.util.Calendar.HOUR_OF_DAY, hour)
+                set(java.util.Calendar.MINUTE, minute)
+            }
+            val pattern = if (android.text.format.DateFormat.is24HourFormat(ctx)) "HH:mm" else "h:mm a"
+            return SimpleDateFormat(pattern, java.util.Locale.getDefault()).format(cal.time)
+        }
+
         const val ACTION_START = "start"
         const val ACTION_DISMISS = "dismiss"
         const val ACTION_SNOOZE = "snooze"

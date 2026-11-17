@@ -102,7 +102,7 @@ void main() {
     WidgetTester tester,
   ) async {
     await open(tester, _Android('add_note'));
-    expect(find.text('New Note'), findsOneWidget);
+    expect(find.text('New note'), findsOneWidget);
     expect(
       tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex,
       2,
@@ -113,7 +113,7 @@ void main() {
     WidgetTester tester,
   ) async {
     final ProviderContainer c = await open(tester, _Android('add_event'));
-    expect(find.text('Save Event'), findsOneWidget);
+    expect(find.text('Save event'), findsOneWidget);
     expect(c.read(calendarViewProvider), CalendarView.schedule);
     expect(
       tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex,
@@ -130,9 +130,9 @@ void main() {
 
       android.warm('add_note');
       await settle(tester);
-      expect(find.text('New Note'), findsOneWidget);
+      expect(find.text('New note'), findsOneWidget);
       await closeSheet(tester);
-      expect(find.text('New Note'), findsNothing);
+      expect(find.text('New note'), findsNothing);
 
       // Resume with nothing waiting: no sheet comes back.
       for (final AppLifecycleState st in <AppLifecycleState>[
@@ -159,7 +159,7 @@ void main() {
 
       android.warm('add_event');
       await settle(tester);
-      expect(find.text('Save Event'), findsOneWidget);
+      expect(find.text('Save event'), findsOneWidget);
     },
   );
 

@@ -1,3 +1,8 @@
+import 'package:flutter/material.dart';
+
+import 'theme/app_spacing.dart';
+import 'theme/app_theme.dart';
+
 /// Markdown task lines (`- [ ] text`, `- [x] text`, `[ ] text`, `[X] text`)
 /// inside free text, shared by events and notes.
 typedef ChecklistItem = ({String text, bool done});
@@ -43,4 +48,62 @@ String toggleChecklistLine(String text, int targetIndex) {
 String stripChecklistMarker(String line) {
   final RegExpMatch? m = _itemPattern.firstMatch(line.trim());
   return m == null ? line : m.group(2)!.trim();
+}
+
+/// One tickable checklist line: a 48dp-tall row that reads to TalkBack as a
+/// checkbox with its text and state.
+class ChecklistRow extends StatelessWidget {
+  const ChecklistRow({
+    required this.text,
+    required this.done,
+    required this.onToggle,
+    super.key,
+  });
+
+  final String text;
+  final bool done;
+  final VoidCallback onToggle;
+
+  @override
+  Widget build(BuildContext context) {
+    final ColorScheme colors = context.colors;
+    return Semantics(
+      container: true,
+      checked: done,
+      label: text,
+      onTap: onToggle,
+      child: ExcludeSemantics(
+        child: InkWell(
+          borderRadius: AppRadius.small,
+          onTap: onToggle,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(
+              minHeight: AppSizes.minTouchTarget,
+            ),
+            child: Row(
+              children: <Widget>[
+                Icon(
+                  done
+                      ? Icons.check_box_rounded
+                      : Icons.check_box_outline_blank_rounded,
+                  size: AppSizes.iconMd,
+                  color: done ? colors.primary : colors.onSurfaceVariant,
+                ),
+                AppSpacing.gapSm,
+                Expanded(
+                  child: Text(
+                    text,
+                    style: context.textStyles.bodyMedium?.copyWith(
+                      decoration: done ? TextDecoration.lineThrough : null,
+                      color: done ? colors.onSurfaceVariant : colors.onSurface,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }

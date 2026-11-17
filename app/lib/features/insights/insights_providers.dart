@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
@@ -19,6 +21,15 @@ enum PonponSurface { calendar, finance, notes }
 final Provider<DateTime Function()> ponponClockProvider =
     Provider<DateTime Function()>((Ref ref) => DateTime.now);
 
+/// How often tips that depend on the clock are recomputed while on screen.
+const Duration ponponRefreshEvery = Duration(seconds: 30);
+
+/// Ticks every [ponponRefreshEvery] while some tip is on screen, and stops
+/// when none is (auto-disposed with the insight providers).
+final StreamProvider<int> ponponTickProvider = StreamProvider.autoDispose<int>(
+  (Ref ref) => Stream<int>.periodic(ponponRefreshEvery, (int i) => i + 1),
+);
+
 /// The surfaces whose bubble was closed. In memory only: it comes back on the
 /// next app start.
 class PonponDismissals extends Notifier<Set<PonponSurface>> {
@@ -36,7 +47,8 @@ ponponDismissalsProvider =
     );
 
 final Provider<List<PonponInsight>> calendarInsightsProvider =
-    Provider<List<PonponInsight>>((Ref ref) {
+    Provider.autoDispose<List<PonponInsight>>((Ref ref) {
+      ref.watch(ponponTickProvider);
       return calendarInsights(
         events: ref.watch(calendarControllerProvider).value ?? const [],
         shifts: ref.watch(workControllerProvider).value ?? const [],
@@ -45,25 +57,31 @@ final Provider<List<PonponInsight>> calendarInsightsProvider =
     });
 
 /// Only while the month on show is the current one.
-final FutureProvider<List<PonponInsight>>
-financeInsightsProvider = FutureProvider<List<PonponInsight>>((Ref ref) async {
-  final FinanceState state = await ref.watch(financeControllerProvider.future);
-  final DateTime now = ref.read(ponponClockProvider)();
-  final DateFormat month = DateFormat('yyyy-MM');
-  if (state.month != month.format(now)) return const <PonponInsight>[];
-  final List<Transaction> last = await ref
-      .read(financeRepositoryProvider)
-      .getTransactions(month: month.format(DateTime(now.year, now.month - 1)));
-  return financeInsights(
-    thisMonth: state.transactions,
-    lastMonth: last,
-    now: now,
-  );
-});
+final FutureProvider<List<PonponInsight>> financeInsightsProvider =
+    FutureProvider.autoDispose<List<PonponInsight>>((Ref ref) async {
+      ref.watch(ponponTickProvider);
+      final FinanceState state = await ref.watch(
+        financeControllerProvider.future,
+      );
+      final DateTime now = ref.read(ponponClockProvider)();
+      final DateFormat month = DateFormat('yyyy-MM');
+      if (state.month != month.format(now)) return const <PonponInsight>[];
+      final List<Transaction> last = await ref
+          .read(financeRepositoryProvider)
+          .getTransactions(
+            month: month.format(DateTime(now.year, now.month - 1)),
+          );
+      return financeInsights(
+        thisMonth: state.transactions,
+        lastMonth: last,
+        now: now,
+      );
+    });
 
 /// Silent while a search or tag filter narrows the list.
 final Provider<List<PonponInsight>> notesInsightsProvider =
-    Provider<List<PonponInsight>>((Ref ref) {
+    Provider.autoDispose<List<PonponInsight>>((Ref ref) {
+      ref.watch(ponponTickProvider);
       final NotesState? state = ref.watch(notesControllerProvider).value;
       if (state == null ||
           state.searchQuery.isNotEmpty ||

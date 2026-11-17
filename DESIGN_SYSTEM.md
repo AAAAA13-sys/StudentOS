@@ -21,7 +21,7 @@ Modern AI-generated and template-driven mobile apps suffer from predictable desi
 ### 1.2 The Anti-Slop Principles for StudentOS
 StudentOS is a high-utility productivity suite for students. It must feel calm, instantaneous, focused, and crafted:
 - **Restraint Over Spectacle:** 90% of the UI is clean, breathable canvas. The lavender palette is a **delicate accent**, not a full-screen purple wash.
-- **Hairlines Over Heavy Shadows:** High-craft 0.75px–1.0px subtle borders (`#E4E0F0` light / `#2B273F` dark) replace muddy drop-shadows to define depth.
+- **Hairlines Over Heavy Shadows:** High-craft 0.75px–1.0px subtle borders (`#E2D6F5` light / `#4A3A7A` dark) replace muddy drop-shadows to define depth.
 - **Tabular Figures for Data:** All currency amounts (`₱120.00`), dates, and durations use monospace/tabular figure alignment (`fontFeatures: [FontFeature.tabularFigures()]`).
 - **Tactile, Snappy Micro-Interactions:** 
   - Button taps: **100ms–140ms** subtle lavender ripple.
@@ -40,18 +40,20 @@ Lavender is scientifically proven to evoke calmness, reduce cognitive load, and 
 | Token Name | Hex Code | Purpose |
 |------------|----------|---------|
 | `midnightIndigo` | `#0B0720` | Deepest Midnight/Indigo: Dark mode scaffold background, high-contrast text |
-| `darkPurple` | `#25134D` | Dark Purple: Dark mode surface containers/cards, secondary text container |
+| `darkPurple` | `#25134D` | Dark Purple: dark mode containers (chips, filled inputs) |
+| `cardDark` | `#170E38` | Dark mode cards, sheets, dialogs, drawer, nav bar: one step above `#0B0720` |
+| `mutedLight` | `#5E5873` | Light mode secondary text, hints, inactive nav icons (5.7:1 on `#F2E9FF`) |
 | `vibrantViolet` | `#6A2FC8` | Vibrant Violet: Primary Brand Accent, key CTA buttons, active tab indicators |
 | `mediumLavender` | `#9D71E8` | Medium Lavender: Secondary accent, dark mode primary, outlines |
 | `lightLilac` | `#D1B8FF` | Light Lilac: Light mode primary container, active chips, selected pill fill |
 | `paleLavenderWhite` | `#F2E9FF` | Pale Lavender White: Light mode scaffold canvas, subtle card background |
 | `surfaceWhite` | `#FFFFFF` | Card surfaces, modal sheets, dialogs (Light mode) |
 | `hairlineLight`| `#E2D6F5` | 1px border stroke for light cards and dividers |
-| `hairlineDark` | `#25134D` | 1px border stroke for dark cards and dividers |
+| `hairlineDark` | `#4A3A7A` | 1px border stroke for dark cards, sheets, dialogs and dividers (~2:1 on `#0B0720`) |
 
 ### 2.3 Semantic Module Accents
 Each module maintains identity without breaking overall harmony:
-- **Calendar:** Lavender Iris (`#7C3AED` light / `#A78BFA` dark) — Schedule, time, classes.
+- **Calendar:** Vibrant Violet (`#6A2FC8` light / `#9D71E8` dark) — Schedule, time, classes.
 - **Finance (Income):** Sage Emerald (`#059669` light / `#34D399` dark) — Money received, positive balance.
 - **Finance (Expense):** Rose Coral (`#E11D48` light / `#FB7185` dark) — Money spent, negative balance.
 - **Notes:** Warm Amber (`#D97706` light / `#FBBF24` dark) — Ideas, tags, lecture highlights.
@@ -96,9 +98,9 @@ Thumb-zone navigation for the 3 daily destinations. On 2026-11-17 the owner aske
 
 **Design Details:**
 - Height: 68dp.
-- Indicator pill: Soft lavender container (`#EDE9FE` light / `#2D2845` dark).
-- Active icon color: `#7C3AED` (Lavender 600).
-- Inactive icon color: `#64748B` (Muted Slate).
+- Indicator pill: Light Lilac container (`#D1B8FF` light / `#25134D` dark).
+- Active icon color: `#6A2FC8` (Vibrant Violet).
+- Inactive icon color: `#5E5873` (`mutedLight`).
 - Background: Seamlessly matches or sits on `#FFFFFF` with a 1px top hairline border.
 
 ### 4.2 Tier 2: The Hamburger Drawer (`NavigationDrawer`)
@@ -116,7 +118,7 @@ A true working digital calendar replaces static month headers with an interactiv
   - 7-column header: `S M T W T F S` in `onSurfaceVariant` (medium 11sp).
   - 5 to 6 row grid dynamically calculating weekday offset for the active month.
   - Cell size: 38×34dp with circular touch targets.
-  - **Selected Day:** Solid Lavender (`#7C3AED`) circle with bold white text.
+  - **Selected Day:** Solid Vibrant Violet (`#6A2FC8`) circle with bold white text.
   - **Today Indicator:** Outlined Lavender circle with primary text.
   - **Event Dot:** 4px dot below day number indicating scheduled classes/events on that date.
   - Tapping any day cell sets `_selectedDate` with a 150ms cubic ease animation, updates the agenda view, and pre-fills that date in the Add Event modal.
@@ -138,7 +140,7 @@ Never use linear transitions or slow robotic springs. Use standard Material 3 / 
 ### 5.2 Modal Bottom Sheets
 - Rounded top corners: `BorderRadius.vertical(top: Radius.circular(24))`.
 - Visual drag handle: 36px wide × 4px high, color `outlineVariant.withOpacity(0.5)`.
-- Background: Pure surface white (`#FFFFFF`) in light mode, `#1E1B30` in dark mode.
+- Background: Pure surface white (`#FFFFFF`) in light mode, `#170E38` in dark mode.
 - Keyboard-aware padding: `EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom)`.
 
 ---

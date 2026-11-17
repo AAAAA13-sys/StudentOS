@@ -91,8 +91,10 @@ class CalendarWidgetProvider : AppWidgetProvider() {
 
                 val time = SimpleDateFormat("h:mm a", Locale.getDefault())
                 val title = event?.first ?: ctx.getString(R.string.widget_no_events)
+                val room = event?.third.orEmpty()
+                val withRoom = { t: String -> if (room.isEmpty()) t else "$t · $room" }
                 val whenText = if (event == null) ctx.getString(R.string.widget_free_time)
-                else dayWord(event.second, now) + " · " + time.format(Date(event.second))
+                else withRoom(dayWord(event.second, now) + " · " + time.format(Date(event.second)))
                 val alarmText = if (alarm == null) ctx.getString(R.string.widget_no_alarm)
                 else ctx.getString(
                     R.string.widget_alarm_at,
@@ -105,8 +107,10 @@ class CalendarWidgetProvider : AppWidgetProvider() {
                 }
                 val smallSub = if (event == null) smallAlarm ?: whenText
                 else listOfNotNull(
-                    (if (dayDiff(event.second, now) == 0) "" else dayWord(event.second, now) + " ") +
-                        time.format(Date(event.second)),
+                    withRoom(
+                        (if (dayDiff(event.second, now) == 0) "" else dayWord(event.second, now) + " ") +
+                            time.format(Date(event.second)),
+                    ),
                     smallAlarm,
                 ).joinToString(" · ")
 
@@ -129,13 +133,13 @@ class CalendarWidgetProvider : AppWidgetProvider() {
             }
 
             /** First stored occurrence that has not started yet. */
-            private fun nextEvent(ctx: Context, now: Long): Pair<String, Long>? {
+            private fun nextEvent(ctx: Context, now: Long): Triple<String, Long, String>? {
                 val raw = HomeWidgetPlugin.getData(ctx).getString("upcoming_events", "[]") ?: "[]"
                 val arr = try { JSONArray(raw) } catch (e: Exception) { JSONArray() }
                 for (i in 0 until arr.length()) {
                     val o = arr.optJSONObject(i) ?: continue
                     val s = o.optLong("s", 0L)
-                    if (s > now) return o.optString("t", "") to s
+                    if (s > now) return Triple(o.optString("t", ""), s, (if (o.isNull("location")) "" else o.optString("location", "").trim()))
                 }
                 return null
             }

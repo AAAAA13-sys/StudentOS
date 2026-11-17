@@ -38,173 +38,220 @@ Future<void> showNoteEditor(
     isDismissible: false,
     enableDrag: false,
     builder: (BuildContext ctx) {
-      return Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(ctx).viewInsets.bottom,
-          left: AppSpacing.lg,
-          right: AppSpacing.lg,
-          top: AppSpacing.xl,
-        ),
-        child: Form(
-          key: formKey,
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: <Widget>[
-                Text(
-                  onCreate == null ? 'Edit Note' : 'New Note',
-                  style: ctx.textStyles.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                AppSpacing.gapLg,
-                TextFormField(
-                  controller: titleController,
-                  decoration: const InputDecoration(
-                    labelText: 'Title (optional)',
-                    border: OutlineInputBorder(borderRadius: AppRadius.medium),
-                  ),
-                  validator: (String? val) =>
-                      noteTitleFor(val ?? '', bodyController.text) == null
-                      ? 'Write a title or some text'
-                      : null,
-                ),
-                AppSpacing.gapMd,
-                TextFormField(
-                  controller: bodyController,
-                  focusNode: bodyFocus,
-                  maxLines: 6,
-                  textAlignVertical: TextAlignVertical.top,
-                  decoration: const InputDecoration(
-                    labelText: 'Note content',
-                    alignLabelWithHint: true,
-                    hintText:
-                        'Notes or active recall cards (e.g. Q: ... A: ...)',
-                    border: OutlineInputBorder(borderRadius: AppRadius.medium),
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Wrap(
+      final String startTitle = note.title;
+      final String startBody = note.body;
+      final String startTags = note.tags.join(', ');
+      bool isDirty() =>
+          titleController.text != startTitle ||
+          bodyController.text != startBody ||
+          tagsController.text != startTags;
+
+      /// Closes the sheet, asking first when there is unsaved text.
+      Future<void> close() async {
+        if (isDirty()) {
+          final bool discard = await confirmDestructive(
+            ctx,
+            title: 'Discard changes?',
+            message: 'What you typed in this note will be lost.',
+            confirmLabel: 'Discard',
+          );
+          if (!discard) return;
+        }
+        if (ctx.mounted) Navigator.pop(ctx);
+      }
+
+      return ListenableBuilder(
+        listenable: Listenable.merge(<Listenable>[
+          titleController,
+          bodyController,
+          tagsController,
+        ]),
+        builder: (BuildContext ctx, Widget? _) => PopScope(
+          canPop: !isDirty(),
+          onPopInvokedWithResult: (bool didPop, Object? _) {
+            if (!didPop) close();
+          },
+          child: Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(ctx).viewInsets.bottom,
+              left: AppSpacing.lg,
+              right: AppSpacing.lg,
+              top: AppSpacing.xl,
+            ),
+            child: Form(
+              key: formKey,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: <Widget>[
-                    TextButton.icon(
-                      onPressed: () {
-                        final String text = bodyController.text;
-                        final int cursor = bodyController.selection.isValid
-                            ? bodyController.selection.start
-                            : text.length;
-                        final String before = text.substring(0, cursor);
-                        final String after = text.substring(cursor);
-                        final String prefix =
-                            before.isEmpty || before.endsWith('\n') ? '' : '\n';
-                        final String inserted = '$before$prefix- [ ] ';
-                        bodyController.text = '$inserted$after';
-                        bodyController.selection = TextSelection.fromPosition(
-                          TextPosition(offset: inserted.length),
-                        );
-                        bodyFocus.requestFocus();
-                      },
-                      icon: const Icon(Icons.add_task_rounded, size: 16),
-                      label: Text(
-                        'Add checklist item',
-                        style: Theme.of(ctx).textTheme.labelMedium,
+                    Text(
+                      onCreate == null ? 'Edit note' : 'New note',
+                      style: ctx.textStyles.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                    TextButton.icon(
-                      onPressed: () {
-                        final String text = bodyController.text;
-                        final String prefix =
-                            text.isEmpty || text.endsWith('\n') ? '' : '\n\n';
-                        bodyController.text = '$text${prefix}Q: \nA: ';
-                        bodyController.selection = TextSelection.fromPosition(
-                          TextPosition(offset: bodyController.text.length - 4),
-                        );
-                        // So the question is typed here, not in whichever
-                        // field had the cursor.
-                        bodyFocus.requestFocus();
-                      },
-                      icon: const Icon(Icons.bolt_rounded, size: 16),
-                      label: Text(
-                        'Add Q&A recall card',
-                        style: Theme.of(ctx).textTheme.labelMedium,
+                    AppSpacing.gapLg,
+                    TextFormField(
+                      controller: titleController,
+                      decoration: const InputDecoration(
+                        labelText: 'Title (optional)',
+                        border: OutlineInputBorder(
+                          borderRadius: AppRadius.medium,
+                        ),
+                      ),
+                      validator: (String? val) =>
+                          noteTitleFor(val ?? '', bodyController.text) == null
+                          ? 'Write a title or some text'
+                          : null,
+                    ),
+                    AppSpacing.gapMd,
+                    TextFormField(
+                      controller: bodyController,
+                      focusNode: bodyFocus,
+                      maxLines: 6,
+                      textAlignVertical: TextAlignVertical.top,
+                      decoration: const InputDecoration(
+                        labelText: 'Note content',
+                        alignLabelWithHint: true,
+                        hintText: 'Notes or quiz cards (e.g. Q: ... A: ...)',
+                        border: OutlineInputBorder(
+                          borderRadius: AppRadius.medium,
+                        ),
                       ),
                     ),
+                    const SizedBox(height: 4),
+                    Wrap(
+                      children: <Widget>[
+                        TextButton.icon(
+                          onPressed: () {
+                            final String text = bodyController.text;
+                            final int cursor = bodyController.selection.isValid
+                                ? bodyController.selection.start
+                                : text.length;
+                            final String before = text.substring(0, cursor);
+                            final String after = text.substring(cursor);
+                            final String prefix =
+                                before.isEmpty || before.endsWith('\n')
+                                ? ''
+                                : '\n';
+                            final String inserted = '$before$prefix- [ ] ';
+                            bodyController.text = '$inserted$after';
+                            bodyController.selection =
+                                TextSelection.fromPosition(
+                                  TextPosition(offset: inserted.length),
+                                );
+                            bodyFocus.requestFocus();
+                          },
+                          icon: const Icon(Icons.add_task_rounded, size: 16),
+                          label: Text(
+                            'Add checklist item',
+                            style: Theme.of(ctx).textTheme.labelMedium,
+                          ),
+                        ),
+                        TextButton.icon(
+                          onPressed: () {
+                            final String text = bodyController.text;
+                            final String prefix =
+                                text.isEmpty || text.endsWith('\n')
+                                ? ''
+                                : '\n\n';
+                            bodyController.text = '$text${prefix}Q: \nA: ';
+                            bodyController.selection =
+                                TextSelection.fromPosition(
+                                  TextPosition(
+                                    offset: bodyController.text.length - 4,
+                                  ),
+                                );
+                            // So the question is typed here, not in whichever
+                            // field had the cursor.
+                            bodyFocus.requestFocus();
+                          },
+                          icon: const Icon(Icons.bolt_rounded, size: 16),
+                          label: Text(
+                            'Add quiz card',
+                            style: Theme.of(ctx).textTheme.labelMedium,
+                          ),
+                        ),
+                      ],
+                    ),
+                    AppSpacing.gapMd,
+                    TextFormField(
+                      controller: tagsController,
+                      decoration: const InputDecoration(
+                        labelText: 'Tags (comma separated, e.g. math, lecture)',
+                        border: OutlineInputBorder(
+                          borderRadius: AppRadius.medium,
+                        ),
+                      ),
+                    ),
+                    AppSpacing.gapXl,
+                    SizedBox(
+                      height: AppSizes.buttonHeight,
+                      child: FilledButton(
+                        onPressed: () {
+                          if (!formKey.currentState!.validate()) return;
+                          final List<String> tags = tagsController.text
+                              .split(',')
+                              .map((String s) => s.trim())
+                              .where((String s) => s.isNotEmpty)
+                              .toList();
+
+                          final String title = noteTitleFor(
+                            titleController.text,
+                            bodyController.text,
+                          )!;
+                          if (onCreate != null) {
+                            onCreate(
+                              Note(
+                                id: 0,
+                                title: title,
+                                body: bodyController.text,
+                                tags: tags,
+                              ),
+                            );
+                          } else {
+                            ref
+                                .read(notesControllerProvider.notifier)
+                                .updateNote(
+                                  note.id,
+                                  title: title,
+                                  body: bodyController.text,
+                                  tags: tags,
+                                );
+                          }
+                          Navigator.pop(ctx);
+                        },
+                        child: Text(
+                          onCreate == null ? 'Save changes' : 'Save note',
+                        ),
+                      ),
+                    ),
+                    TextButton(onPressed: close, child: const Text('Cancel')),
+                    if (onCreate == null)
+                      TextButton.icon(
+                        style: TextButton.styleFrom(
+                          foregroundColor: ctx.colors.error,
+                        ),
+                        icon: const Icon(Icons.delete_outline_rounded),
+                        label: const Text('Delete note'),
+                        onPressed: () async {
+                          final bool confirmed = await confirmDestructive(
+                            ctx,
+                            title: 'Delete note?',
+                            message: '"${note.title}" will be removed.',
+                          );
+                          if (!confirmed) return;
+                          await ref
+                              .read(notesControllerProvider.notifier)
+                              .deleteNote(note.id);
+                          if (ctx.mounted) Navigator.pop(ctx);
+                        },
+                      ),
+                    AppSpacing.gapSm,
                   ],
                 ),
-                AppSpacing.gapMd,
-                TextFormField(
-                  controller: tagsController,
-                  decoration: const InputDecoration(
-                    labelText: 'Tags (comma separated, e.g. math, lecture)',
-                    border: OutlineInputBorder(borderRadius: AppRadius.medium),
-                  ),
-                ),
-                AppSpacing.gapXl,
-                SizedBox(
-                  height: AppSizes.buttonHeight,
-                  child: FilledButton(
-                    onPressed: () {
-                      if (!formKey.currentState!.validate()) return;
-                      final List<String> tags = tagsController.text
-                          .split(',')
-                          .map((String s) => s.trim())
-                          .where((String s) => s.isNotEmpty)
-                          .toList();
-
-                      final String title = noteTitleFor(
-                        titleController.text,
-                        bodyController.text,
-                      )!;
-                      if (onCreate != null) {
-                        onCreate(
-                          Note(
-                            id: 0,
-                            title: title,
-                            body: bodyController.text,
-                            tags: tags,
-                          ),
-                        );
-                      } else {
-                        ref
-                            .read(notesControllerProvider.notifier)
-                            .updateNote(
-                              note.id,
-                              title: title,
-                              body: bodyController.text,
-                              tags: tags,
-                            );
-                      }
-                      Navigator.pop(ctx);
-                    },
-                    child: Text(onCreate == null ? 'Update Note' : 'Save Note'),
-                  ),
-                ),
-                TextButton(
-                  onPressed: () => Navigator.pop(ctx),
-                  child: const Text('Cancel'),
-                ),
-                if (onCreate == null)
-                  TextButton.icon(
-                    style: TextButton.styleFrom(
-                      foregroundColor: ctx.colors.error,
-                    ),
-                    icon: const Icon(Icons.delete_outline_rounded),
-                    label: const Text('Delete note'),
-                    onPressed: () async {
-                      final bool confirmed = await confirmDestructive(
-                        ctx,
-                        title: 'Delete note?',
-                        message: '"${note.title}" will be removed.',
-                      );
-                      if (!confirmed) return;
-                      await ref
-                          .read(notesControllerProvider.notifier)
-                          .deleteNote(note.id);
-                      if (ctx.mounted) Navigator.pop(ctx);
-                    },
-                  ),
-                AppSpacing.gapSm,
-              ],
+              ),
             ),
           ),
         ),

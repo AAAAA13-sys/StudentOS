@@ -29,6 +29,7 @@ class AppDrawer extends ConsumerWidget {
     // widget is gone and `ref` can no longer be used.
     final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
     final BackupService backup = ref.read(backupServiceProvider);
+    final ProviderContainer container = ProviderScope.containerOf(context);
     Navigator.pop(context);
     try {
       final String json = await backup.exportJson();
@@ -39,6 +40,8 @@ class AppDrawer extends ConsumerWidget {
         mimeType: 'application/json',
       );
       if (saved != null) {
+        await backup.markBackedUp(DateTime.now());
+        container.invalidate(backupStatusProvider);
         messenger.showSnackBar(const SnackBar(content: Text('Backup saved')));
       }
     } catch (_) {
@@ -74,7 +77,8 @@ class AppDrawer extends ConsumerWidget {
         ..invalidate(workControllerProvider)
         ..invalidate(phoneControllerProvider)
         ..invalidate(alarmControllerProvider)
-        ..invalidate(focusControllerProvider);
+        ..invalidate(focusControllerProvider)
+        ..invalidate(backupStatusProvider);
       messenger.showSnackBar(
         SnackBar(
           content: Text(
@@ -97,6 +101,7 @@ class AppDrawer extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final ColorScheme colors = context.colors;
     final TextTheme textStyles = context.textStyles;
+    final BackupStatus? backupStatus = ref.watch(backupStatusProvider).value;
 
     Widget sectionLabel(String text) => Padding(
       padding: const EdgeInsets.fromLTRB(
@@ -153,12 +158,6 @@ class AppDrawer extends ConsumerWidget {
                             color: colors.onSurfaceVariant,
                           ),
                         ),
-                        Text(
-                          'Ponpon says hi.',
-                          style: textStyles.bodySmall?.copyWith(
-                            color: colors.onSurfaceVariant,
-                          ),
-                        ),
                       ],
                     ),
                   ),
@@ -170,7 +169,9 @@ class AppDrawer extends ConsumerWidget {
           ListTile(
             leading: const Icon(Icons.save_alt_rounded),
             title: const Text('Back up to a file'),
-            subtitle: const Text('Save a copy you can keep elsewhere'),
+            subtitle: Text(
+              'Last backup: ${backupAgeLabel(backupStatus?.last, DateTime.now())}',
+            ),
             onTap: () => _backUp(context, ref),
           ),
           ListTile(

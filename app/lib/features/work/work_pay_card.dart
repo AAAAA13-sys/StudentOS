@@ -4,6 +4,9 @@ import 'package:intl/intl.dart';
 
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/confirm_dialog.dart';
+import '../finance/amount_validation.dart';
+import 'add_shift_sheet.dart';
 import 'shift.dart';
 import 'work_controller.dart';
 
@@ -113,12 +116,12 @@ class _GotPaidDialogState extends State<_GotPaidDialog> {
   }
 
   void _save() {
-    final double? amount = double.tryParse(_amount.text.trim());
-    if (amount == null || amount <= 0) {
-      setState(() => _error = 'Enter the amount you received');
+    final String? problem = validateAmount(_amount.text);
+    if (problem != null) {
+      setState(() => _error = problem);
       return;
     }
-    Navigator.pop(context, amount);
+    Navigator.pop(context, double.parse(_amount.text.trim()));
   }
 
   @override
@@ -180,7 +183,7 @@ class _GotPaidDialogState extends State<_GotPaidDialog> {
   }
 }
 
-/// Lists the shifts that are not paid yet, so a day can be removed.
+/// Lists every shift, unpaid first, each in date and time order.
 Future<void> showShiftsSheet(BuildContext context) {
   return showModalBottomSheet<void>(
     context: context,
@@ -195,14 +198,27 @@ class _ShiftsSheet extends ConsumerWidget {
   const _ShiftsSheet();
 
   Future<void> _delete(BuildContext context, WidgetRef ref, Shift shift) async {
+    final String when =
+        '${shift.job}, ${DateFormat('EEE, MMM d').format(shift.startsAt)}';
+    if (shift.paid) {
+      final bool ok = await confirmDestructive(
+        context,
+        title: 'Remove a paid shift?',
+        message:
+            '$when was already paid. Your income stays as it is; '
+            'only the shift is removed.',
+        confirmLabel: 'Remove',
+      );
+      if (!ok) return;
+      await ref.read(workControllerProvider.notifier).deleteShift(shift);
+      return;
+    }
     final bool inSeries = shift.seriesId != null;
     final bool? andLater = await showDialog<bool>(
       context: context,
       builder: (BuildContext ctx) => AlertDialog(
         title: const Text('Remove this shift?'),
-        content: Text(
-          '${shift.job}, ${DateFormat('EEE, MMM d').format(shift.startsAt)}',
-        ),
+        content: Text(when),
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.pop(ctx),
@@ -233,15 +249,53 @@ class _ShiftsSheet extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final DateTime now = DateTime.now();
-    final List<Shift> unpaid = <Shift>[
-      for (final Shift shift
-          in ref.watch(workControllerProvider).value ?? const <Shift>[])
-        if (!shift.paid) shift,
-    ];
+    final List<Shift> all =
+        ref.watch(workControllerProvider).value ?? const <Shift>[];
+    final List<Shift> unpaid = inDateOrder(all.where((Shift s) => !s.paid));
+    final List<Shift> paid = inDateOrder(all.where((Shift s) => s.paid));
     final ColorScheme colors = context.colors;
     final TextTheme textStyles = context.textStyles;
     final DateFormat day = DateFormat('EEE, MMM d');
     final DateFormat time = DateFormat('h:mm a');
+
+    Widget header(String text) => Padding(
+      padding: const EdgeInsets.only(top: AppSpacing.md, bottom: AppSpacing.xs),
+      child: Text(
+        text,
+        style: textStyles.labelLarge?.copyWith(color: colors.onSurfaceVariant),
+      ),
+    );
+
+    Widget tile(Shift shift) => ListTile(
+      contentPadding: EdgeInsets.zero,
+      onTap: () => editShift(context, ref, shift),
+      title: Text(
+        '${day.format(shift.startsAt)} · '
+        '${time.format(shift.startsAt)} – ${time.format(shift.endsAt)}',
+        style: textStyles.bodyMedium?.copyWith(
+          fontWeight: FontWeight.w600,
+          fontFeatures: _tabular,
+        ),
+      ),
+      subtitle: Text(
+        '${shift.job} · ${formatHours(shift.paidMinutes)} hrs'
+        '${shift.hourlyRateCents > 0 ? ' · ${_pesos(shift.payCents)}' : ''}'
+        '${shift.paid
+            ? ' · paid'
+            : shift.isWorked(now)
+            ? ''
+            : ' · still to work'}',
+        style: textStyles.bodySmall?.copyWith(
+          color: colors.onSurfaceVariant,
+          fontFeatures: _tabular,
+        ),
+      ),
+      trailing: IconButton(
+        icon: const Icon(Icons.delete_outline_rounded, size: 20),
+        tooltip: 'Remove',
+        onPressed: () => _delete(context, ref, shift),
+      ),
+    );
 
     return ConstrainedBox(
       constraints: BoxConstraints(
@@ -254,59 +308,31 @@ class _ShiftsSheet extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
             Text(
-              'Shifts not paid yet',
+              'Shifts',
               style: textStyles.titleLarge?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
             ),
-            AppSpacing.gapSm,
-            if (unpaid.isEmpty)
+            if (all.isEmpty)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: AppSpacing.xl),
-                child: Text(
-                  'Nothing waiting to be paid.',
-                  style: textStyles.bodyMedium,
-                ),
+                child: Text('No shifts yet.', style: textStyles.bodyMedium),
               )
             else
               Flexible(
-                child: ListView.separated(
+                child: ListView(
                   shrinkWrap: true,
-                  itemCount: unpaid.length,
-                  separatorBuilder: (_, _) =>
-                      Divider(height: 1, color: colors.outlineVariant),
-                  itemBuilder: (BuildContext ctx, int index) {
-                    final Shift shift = unpaid[index];
-                    return ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      title: Text(
-                        '${day.format(shift.startsAt)} · '
-                        '${time.format(shift.startsAt)} – '
-                        '${time.format(shift.endsAt)}',
-                        style: textStyles.bodyMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
-                          fontFeatures: _tabular,
-                        ),
+                  children: <Widget>[
+                    header('Not paid yet'),
+                    if (unpaid.isEmpty)
+                      Text(
+                        'Nothing waiting to be paid.',
+                        style: textStyles.bodyMedium,
                       ),
-                      subtitle: Text(
-                        '${shift.job} · ${formatHours(shift.paidMinutes)} hrs'
-                        '${shift.hourlyRateCents > 0 ? ' · ${_pesos(shift.payCents)}' : ''}'
-                        '${shift.isWorked(now) ? '' : ' · still to work'}',
-                        style: textStyles.bodySmall?.copyWith(
-                          color: colors.onSurfaceVariant,
-                          fontFeatures: _tabular,
-                        ),
-                      ),
-                      trailing: IconButton(
-                        icon: const Icon(
-                          Icons.delete_outline_rounded,
-                          size: 20,
-                        ),
-                        tooltip: 'Remove',
-                        onPressed: () => _delete(context, ref, shift),
-                      ),
-                    );
-                  },
+                    for (final Shift shift in unpaid) tile(shift),
+                    if (paid.isNotEmpty) header('Paid'),
+                    for (final Shift shift in paid) tile(shift),
+                  ],
                 ),
               ),
             AppSpacing.gapLg,

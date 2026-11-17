@@ -3,6 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/theme/app_spacing.dart';
 import '../../core/widgets/ponpon_talk.dart';
+import '../focus/clock_panels.dart';
+import '../notes/note.dart';
+import '../notes/notes_controller.dart';
+import '../notes/quiz_sheet.dart';
 import 'insights_providers.dart';
 import 'ponpon_insight.dart';
 
@@ -46,7 +50,32 @@ class PonponTalkSlot extends ConsumerWidget {
         insights: insights,
         onClose: () =>
             ref.read(ponponDismissalsProvider.notifier).dismiss(surface),
+        onAction: (PonponAction action) =>
+            runPonponAction(context, ref, action),
       ),
     );
+  }
+}
+
+/// The first note, in list order, that has quiz cards.
+Note? firstQuizNote(List<Note> notes) {
+  for (final Note n in notes) {
+    if (n.recallCards.isNotEmpty) return n;
+  }
+  return null;
+}
+
+/// Does what a tip's button promises. The tips sit on their own tab, so no
+/// tab switch is needed: Focus is a view of Calendar, and the quiz opens as a
+/// sheet over Notes.
+void runPonponAction(BuildContext context, WidgetRef ref, PonponAction action) {
+  switch (action) {
+    case PonponAction.startFocus:
+      ref.read(calendarViewProvider.notifier).show(CalendarView.focus);
+    case PonponAction.quizNotes:
+      final Note? note = firstQuizNote(
+        ref.read(notesControllerProvider).value?.notes ?? const <Note>[],
+      );
+      if (note != null) showQuizSheet(context, note);
   }
 }

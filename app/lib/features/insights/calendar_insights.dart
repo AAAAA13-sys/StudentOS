@@ -92,6 +92,7 @@ List<PonponInsight> calendarInsights({
         text: '$kind $when: ${due.event.title}. A focus session would help.',
         mood: PonponMood.focused,
         priority: 1,
+        action: PonponAction.startFocus,
       ),
     );
   }

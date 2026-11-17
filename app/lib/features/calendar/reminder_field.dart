@@ -63,6 +63,16 @@ class ReminderField extends ConsumerWidget {
                 value: c.minutes ?? _none,
                 child: Text(c.label),
               ),
+            // A stored value this list does not offer (an import or an
+            // older build) still needs an item to show.
+            if (value != null &&
+                !reminderChoices.any(
+                  (({int? minutes, String label}) c) => c.minutes == value,
+                ))
+              DropdownMenuItem<int>(
+                value: value,
+                child: Text('$value min before'),
+              ),
           ],
           onChanged: (int? v) {
             if (v != null) onChanged(v == _none ? null : v);

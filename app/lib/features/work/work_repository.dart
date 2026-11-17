@@ -61,6 +61,28 @@ class WorkRepository {
         .go();
   }
 
+  /// Replaces the stored shift that has [shift]'s id; its series link and
+  /// paid state are kept.
+  Future<void> updateShift(Shift shift) {
+    return (_db.update(
+      _db.shiftRows,
+    )..where((t) => t.id.equals(shift.id))).write(
+      ShiftRowsCompanion(
+        job: Value(shift.job),
+        startsAt: Value(shift.startsAt),
+        durationMinutes: Value(shift.durationMinutes),
+        breakMinutes: Value(shift.breakMinutes),
+        hourlyRateCents: Value(shift.hourlyRateCents),
+      ),
+    );
+  }
+
+  Future<void> markUnpaid(Iterable<int> ids) {
+    return (_db.update(_db.shiftRows)..where((t) => t.id.isIn(ids))).write(
+      const ShiftRowsCompanion(paid: Value(false)),
+    );
+  }
+
   Future<void> markPaid(Iterable<int> ids) {
     return (_db.update(_db.shiftRows)..where((t) => t.id.isIn(ids))).write(
       const ShiftRowsCompanion(paid: Value(true)),

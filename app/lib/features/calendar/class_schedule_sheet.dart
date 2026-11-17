@@ -63,13 +63,13 @@ class _ClassScheduleSheet extends StatefulWidget {
 
 class _ClassScheduleSheetState extends State<_ClassScheduleSheet> {
   static const List<(int, String)> _days = <(int, String)>[
+    (DateTime.sunday, 'Sun'),
     (DateTime.monday, 'Mon'),
     (DateTime.tuesday, 'Tue'),
     (DateTime.wednesday, 'Wed'),
     (DateTime.thursday, 'Thu'),
     (DateTime.friday, 'Fri'),
     (DateTime.saturday, 'Sat'),
-    (DateTime.sunday, 'Sun'),
   ];
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
@@ -207,7 +207,18 @@ class _ClassScheduleSheetState extends State<_ClassScheduleSheet> {
                   Expanded(
                     child: OutlinedButton.icon(
                       icon: const Icon(Icons.schedule_rounded, size: 18),
-                      label: Text(_time.format(context)),
+                      label: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          _time.format(context),
+                          maxLines: 1,
+                          style: const TextStyle(
+                            fontFeatures: <FontFeature>[
+                              FontFeature.tabularFigures(),
+                            ],
+                          ),
+                        ),
+                      ),
                       onPressed: () async {
                         final TimeOfDay? picked = await showTimePicker(
                           context: context,
@@ -250,8 +261,12 @@ class _ClassScheduleSheetState extends State<_ClassScheduleSheet> {
               AppSpacing.gapMd,
               OutlinedButton.icon(
                 icon: const Icon(Icons.event_rounded, size: 18),
-                label: Text(
-                  'Until ${DateFormat('MMM d, yyyy').format(_until)}',
+                label: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    'Until ${DateFormat('MMM d, yyyy').format(_until)}',
+                    maxLines: 1,
+                  ),
                 ),
                 onPressed: () async {
                   final DateTime now = DateTime.now();
@@ -274,7 +289,7 @@ class _ClassScheduleSheetState extends State<_ClassScheduleSheet> {
                 height: AppSizes.buttonHeight,
                 child: FilledButton(
                   onPressed: _save,
-                  child: const Text('Save class'),
+                  child: const Text('Add class'),
                 ),
               ),
               AppSpacing.gapLg,

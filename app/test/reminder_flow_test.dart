@@ -122,7 +122,7 @@ void main() {
 
     Future<void> save(String title) async {
       await tester.enterText(find.byType(TextFormField).first, title);
-      await tester.tap(find.text('Save Event'));
+      await tester.tap(find.text('Save event'));
       await tester.pumpAndSettle();
       await settle(tester);
     }

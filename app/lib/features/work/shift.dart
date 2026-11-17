@@ -182,3 +182,10 @@ List<CalendarEvent> eventsOverlapping({
   );
   return found;
 }
+
+/// [shifts] earliest first.
+List<Shift> inDateOrder(Iterable<Shift> shifts) =>
+    shifts.toList()..sort((Shift a, Shift b) {
+      final int byTime = a.startsAt.compareTo(b.startsAt);
+      return byTime != 0 ? byTime : a.id.compareTo(b.id);
+    });

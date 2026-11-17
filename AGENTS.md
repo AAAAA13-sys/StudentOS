@@ -286,8 +286,8 @@ Before building any Flutter screen, invoke ui-ux-pro-max with the screen's purpo
 ### 6.7 Anti-Slop Mobile UI & Lavender Design Standards
 
 The UI must adhere strictly to `DESIGN_SYSTEM.md` and eliminate all generic AI tropes:
-- **No Purple Gradient Syndrome:** No diagonal purple-to-indigo gradients, no glowing radial blobs, and no muddy backgrounds. Use a crisp, calming porcelain canvas (`#FAF8FF` / `#FFFFFF`) with a restrained **hint of lavender** (`#7C3AED` primary, `#EDE9FE` container).
-- **Hairlines Over Shadows:** Use high-craft 0.75px–1.0px hairline borders (`#E4E0F0` light, `#2D2845` dark) instead of heavy blurry drop shadows.
+- **No Purple Gradient Syndrome:** No diagonal purple-to-indigo gradients, no glowing radial blobs, and no muddy backgrounds. Use a crisp, calming pale lavender canvas (`#F2E9FF`, white `#FFFFFF` cards) with a restrained **hint of lavender** (`#6A2FC8` primary, `#D1B8FF` container).
+- **Hairlines Over Shadows:** Use high-craft 0.75px–1.0px hairline borders (`#E2D6F5` light, `#4A3A7A` dark) instead of heavy blurry drop shadows.
 - **Dual-Tier Navigation:** 
   1. Bottom Navigation Bar: 3 thumb-accessible destinations (Calendar, Finance, Notes). The Clock tab added on 2026-11-16 was merged into Calendar on 2026-11-17 at the owner's request (Schedule | Alarms | Focus); school modules (subjects, grades) are out.
   2. Hamburger Drawer (`NavigationDrawer`): top-left menu icon (`Icons.menu_rounded`) holding back up, restore, the home-screen widget buttons and About (no profile or sync: the app is local-only).

@@ -111,7 +111,10 @@ class AlarmActivity : Activity(), SensorEventListener {
             },
             LinearLayout.LayoutParams(dp(120), dp(120)),
         )
-        root.addView(text(SimpleDateFormat("h:mm", Locale.getDefault()).format(Date()), 56f, bold = true))
+        root.addView(text(SimpleDateFormat(
+            if (android.text.format.DateFormat.is24HourFormat(this)) "HH:mm" else "h:mm a",
+            Locale.getDefault(),
+        ).format(Date()), 56f, bold = true))
         root.addView(text(spec.label.ifBlank { "Wake up" }, 22f, color = LILAC))
         root.addView(space(28))
 

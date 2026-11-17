@@ -12,6 +12,7 @@ class CalendarEvent {
     this.recurrenceUntil,
     this.reminderMinutes,
     this.noteId,
+    this.done = false,
   });
 
   final int id;
@@ -27,6 +28,10 @@ class CalendarEvent {
   /// Id of the attached note, if any.
   final int? noteId;
 
+  /// An exam or assignment marked done; it stops counting down and drops off
+  /// the home widget. For a repeating event this applies to the series.
+  final bool done;
+
   CalendarEvent withIds({required int id, required int? noteId}) {
     return CalendarEvent(
       id: id,
@@ -39,6 +44,7 @@ class CalendarEvent {
       recurrenceUntil: recurrenceUntil,
       reminderMinutes: reminderMinutes,
       noteId: noteId,
+      done: done,
     );
   }
 
@@ -53,6 +59,7 @@ class CalendarEvent {
     String? recurrenceUntil,
     int? reminderMinutes,
     int? noteId,
+    bool? done,
   }) {
     return CalendarEvent(
       id: id ?? this.id,
@@ -65,6 +72,7 @@ class CalendarEvent {
       recurrenceUntil: recurrenceUntil ?? this.recurrenceUntil,
       reminderMinutes: reminderMinutes ?? this.reminderMinutes,
       noteId: noteId ?? this.noteId,
+      done: done ?? this.done,
     );
   }
 
@@ -108,14 +116,28 @@ class CalendarEvent {
     return body.isEmpty ? tag : '$body\n$tag';
   }
 
-  /// Relative countdown string from [now] (e.g. 'Today', 'Tomorrow', 'in 3 days').
-  /// Null if not an exam/assignment or more than 14 days away or in the past.
-  String? countdownBadge(DateTime now) {
-    if (!isExam && !isAssignment) return null;
-    final DateTime today = DateTime(now.year, now.month, now.day);
+  /// Whether this lasts the whole day: starts at midnight and runs 24 hours
+  /// or more (what an imported all-day event looks like).
+  bool get isAllDay {
     final DateTime start = startsAt.toLocal();
-    final DateTime startDay = DateTime(start.year, start.month, start.day);
-    final int diff = startDay.difference(today).inDays;
+    return durationMinutes >= 1440 && start.hour == 0 && start.minute == 0;
+  }
+
+  /// Relative countdown string from [now] (e.g. 'Today', 'Tomorrow', 'in 3
+  /// days') to the occurrence on day [on], or to the next occurrence from
+  /// today when [on] is null. Null if not an exam/assignment, done, more than
+  /// 14 days away or in the past.
+  String? countdownBadge(DateTime now, {DateTime? on}) {
+    if (done || (!isExam && !isAssignment)) return null;
+    final DateTime today = DateTime(now.year, now.month, now.day);
+    final DateTime? occurrence = on ?? nextOccurrence(today);
+    if (occurrence == null) return null;
+    final DateTime day = DateTime(
+      occurrence.year,
+      occurrence.month,
+      occurrence.day,
+    );
+    final int diff = day.difference(today).inDays;
     if (diff < 0 || diff > 14) return null;
     if (diff == 0) return 'Today';
     if (diff == 1) return 'Tomorrow';
@@ -223,4 +245,18 @@ class CalendarEvent {
     }
     return next;
   }
+}
+
+/// A length in minutes as people say it: `45 min`, `1 h 30 min`, `3 h`,
+/// `All day` (a multiple of 24 h is shown as days).
+String formatEventDuration(int minutes) {
+  if (minutes >= 1440 && minutes % 1440 == 0) {
+    final int days = minutes ~/ 1440;
+    return days == 1 ? 'All day' : '$days days';
+  }
+  final int h = minutes ~/ 60;
+  final int m = minutes % 60;
+  if (h == 0) return '$m min';
+  if (m == 0) return '$h h';
+  return '$h h $m min';
 }

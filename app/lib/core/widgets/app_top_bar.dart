@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../db/backup.dart';
 import '../theme/app_theme.dart';
 
 /// The one app bar every tab uses: menu button, left-aligned tab name, and
 /// at most two actions.
-class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
+class AppTopBar extends ConsumerWidget implements PreferredSizeWidget {
   const AppTopBar({
     required this.title,
     this.actions = const <Widget>[],
@@ -18,13 +20,25 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final BackupStatus? status = ref.watch(backupStatusProvider).value;
+    final bool backupDue =
+        status != null &&
+        backupNeedsAttention(
+          status.last,
+          DateTime.now(),
+          hasData: status.hasData,
+        );
     return AppBar(
       centerTitle: false,
       titleSpacing: 0,
       leading: IconButton(
-        icon: const Icon(Icons.menu_rounded),
-        tooltip: 'Menu',
+        icon: Badge(
+          smallSize: 8,
+          isLabelVisible: backupDue,
+          child: const Icon(Icons.menu_rounded),
+        ),
+        tooltip: backupDue ? 'Menu, a backup is due' : 'Menu',
         // The drawer belongs to the shell's Scaffold, not the tab's own.
         onPressed: () =>
             context.findRootAncestorStateOfType<ScaffoldState>()?.openDrawer(),

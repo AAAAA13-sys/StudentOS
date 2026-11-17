@@ -117,6 +117,19 @@ class $EventRowsTable extends EventRows
     type: DriftSqlType.int,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _doneMeta = const VerificationMeta('done');
+  @override
+  late final GeneratedColumn<bool> done = GeneratedColumn<bool>(
+    'done',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("done" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -129,6 +142,7 @@ class $EventRowsTable extends EventRows
     recurrenceUntil,
     reminderMinutes,
     noteId,
+    done,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -212,6 +226,12 @@ class $EventRowsTable extends EventRows
         noteId.isAcceptableOrUnknown(data['note_id']!, _noteIdMeta),
       );
     }
+    if (data.containsKey('done')) {
+      context.handle(
+        _doneMeta,
+        done.isAcceptableOrUnknown(data['done']!, _doneMeta),
+      );
+    }
     return context;
   }
 
@@ -261,6 +281,10 @@ class $EventRowsTable extends EventRows
         DriftSqlType.int,
         data['${effectivePrefix}note_id'],
       ),
+      done: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}done'],
+      )!,
     );
   }
 
@@ -288,6 +312,10 @@ class EventRow extends DataClass implements Insertable<EventRow> {
   /// The note attached to this event, if any. The note may have been
   /// deleted since; readers must cope with a missing note.
   final int? noteId;
+
+  /// An exam or assignment the owner has marked done. Applies to the whole
+  /// series when the event repeats.
+  final bool done;
   const EventRow({
     required this.id,
     required this.title,
@@ -299,6 +327,7 @@ class EventRow extends DataClass implements Insertable<EventRow> {
     this.recurrenceUntil,
     this.reminderMinutes,
     this.noteId,
+    required this.done,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -323,6 +352,7 @@ class EventRow extends DataClass implements Insertable<EventRow> {
     if (!nullToAbsent || noteId != null) {
       map['note_id'] = Variable<int>(noteId);
     }
+    map['done'] = Variable<bool>(done);
     return map;
   }
 
@@ -348,6 +378,7 @@ class EventRow extends DataClass implements Insertable<EventRow> {
       noteId: noteId == null && nullToAbsent
           ? const Value.absent()
           : Value(noteId),
+      done: Value(done),
     );
   }
 
@@ -367,6 +398,7 @@ class EventRow extends DataClass implements Insertable<EventRow> {
       recurrenceUntil: serializer.fromJson<String?>(json['recurrenceUntil']),
       reminderMinutes: serializer.fromJson<int?>(json['reminderMinutes']),
       noteId: serializer.fromJson<int?>(json['noteId']),
+      done: serializer.fromJson<bool>(json['done']),
     );
   }
   @override
@@ -383,6 +415,7 @@ class EventRow extends DataClass implements Insertable<EventRow> {
       'recurrenceUntil': serializer.toJson<String?>(recurrenceUntil),
       'reminderMinutes': serializer.toJson<int?>(reminderMinutes),
       'noteId': serializer.toJson<int?>(noteId),
+      'done': serializer.toJson<bool>(done),
     };
   }
 
@@ -397,6 +430,7 @@ class EventRow extends DataClass implements Insertable<EventRow> {
     Value<String?> recurrenceUntil = const Value.absent(),
     Value<int?> reminderMinutes = const Value.absent(),
     Value<int?> noteId = const Value.absent(),
+    bool? done,
   }) => EventRow(
     id: id ?? this.id,
     title: title ?? this.title,
@@ -412,6 +446,7 @@ class EventRow extends DataClass implements Insertable<EventRow> {
         ? reminderMinutes.value
         : this.reminderMinutes,
     noteId: noteId.present ? noteId.value : this.noteId,
+    done: done ?? this.done,
   );
   EventRow copyWithCompanion(EventRowsCompanion data) {
     return EventRow(
@@ -433,6 +468,7 @@ class EventRow extends DataClass implements Insertable<EventRow> {
           ? data.reminderMinutes.value
           : this.reminderMinutes,
       noteId: data.noteId.present ? data.noteId.value : this.noteId,
+      done: data.done.present ? data.done.value : this.done,
     );
   }
 
@@ -448,7 +484,8 @@ class EventRow extends DataClass implements Insertable<EventRow> {
           ..write('recurrence: $recurrence, ')
           ..write('recurrenceUntil: $recurrenceUntil, ')
           ..write('reminderMinutes: $reminderMinutes, ')
-          ..write('noteId: $noteId')
+          ..write('noteId: $noteId, ')
+          ..write('done: $done')
           ..write(')'))
         .toString();
   }
@@ -465,6 +502,7 @@ class EventRow extends DataClass implements Insertable<EventRow> {
     recurrenceUntil,
     reminderMinutes,
     noteId,
+    done,
   );
   @override
   bool operator ==(Object other) =>
@@ -479,7 +517,8 @@ class EventRow extends DataClass implements Insertable<EventRow> {
           other.recurrence == this.recurrence &&
           other.recurrenceUntil == this.recurrenceUntil &&
           other.reminderMinutes == this.reminderMinutes &&
-          other.noteId == this.noteId);
+          other.noteId == this.noteId &&
+          other.done == this.done);
 }
 
 class EventRowsCompanion extends UpdateCompanion<EventRow> {
@@ -493,6 +532,7 @@ class EventRowsCompanion extends UpdateCompanion<EventRow> {
   final Value<String?> recurrenceUntil;
   final Value<int?> reminderMinutes;
   final Value<int?> noteId;
+  final Value<bool> done;
   const EventRowsCompanion({
     this.id = const Value.absent(),
     this.title = const Value.absent(),
@@ -504,6 +544,7 @@ class EventRowsCompanion extends UpdateCompanion<EventRow> {
     this.recurrenceUntil = const Value.absent(),
     this.reminderMinutes = const Value.absent(),
     this.noteId = const Value.absent(),
+    this.done = const Value.absent(),
   });
   EventRowsCompanion.insert({
     this.id = const Value.absent(),
@@ -516,6 +557,7 @@ class EventRowsCompanion extends UpdateCompanion<EventRow> {
     this.recurrenceUntil = const Value.absent(),
     this.reminderMinutes = const Value.absent(),
     this.noteId = const Value.absent(),
+    this.done = const Value.absent(),
   }) : title = Value(title),
        startsAt = Value(startsAt);
   static Insertable<EventRow> custom({
@@ -529,6 +571,7 @@ class EventRowsCompanion extends UpdateCompanion<EventRow> {
     Expression<String>? recurrenceUntil,
     Expression<int>? reminderMinutes,
     Expression<int>? noteId,
+    Expression<bool>? done,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -541,6 +584,7 @@ class EventRowsCompanion extends UpdateCompanion<EventRow> {
       if (recurrenceUntil != null) 'recurrence_until': recurrenceUntil,
       if (reminderMinutes != null) 'reminder_minutes': reminderMinutes,
       if (noteId != null) 'note_id': noteId,
+      if (done != null) 'done': done,
     });
   }
 
@@ -555,6 +599,7 @@ class EventRowsCompanion extends UpdateCompanion<EventRow> {
     Value<String?>? recurrenceUntil,
     Value<int?>? reminderMinutes,
     Value<int?>? noteId,
+    Value<bool>? done,
   }) {
     return EventRowsCompanion(
       id: id ?? this.id,
@@ -567,6 +612,7 @@ class EventRowsCompanion extends UpdateCompanion<EventRow> {
       recurrenceUntil: recurrenceUntil ?? this.recurrenceUntil,
       reminderMinutes: reminderMinutes ?? this.reminderMinutes,
       noteId: noteId ?? this.noteId,
+      done: done ?? this.done,
     );
   }
 
@@ -603,6 +649,9 @@ class EventRowsCompanion extends UpdateCompanion<EventRow> {
     if (noteId.present) {
       map['note_id'] = Variable<int>(noteId.value);
     }
+    if (done.present) {
+      map['done'] = Variable<bool>(done.value);
+    }
     return map;
   }
 
@@ -618,7 +667,8 @@ class EventRowsCompanion extends UpdateCompanion<EventRow> {
           ..write('recurrence: $recurrence, ')
           ..write('recurrenceUntil: $recurrenceUntil, ')
           ..write('reminderMinutes: $reminderMinutes, ')
-          ..write('noteId: $noteId')
+          ..write('noteId: $noteId, ')
+          ..write('done: $done')
           ..write(')'))
         .toString();
   }
@@ -4566,6 +4616,7 @@ typedef $$EventRowsTableCreateCompanionBuilder = EventRowsCompanion Function({
   Value<String?> recurrenceUntil,
   Value<int?> reminderMinutes,
   Value<int?> noteId,
+  Value<bool> done,
 });
 typedef $$EventRowsTableUpdateCompanionBuilder = EventRowsCompanion Function({
   Value<int> id,
@@ -4578,6 +4629,7 @@ typedef $$EventRowsTableUpdateCompanionBuilder = EventRowsCompanion Function({
   Value<String?> recurrenceUntil,
   Value<int?> reminderMinutes,
   Value<int?> noteId,
+  Value<bool> done,
 });
 
 class $$EventRowsTableFilterComposer
@@ -4636,6 +4688,11 @@ class $$EventRowsTableFilterComposer
 
   ColumnFilters<int> get noteId => $composableBuilder(
     column: $table.noteId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get done => $composableBuilder(
+    column: $table.done,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -4698,6 +4755,11 @@ class $$EventRowsTableOrderingComposer
     column: $table.noteId,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<bool> get done => $composableBuilder(
+    column: $table.done,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$EventRowsTableAnnotationComposer
@@ -4746,6 +4808,9 @@ class $$EventRowsTableAnnotationComposer
 
   GeneratedColumn<int> get noteId =>
       $composableBuilder(column: $table.noteId, builder: (column) => column);
+
+  GeneratedColumn<bool> get done =>
+      $composableBuilder(column: $table.done, builder: (column) => column);
 }
 
 class $$EventRowsTableTableManager
@@ -4786,6 +4851,7 @@ class $$EventRowsTableTableManager
                 Value<String?> recurrenceUntil = const Value.absent(),
                 Value<int?> reminderMinutes = const Value.absent(),
                 Value<int?> noteId = const Value.absent(),
+                Value<bool> done = const Value.absent(),
               }) => EventRowsCompanion(
                 id: id,
                 title: title,
@@ -4797,6 +4863,7 @@ class $$EventRowsTableTableManager
                 recurrenceUntil: recurrenceUntil,
                 reminderMinutes: reminderMinutes,
                 noteId: noteId,
+                done: done,
               ),
           createCompanionCallback:
               ({
@@ -4810,6 +4877,7 @@ class $$EventRowsTableTableManager
                 Value<String?> recurrenceUntil = const Value.absent(),
                 Value<int?> reminderMinutes = const Value.absent(),
                 Value<int?> noteId = const Value.absent(),
+                Value<bool> done = const Value.absent(),
               }) => EventRowsCompanion.insert(
                 id: id,
                 title: title,
@@ -4821,6 +4889,7 @@ class $$EventRowsTableTableManager
                 recurrenceUntil: recurrenceUntil,
                 reminderMinutes: reminderMinutes,
                 noteId: noteId,
+                done: done,
               ),
           withReferenceMapper: (p0) => p0
               .map(

@@ -113,7 +113,7 @@ void main() {
     await tester.tap(find.byType(FloatingActionButton));
     await tester.pumpAndSettle();
 
-    expect(find.text('New Event'), findsOneWidget);
+    expect(find.text('New event'), findsOneWidget);
     expect(find.text('Title'), findsOneWidget);
   });
 
@@ -147,7 +147,7 @@ void main() {
     await tester.tap(find.text('Income or another date'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Add Transaction'), findsOneWidget);
+    expect(find.text('New transaction'), findsOneWidget);
   });
 
   testWidgets('Notes screen displays notes list, search bar, and tags', (
@@ -177,7 +177,7 @@ void main() {
     await tester.tap(find.byType(FloatingActionButton));
     await tester.pumpAndSettle();
 
-    expect(find.text('New Note'), findsOneWidget);
+    expect(find.text('New note'), findsOneWidget);
     expect(find.text('Title (optional)'), findsOneWidget);
     expect(find.text('Note content'), findsOneWidget);
   });

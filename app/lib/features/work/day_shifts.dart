@@ -16,14 +16,14 @@ class DayShifts extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final List<Shift> shifts = <Shift>[
+    final List<Shift> shifts = inDateOrder(<Shift>[
       for (final Shift shift
           in ref.watch(workControllerProvider).value ?? const <Shift>[])
         if (shift.startsAt.year == day.year &&
             shift.startsAt.month == day.month &&
             shift.startsAt.day == day.day)
           shift,
-    ];
+    ]);
     if (shifts.isEmpty) return const SizedBox.shrink();
 
     final ColorScheme colors = context.colors;

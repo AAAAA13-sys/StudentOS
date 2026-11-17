@@ -82,6 +82,9 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
                 },
               ),
             ),
+            if (notesState.value case final NotesState loaded
+                when loaded.tags.isNotEmpty)
+              _tagRow(loaded),
             PonponTalkSlot(
               surface: PonponSurface.notes,
               suppress: notesState.value?.notes.isEmpty ?? true,
@@ -101,7 +104,7 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
                         color: colors.error,
                       ),
                       AppSpacing.gapMd,
-                      Text('Failed to load notes: $err'),
+                      const Text('Couldn’t load your notes.'),
                       AppSpacing.gapLg,
                       FilledButton(
                         onPressed: () => ref
@@ -118,44 +121,6 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
                 return Expanded(
                   child: Column(
                     children: <Widget>[
-                      if (state.tags.isNotEmpty)
-                        SizedBox(
-                          height: 48,
-                          child: ListView.separated(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: AppSpacing.lg,
-                            ),
-                            scrollDirection: Axis.horizontal,
-                            itemCount: state.tags.length + 1,
-                            separatorBuilder: (_, _) => AppSpacing.gapSm,
-                            itemBuilder: (BuildContext ctx, int index) {
-                              if (index == 0) {
-                                final bool isSelected =
-                                    state.selectedTag == null;
-                                return FilterChip(
-                                  label: const Text('All'),
-                                  selected: isSelected,
-                                  onSelected: (_) {
-                                    ref
-                                        .read(notesControllerProvider.notifier)
-                                        .selectTag(null);
-                                  },
-                                );
-                              }
-                              final String tag = state.tags[index - 1];
-                              final bool isSelected = state.selectedTag == tag;
-                              return FilterChip(
-                                label: Text('#$tag'),
-                                selected: isSelected,
-                                onSelected: (_) {
-                                  ref
-                                      .read(notesControllerProvider.notifier)
-                                      .selectTag(isSelected ? null : tag);
-                                },
-                              );
-                            },
-                          ),
-                        ),
                       Expanded(
                         child: state.notes.isEmpty
                             ? Center(
@@ -213,9 +178,49 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
           ],
         ),
         floatingActionButton: FloatingActionButton(
+          tooltip: 'New note',
           onPressed: () => _showAddNoteDialog(context),
           child: const Icon(Icons.add_rounded),
         ),
+      ),
+    );
+  }
+
+  /// The tag filter row. It sits above the Ponpon bubble so that filtering,
+  /// which can hide the bubble, never moves the chips.
+  Widget _tagRow(NotesState state) {
+    return SizedBox(
+      height: 48,
+      child: ListView.separated(
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+        scrollDirection: Axis.horizontal,
+        itemCount: state.tags.length + 1,
+        separatorBuilder: (_, _) => AppSpacing.gapSm,
+        itemBuilder: (BuildContext ctx, int index) {
+          if (index == 0) {
+            final bool isSelected = state.selectedTag == null;
+            return FilterChip(
+              showCheckmark: false,
+              label: const Text('All'),
+              selected: isSelected,
+              onSelected: (_) {
+                ref.read(notesControllerProvider.notifier).selectTag(null);
+              },
+            );
+          }
+          final String tag = state.tags[index - 1];
+          final bool isSelected = state.selectedTag == tag;
+          return FilterChip(
+            showCheckmark: false,
+            label: Text('#$tag'),
+            selected: isSelected,
+            onSelected: (_) {
+              ref
+                  .read(notesControllerProvider.notifier)
+                  .selectTag(isSelected ? null : tag);
+            },
+          );
+        },
       ),
     );
   }
@@ -467,7 +472,7 @@ class _NoteCard extends ConsumerWidget {
                             ),
                             const SizedBox(width: 4),
                             Text(
-                              '${note.recallCards.length} ${note.recallCards.length == 1 ? 'card' : 'cards'} • Practice Recall',
+                              '${note.recallCards.length} ${note.recallCards.length == 1 ? 'card' : 'cards'} · Quiz',
                               style: textStyles.labelSmall?.copyWith(
                                 color: colors.onPrimaryContainer,
                                 fontWeight: FontWeight.bold,

@@ -56,7 +56,6 @@ class NotesController extends AsyncNotifier<NotesState> {
 
   Future<void> search(String q) async {
     final String currentTag = state.value?.selectedTag ?? '';
-    state = const AsyncLoading();
     state = await AsyncValue.guard(
       () =>
           _fetchState(query: q, tag: currentTag.isNotEmpty ? currentTag : null),
@@ -65,7 +64,6 @@ class NotesController extends AsyncNotifier<NotesState> {
 
   Future<void> selectTag(String? tag) async {
     final String currentQuery = state.value?.searchQuery ?? '';
-    state = const AsyncLoading();
     state = await AsyncValue.guard(
       () => _fetchState(
         query: currentQuery.isNotEmpty ? currentQuery : null,

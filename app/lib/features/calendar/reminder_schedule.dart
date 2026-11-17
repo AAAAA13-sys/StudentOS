@@ -67,7 +67,7 @@ List<ReminderFire> upcomingReminders(
   final List<ReminderFire> fires = <ReminderFire>[];
   for (final CalendarEvent event in events) {
     final int? minutes = event.reminderMinutes;
-    if (minutes == null || minutes < 0) continue;
+    if (event.done || minutes == null || minutes < 0) continue;
     final Duration lead = Duration(minutes: minutes);
     final String prefix = event.isExam
         ? 'Exam: '

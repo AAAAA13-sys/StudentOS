@@ -1,7 +1,10 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../core/checklist.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/widgets/capture_request.dart';
 import '../../core/theme/app_theme.dart';
@@ -23,6 +26,8 @@ import '../notes/note_editor_sheet.dart';
 import '../notes/notes_controller.dart';
 import '../notes/notes_repository.dart';
 import 'event.dart';
+import 'linked_notes.dart';
+import '../notes/quiz_sheet.dart';
 import '../work/add_shift_sheet.dart';
 import '../work/day_shifts.dart';
 import '../work/shift.dart';
@@ -105,6 +110,55 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     DateTime date,
   ) {
     return allEvents.where((CalendarEvent e) => e.occursOn(date)).toList();
+  }
+
+  /// Minutes into the day an event starts, for ordering a day's list.
+  int _minuteOfDay(CalendarEvent e) {
+    final DateTime s = e.startsAt.toLocal();
+    return s.hour * 60 + s.minute;
+  }
+
+  /// The events on [day] with their start on that day, by time of day (a
+  /// repeating series that began earlier sorts by its clock time, not its
+  /// first date).
+  List<({CalendarEvent event, DateTime at})> _dayOccurrences(
+    List<CalendarEvent> allEvents,
+    DateTime day,
+  ) {
+    final List<CalendarEvent> events = _eventsForDate(allEvents, day)
+      ..sort((CalendarEvent a, CalendarEvent b) {
+        final int byTime = _minuteOfDay(a).compareTo(_minuteOfDay(b));
+        return byTime != 0 ? byTime : a.title.compareTo(b.title);
+      });
+    return <({CalendarEvent event, DateTime at})>[
+      for (final CalendarEvent e in events)
+        (
+          event: e,
+          at: DateTime(
+            day.year,
+            day.month,
+            day.day,
+            e.startsAt.toLocal().hour,
+            e.startsAt.toLocal().minute,
+          ),
+        ),
+    ];
+  }
+
+  /// Every event from today on, each at its next occurrence, soonest first.
+  List<({CalendarEvent event, DateTime at})> _upcomingOccurrences(
+    List<CalendarEvent> allEvents,
+    DateTime now,
+  ) {
+    final DateTime todayStart = DateTime(now.year, now.month, now.day);
+    final List<({CalendarEvent event, DateTime at})> rows =
+        <({CalendarEvent event, DateTime at})>[
+          for (final CalendarEvent e in allEvents)
+            if (e.nextOccurrence(todayStart) case final DateTime at)
+              (event: e, at: at),
+        ];
+    rows.sort((a, b) => a.at.compareTo(b.at));
+    return rows;
   }
 
   @override
@@ -191,17 +245,14 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                 segments: const <ButtonSegment<CalendarView>>[
                   ButtonSegment<CalendarView>(
                     value: CalendarView.schedule,
-                    icon: Icon(Icons.calendar_month_rounded),
                     label: Text('Schedule'),
                   ),
                   ButtonSegment<CalendarView>(
                     value: CalendarView.alarm,
-                    icon: Icon(Icons.alarm_rounded),
                     label: Text('Alarms'),
                   ),
                   ButtonSegment<CalendarView>(
                     value: CalendarView.focus,
-                    icon: Icon(Icons.timer_outlined),
                     label: Text('Focus'),
                   ),
                 ],
@@ -222,7 +273,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
       ),
       floatingActionButton: switch (view) {
         CalendarView.schedule => FloatingActionButton(
-          tooltip: 'Add Event',
+          tooltip: 'New event',
           onPressed: () =>
               _showAddEventDialog(context, prefilledDate: _selectedDate),
           child: const Icon(Icons.add_rounded),
@@ -254,13 +305,13 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
 
     return eventsState.when(
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (Object err, _) => Center(
+      error: (Object _, _) => Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Icon(Icons.error_outline_rounded, size: 48, color: colors.error),
             AppSpacing.gapMd,
-            Text('Failed to load events: $err'),
+            const Text("Couldn't load your events."),
             AppSpacing.gapLg,
             FilledButton(
               onPressed: () =>
@@ -271,15 +322,14 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
         ),
       ),
       data: (List<CalendarEvent> allEvents) {
-        final List<CalendarEvent> dayEvents = _eventsForDate(
-          allEvents,
-          _selectedDate,
-        )..sort((a, b) => a.startsAt.compareTo(b.startsAt));
-
-        final List<CalendarEvent> displayedEvents = _filterByDay
-            ? dayEvents
-            : (List<CalendarEvent>.from(allEvents)
-                ..sort((a, b) => a.startsAt.compareTo(b.startsAt)));
+        final List<({CalendarEvent event, DateTime at})> displayedEvents =
+            _filterByDay
+            ? _dayOccurrences(allEvents, _selectedDate)
+            : _upcomingOccurrences(allEvents, today);
+        final double headerHeight = math.max(
+          56,
+          MediaQuery.textScalerOf(context).scale(24) + 24,
+        );
 
         return RefreshIndicator(
           onRefresh: () =>
@@ -375,6 +425,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
               SliverPersistentHeader(
                 pinned: true,
                 delegate: _AgendaHeader(
+                  height: headerHeight,
                   background: colors.surface,
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
@@ -384,6 +435,8 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                       children: <Widget>[
                         Expanded(
                           child: Text(
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                             _filterByDay
                                 ? DateFormat('EEEE, MMM d')
                                       .format(_selectedDate)
@@ -435,7 +488,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                         FilledButton.tonalIcon(
                           icon: const Icon(Icons.add_rounded),
                           label: Text(
-                            'Add Event for ${DateFormat('MMM d').format(_selectedDate)}',
+                            'Add event for ${DateFormat('MMM d').format(_selectedDate)}',
                           ),
                           onPressed: () => _showAddEventDialog(
                             context,
@@ -457,8 +510,11 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                   sliver: SliverList.separated(
                     itemCount: displayedEvents.length,
                     separatorBuilder: (_, _) => AppSpacing.gapSm,
-                    itemBuilder: (BuildContext context, int index) =>
-                        _eventRow(displayedEvents[index], today),
+                    itemBuilder: (BuildContext context, int index) => _eventRow(
+                      displayedEvents[index].event,
+                      today,
+                      displayedEvents[index].at,
+                    ),
                   ),
                 ),
             ],
@@ -469,24 +525,26 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
   }
 
   /// One compact event: a time rail (a date pill in "All events"), the title
-  /// with place and badges, and the note button. Long-press deletes.
-  Widget _eventRow(CalendarEvent event, DateTime today) {
+  /// with place and badges, and the note button. Long-press deletes. [at] is
+  /// the occurrence being shown, so a repeating exam counts down to this day,
+  /// not to the day the series began.
+  Widget _eventRow(CalendarEvent event, DateTime today, DateTime at) {
     final ColorScheme colors = context.colors;
     final TextTheme textStyles = context.textStyles;
-    final DateTime start = event.startsAt.toLocal();
-    final DateTime localStart = _filterByDay
-        ? DateTime(
-            _selectedDate.year,
-            _selectedDate.month,
-            _selectedDate.day,
-            start.hour,
-            start.minute,
-          )
-        : start;
-    final String? countdown = event.countdownBadge(today);
+    final String? countdown = event.countdownBadge(today, on: at);
     final bool hasLocation =
         event.location != null && event.location!.isNotEmpty;
-    final String when = DateFormat('h:mm a').format(localStart);
+    final bool trackable = event.isExam || event.isAssignment;
+    final Map<int, Note>? notesById = ref.watch(linkedNotesProvider).value;
+    final Note? linked = event.noteId == null ? null : notesById?[event.noteId];
+    // While the notes load, trust the stored link rather than flicker.
+    final bool noteExists =
+        event.noteId != null && (notesById == null || linked != null);
+    final bool canQuiz = trackable && (linked?.recallCards.isNotEmpty ?? false);
+    final String when = event.isAllDay
+        ? 'All day'
+        : DateFormat('h:mm a').format(at);
+    final String length = formatEventDuration(event.durationMinutes);
 
     final Widget lead = _filterByDay
         ? Row(
@@ -501,25 +559,31 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                 ),
               ),
               AppSpacing.gapSm,
-              SizedBox(
-                width: 64,
+              // At least 64dp, wider when large text needs it.
+              ConstrainedBox(
+                constraints: const BoxConstraints(minWidth: 64),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     Text(
                       when,
+                      maxLines: 1,
+                      softWrap: false,
                       style: textStyles.labelLarge?.copyWith(
                         fontWeight: FontWeight.w700,
                         fontFeatures: _tabular,
                       ),
                     ),
-                    Text(
-                      '${event.durationMinutes}m',
-                      style: textStyles.labelSmall?.copyWith(
-                        color: colors.onSurfaceVariant,
-                        fontFeatures: _tabular,
+                    if (!event.isAllDay)
+                      Text(
+                        length,
+                        maxLines: 1,
+                        softWrap: false,
+                        style: textStyles.labelSmall?.copyWith(
+                          color: colors.onSurfaceVariant,
+                          fontFeatures: _tabular,
+                        ),
                       ),
-                    ),
                   ],
                 ),
               ),
@@ -535,14 +599,14 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
                 Text(
-                  DateFormat('MMM').format(localStart).toUpperCase(),
+                  DateFormat('MMM').format(at).toUpperCase(),
                   style: textStyles.labelSmall?.copyWith(
                     color: colors.onPrimaryContainer,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 Text(
-                  DateFormat('d').format(localStart),
+                  DateFormat('d').format(at),
                   style: textStyles.titleMedium?.copyWith(
                     color: colors.onPrimaryContainer,
                     fontWeight: FontWeight.bold,
@@ -553,7 +617,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
           );
 
     final List<String> details = <String>[
-      if (!_filterByDay) '$when (${event.durationMinutes}m)',
+      if (!_filterByDay) event.isAllDay ? 'All day' : '$when · $length',
       if (hasLocation) event.location!,
     ];
 
@@ -590,56 +654,31 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
-                          if (countdown != null)
-                            Container(
-                              margin: const EdgeInsets.only(bottom: 2),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 1,
-                              ),
-                              decoration: BoxDecoration(
-                                color: event.isExam
-                                    ? colors.errorContainer
-                                    : colors.primaryContainer,
-                                borderRadius: AppRadius.pill,
-                                border: Border.all(
-                                  color:
-                                      (event.isExam
-                                              ? colors.error
-                                              : colors.primary)
-                                          .withValues(alpha: 0.3),
-                                  width: 0.75,
-                                ),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: <Widget>[
-                                  Icon(
-                                    event.isExam
-                                        ? Icons.error_outline_rounded
-                                        : Icons.assignment_late_outlined,
-                                    size: 13,
-                                    color: event.isExam
-                                        ? colors.onErrorContainer
-                                        : colors.onPrimaryContainer,
-                                  ),
-                                  AppSpacing.gapXs,
-                                  Flexible(
-                                    child: Text(
-                                      event.isExam
-                                          ? 'Exam • $countdown'
-                                          : 'Due • $countdown',
-                                      style: textStyles.labelSmall?.copyWith(
-                                        color: event.isExam
-                                            ? colors.onErrorContainer
-                                            : colors.onPrimaryContainer,
-                                        fontWeight: FontWeight.bold,
-                                        fontFeatures: _tabular,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
+                          if (trackable && event.done)
+                            _StatusPill(
+                              icon: Icons.check_circle_rounded,
+                              label: 'Done',
+                              background: colors.primaryContainer,
+                              foreground: colors.onPrimaryContainer,
+                              border: colors.primary,
+                            )
+                          else if (countdown != null)
+                            _StatusPill(
+                              icon: event.isExam
+                                  ? Icons.error_outline_rounded
+                                  : Icons.assignment_late_outlined,
+                              label: event.isExam
+                                  ? 'Exam · $countdown'
+                                  : 'Due · $countdown',
+                              background: event.isExam
+                                  ? colors.errorContainer
+                                  : colors.primaryContainer,
+                              foreground: event.isExam
+                                  ? colors.onErrorContainer
+                                  : colors.onPrimaryContainer,
+                              border: event.isExam
+                                  ? colors.error
+                                  : colors.primary,
                             ),
                           Text(
                             event.title,
@@ -664,60 +703,62 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                     ),
                     IconButton(
                       icon: Icon(
-                        event.noteId != null
+                        noteExists
                             ? Icons.article_rounded
                             : Icons.note_add_outlined,
                         size: 22,
-                        color: event.noteId != null
+                        color: noteExists
                             ? colors.primary
                             : colors.onSurfaceVariant,
                       ),
-                      tooltip: event.noteId != null ? 'Open note' : 'Add note',
+                      tooltip: noteExists ? 'Open note' : 'Add note',
                       onPressed: () => _openNote(event),
                     ),
                   ],
                 ),
                 for (int i = 0; i < event.checklistItems.length; i++)
-                  InkWell(
-                    borderRadius: AppRadius.small,
-                    onTap: () async {
-                      final CalendarEvent updated = event.toggleChecklistItem(
-                        i,
-                      );
+                  ChecklistRow(
+                    text: event.checklistItems[i].text,
+                    done: event.checklistItems[i].done,
+                    onToggle: () async {
                       await ref
                           .read(calendarControllerProvider.notifier)
-                          .updateEvent(updated);
+                          .updateEvent(event.toggleChecklistItem(i));
                     },
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 2.5),
-                      child: Row(
-                        children: <Widget>[
-                          Icon(
-                            event.checklistItems[i].done
-                                ? Icons.check_box_rounded
-                                : Icons.check_box_outline_blank_rounded,
-                            size: 17,
-                            color: event.checklistItems[i].done
-                                ? colors.primary
-                                : colors.onSurfaceVariant,
+                  ),
+                if (trackable || canQuiz)
+                  Wrap(
+                    spacing: AppSpacing.sm,
+                    children: <Widget>[
+                      if (trackable)
+                        TextButton.icon(
+                          style: TextButton.styleFrom(
+                            minimumSize: const Size(0, AppSizes.minTouchTarget),
                           ),
-                          const SizedBox(width: 6),
-                          Expanded(
-                            child: Text(
-                              event.checklistItems[i].text,
-                              style: textStyles.bodySmall?.copyWith(
-                                decoration: event.checklistItems[i].done
-                                    ? TextDecoration.lineThrough
-                                    : null,
-                                color: event.checklistItems[i].done
-                                    ? colors.onSurfaceVariant
-                                    : colors.onSurface,
-                              ),
-                            ),
+                          icon: Icon(
+                            event.done
+                                ? Icons.check_circle_rounded
+                                : Icons.check_circle_outline_rounded,
+                            size: AppSizes.iconSm,
                           ),
-                        ],
-                      ),
-                    ),
+                          label: Text(event.done ? 'Done' : 'Mark done'),
+                          onPressed: () => ref
+                              .read(calendarControllerProvider.notifier)
+                              .updateEvent(event.copyWith(done: !event.done)),
+                        ),
+                      if (canQuiz)
+                        TextButton.icon(
+                          style: TextButton.styleFrom(
+                            minimumSize: const Size(0, AppSizes.minTouchTarget),
+                          ),
+                          icon: const Icon(
+                            Icons.quiz_outlined,
+                            size: AppSizes.iconSm,
+                          ),
+                          label: const Text('Quiz'),
+                          onPressed: () => showQuizSheet(context, linked!),
+                        ),
+                    ],
                   ),
                 if (event.recurrence != 'none')
                   Padding(
@@ -815,8 +856,8 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
   }
 
   /// Opens the note attached to [event]. When there is none (or it was
-  /// deleted) a draft titled after the event opens instead; it is stored and
-  /// attached only when saved.
+  /// deleted, in which case the stale link is cleared) a draft titled after
+  /// the event opens instead; it is stored and attached only when saved.
   Future<void> _openNote(CalendarEvent event) async {
     final NotesRepository notes = ref.read(notesRepositoryProvider);
     final Note? note = event.noteId == null
@@ -826,6 +867,12 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     if (note != null) {
       await showNoteEditor(context, ref, note);
       return;
+    }
+    if (event.noteId != null) {
+      await ref
+          .read(calendarControllerProvider.notifier)
+          .updateEvent(event.withIds(id: event.id, noteId: null));
+      if (!mounted) return;
     }
     await showNoteEditor(
       context,
@@ -938,7 +985,9 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                                       ? (isToday
                                             ? colors.primary
                                             : colors.onSurface)
-                                      : colors.outlineVariant),
+                                      : colors.onSurfaceVariant.withValues(
+                                          alpha: 0.75,
+                                        )),
                           ),
                         ),
                         if (hasEvents || hasShift)
@@ -1060,372 +1109,423 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
         ? 'exam'
         : (existingEvent?.isAssignment == true ? 'assignment' : 'general');
 
+    final String startTitle = titleController.text;
+    final String startLocation = locationController.text;
+    final String startNotes = notesController.text;
+    final DateTime startDate = eventDate;
+    final TimeOfDay startTime = eventTime;
+    final int startDuration = durationMinutes;
+    final String startRecurrence = recurrence;
+    final int? startReminder = reminderMinutes;
+    final String startType = eventType;
+    bool isDirty() =>
+        titleController.text != startTitle ||
+        locationController.text != startLocation ||
+        notesController.text != startNotes ||
+        eventDate != startDate ||
+        eventTime != startTime ||
+        durationMinutes != startDuration ||
+        recurrence != startRecurrence ||
+        reminderMinutes != startReminder ||
+        eventType != startType;
+
     await showModalBottomSheet<void>(
       context: context,
       useRootNavigator: true,
       isScrollControlled: true,
       showDragHandle: true,
+      // Dragging down would skip the "Discard changes?" question.
+      enableDrag: false,
       builder: (BuildContext ctx) {
-        return StatefulBuilder(
-          builder: (BuildContext context, StateSetter setModalState) {
-            return Padding(
-              padding: EdgeInsets.only(
-                bottom: MediaQuery.of(ctx).viewInsets.bottom + AppSpacing.xl,
-                left: AppSpacing.lg,
-                right: AppSpacing.lg,
-                top: AppSpacing.sm,
-              ),
-              child: Form(
-                key: formKey,
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: <Widget>[
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        /// Closes the sheet, asking first when something was changed.
+        Future<void> close() async {
+          final bool discard = await confirmDestructive(
+            ctx,
+            title: 'Discard changes?',
+            message: 'What you entered for this event will be lost.',
+            confirmLabel: 'Discard',
+          );
+          if (discard && ctx.mounted) Navigator.pop(ctx);
+        }
+
+        return ListenableBuilder(
+          listenable: Listenable.merge(<Listenable>[
+            titleController,
+            locationController,
+            notesController,
+          ]),
+          builder: (BuildContext ctx, Widget? _) => PopScope(
+            canPop: !isDirty(),
+            onPopInvokedWithResult: (bool didPop, Object? _) {
+              if (!didPop) close();
+            },
+            child: StatefulBuilder(
+              builder: (BuildContext context, StateSetter setModalState) {
+                return Padding(
+                  padding: EdgeInsets.only(
+                    bottom:
+                        MediaQuery.of(ctx).viewInsets.bottom + AppSpacing.xl,
+                    left: AppSpacing.lg,
+                    right: AppSpacing.lg,
+                    top: AppSpacing.sm,
+                  ),
+                  child: Form(
+                    key: formKey,
+                    child: SingleChildScrollView(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: <Widget>[
                           Text(
-                            existingEvent != null ? 'Edit Event' : 'New Event',
+                            existingEvent != null ? 'Edit event' : 'New event',
                             style: ctx.textStyles.titleLarge?.copyWith(
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 4,
+                          AppSpacing.gapMd,
+                          SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
+                              children: <Widget>[
+                                ChoiceChip(
+                                  label: const Text('General'),
+                                  selected: eventType == 'general',
+                                  onSelected: (_) => setModalState(
+                                    () => eventType = 'general',
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                ChoiceChip(
+                                  label: const Text('Exam / Quiz'),
+                                  selected: eventType == 'exam',
+                                  onSelected: (_) => setModalState(() {
+                                    eventType = 'exam';
+                                    if (existingEvent == null &&
+                                        !reminderTouched) {
+                                      reminderMinutes = examReminderMinutes;
+                                    }
+                                  }),
+                                ),
+                                const SizedBox(width: 8),
+                                ChoiceChip(
+                                  label: const Text('Assignment'),
+                                  selected: eventType == 'assignment',
+                                  onSelected: (_) => setModalState(() {
+                                    eventType = 'assignment';
+                                    if (existingEvent == null &&
+                                        !reminderTouched) {
+                                      reminderMinutes = examReminderMinutes;
+                                    }
+                                  }),
+                                ),
+                              ],
                             ),
-                            decoration: BoxDecoration(
-                              color: ctx.colors.primaryContainer,
-                              borderRadius: AppRadius.pill,
+                          ),
+                          AppSpacing.gapLg,
+                          TextFormField(
+                            controller: titleController,
+                            autovalidateMode:
+                                AutovalidateMode.onUserInteraction,
+                            decoration: const InputDecoration(
+                              labelText: 'Title',
+                              hintText: 'e.g. Physics Lecture, Math Quiz',
+                              border: OutlineInputBorder(
+                                borderRadius: AppRadius.medium,
+                              ),
                             ),
-                            child: Text(
-                              DateFormat('MMM d, yyyy').format(eventDate),
-                              style: ctx.textStyles.labelSmall?.copyWith(
-                                color: ctx.colors.onPrimaryContainer,
-                                fontWeight: FontWeight.bold,
+                            validator: (String? val) =>
+                                val == null || val.trim().isEmpty
+                                ? 'Title required'
+                                : null,
+                          ),
+                          AppSpacing.gapMd,
+                          Row(
+                            children: <Widget>[
+                              Expanded(
+                                child: OutlinedButton.icon(
+                                  onPressed: () async {
+                                    final DateTime? picked =
+                                        await showDatePicker(
+                                          context: ctx,
+                                          initialDate: eventDate,
+                                          firstDate: DateTime(2020),
+                                          lastDate: DateTime(2035),
+                                        );
+                                    if (picked != null) {
+                                      setModalState(() => eventDate = picked);
+                                    }
+                                  },
+                                  icon: const Icon(
+                                    Icons.calendar_today_rounded,
+                                    size: 18,
+                                  ),
+                                  label: FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: Text(
+                                      DateFormat(
+                                        eventDate.year == DateTime.now().year
+                                            ? 'MMM d'
+                                            : 'MMM d, yyyy',
+                                      ).format(eventDate),
+                                      maxLines: 1,
+                                      style: const TextStyle(
+                                        fontFeatures: _tabular,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              AppSpacing.gapSm,
+                              Expanded(
+                                child: OutlinedButton.icon(
+                                  onPressed: () async {
+                                    final TimeOfDay? picked =
+                                        await showTimePicker(
+                                          context: ctx,
+                                          initialTime: eventTime,
+                                        );
+                                    if (picked != null) {
+                                      setModalState(() => eventTime = picked);
+                                    }
+                                  },
+                                  icon: const Icon(
+                                    Icons.access_time_rounded,
+                                    size: 18,
+                                  ),
+                                  label: FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: Text(
+                                      eventTime.format(ctx),
+                                      maxLines: 1,
+                                      style: const TextStyle(
+                                        fontFeatures: _tabular,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          AppSpacing.gapMd,
+                          Row(
+                            children: <Widget>[
+                              Expanded(
+                                child: DropdownButtonFormField<int>(
+                                  initialValue: durationMinutes,
+                                  decoration: const InputDecoration(
+                                    labelText: 'Duration',
+                                    border: OutlineInputBorder(
+                                      borderRadius: AppRadius.medium,
+                                    ),
+                                  ),
+                                  items: <DropdownMenuItem<int>>[
+                                    for (final int m in durationChoices(
+                                      durationMinutes,
+                                    ))
+                                      DropdownMenuItem<int>(
+                                        value: m,
+                                        child: Text(formatEventDuration(m)),
+                                      ),
+                                  ],
+                                  onChanged: (int? val) {
+                                    if (val != null) {
+                                      setModalState(
+                                        () => durationMinutes = val,
+                                      );
+                                    }
+                                  },
+                                ),
+                              ),
+                              AppSpacing.gapSm,
+                              Expanded(
+                                child: DropdownButtonFormField<String>(
+                                  initialValue: recurrence,
+                                  decoration: const InputDecoration(
+                                    labelText: 'Repeat',
+                                    border: OutlineInputBorder(
+                                      borderRadius: AppRadius.medium,
+                                    ),
+                                  ),
+                                  items: const <DropdownMenuItem<String>>[
+                                    DropdownMenuItem<String>(
+                                      value: 'none',
+                                      child: Text('Does not repeat'),
+                                    ),
+                                    DropdownMenuItem<String>(
+                                      value: 'daily',
+                                      child: Text('Daily'),
+                                    ),
+                                    DropdownMenuItem<String>(
+                                      value: 'weekly',
+                                      child: Text('Weekly'),
+                                    ),
+                                    DropdownMenuItem<String>(
+                                      value: 'monthly',
+                                      child: Text('Monthly'),
+                                    ),
+                                  ],
+                                  onChanged: (String? val) {
+                                    if (val != null) {
+                                      setModalState(() => recurrence = val);
+                                    }
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                          AppSpacing.gapMd,
+                          ReminderField(
+                            value: reminderMinutes,
+                            onChanged: (int? v) => setModalState(() {
+                              reminderMinutes = v;
+                              reminderTouched = true;
+                            }),
+                          ),
+                          AppSpacing.gapMd,
+                          TextFormField(
+                            controller: locationController,
+                            decoration: const InputDecoration(
+                              labelText: 'Location (optional)',
+                              hintText: 'e.g. Room 304, Science Lab',
+                              border: OutlineInputBorder(
+                                borderRadius: AppRadius.medium,
                               ),
                             ),
                           ),
-                        ],
-                      ),
-                      AppSpacing.gapMd,
-                      SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          children: <Widget>[
-                            ChoiceChip(
-                              label: const Text('General'),
-                              selected: eventType == 'general',
-                              onSelected: (_) =>
-                                  setModalState(() => eventType = 'general'),
+                          AppSpacing.gapMd,
+                          TextFormField(
+                            controller: notesController,
+                            focusNode: notesFocus,
+                            maxLines: 3,
+                            decoration: const InputDecoration(
+                              labelText: 'Notes (optional)',
+                              hintText: 'Anything to bring or do',
+                              border: OutlineInputBorder(
+                                borderRadius: AppRadius.medium,
+                              ),
                             ),
-                            const SizedBox(width: 8),
-                            ChoiceChip(
-                              label: const Text('Exam / Quiz'),
-                              selected: eventType == 'exam',
-                              onSelected: (_) => setModalState(() {
-                                eventType = 'exam';
-                                if (existingEvent == null && !reminderTouched) {
-                                  reminderMinutes = examReminderMinutes;
-                                }
-                              }),
-                            ),
-                            const SizedBox(width: 8),
-                            ChoiceChip(
-                              label: const Text('Assignment'),
-                              selected: eventType == 'assignment',
-                              onSelected: (_) => setModalState(() {
-                                eventType = 'assignment';
-                                if (existingEvent == null && !reminderTouched) {
-                                  reminderMinutes = examReminderMinutes;
-                                }
-                              }),
-                            ),
-                          ],
-                        ),
-                      ),
-                      AppSpacing.gapLg,
-                      TextFormField(
-                        controller: titleController,
-                        decoration: const InputDecoration(
-                          labelText: 'Title',
-                          hintText: 'e.g. Physics Lecture, Math Quiz',
-                          border: OutlineInputBorder(
-                            borderRadius: AppRadius.medium,
                           ),
-                        ),
-                        validator: (String? val) =>
-                            val == null || val.trim().isEmpty
-                            ? 'Title required'
-                            : null,
-                      ),
-                      AppSpacing.gapMd,
-                      Row(
-                        children: <Widget>[
-                          Expanded(
-                            child: OutlinedButton.icon(
-                              onPressed: () async {
-                                final DateTime? picked = await showDatePicker(
-                                  context: ctx,
-                                  initialDate: eventDate,
-                                  firstDate: DateTime(2020),
-                                  lastDate: DateTime(2035),
-                                );
-                                if (picked != null) {
-                                  setModalState(() => eventDate = picked);
-                                }
+                          const SizedBox(height: 4),
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: TextButton.icon(
+                              onPressed: () {
+                                final String current = notesController.text;
+                                final String prefix =
+                                    current.isEmpty || current.endsWith('\n')
+                                    ? ''
+                                    : '\n';
+                                notesController.text = '$current$prefix- [ ] ';
+                                notesController.selection =
+                                    TextSelection.fromPosition(
+                                      TextPosition(
+                                        offset: notesController.text.length,
+                                      ),
+                                    );
+                                // So the item's text is typed here, not in
+                                // whichever field had the cursor.
+                                notesFocus.requestFocus();
+                                setModalState(() {});
                               },
                               icon: const Icon(
-                                Icons.calendar_today_rounded,
-                                size: 18,
+                                Icons.add_task_rounded,
+                                size: 16,
                               ),
                               label: Text(
-                                DateFormat('MMM d, yyyy').format(eventDate),
+                                'Add checklist item',
+                                style: Theme.of(context).textTheme.labelMedium,
                               ),
                             ),
                           ),
-                          AppSpacing.gapSm,
-                          Expanded(
-                            child: OutlinedButton.icon(
+                          AppSpacing.gapLg,
+                          SizedBox(
+                            height: AppSizes.buttonHeight,
+                            child: FilledButton(
+                              onPressed: () {
+                                if (!formKey.currentState!.validate()) return;
+                                final DateTime combinedStart = DateTime(
+                                  eventDate.year,
+                                  eventDate.month,
+                                  eventDate.day,
+                                  eventTime.hour,
+                                  eventTime.minute,
+                                );
+
+                                final String? combinedNotes =
+                                    CalendarEvent.notesWithType(
+                                      notesController.text,
+                                      eventType,
+                                    );
+
+                                final CalendarEvent newEvent = CalendarEvent(
+                                  id: existingEvent?.id ?? 0,
+                                  title: titleController.text.trim(),
+                                  startsAt: combinedStart,
+                                  durationMinutes: durationMinutes,
+                                  location:
+                                      locationController.text.trim().isNotEmpty
+                                      ? locationController.text.trim()
+                                      : null,
+                                  notes: combinedNotes,
+                                  recurrence: recurrence,
+                                  recurrenceUntil:
+                                      existingEvent?.recurrenceUntil,
+                                  reminderMinutes: reminderMinutes,
+                                  noteId: existingEvent?.noteId,
+                                  done: existingEvent?.done ?? false,
+                                );
+
+                                if (existingEvent != null) {
+                                  ref
+                                      .read(calendarControllerProvider.notifier)
+                                      .updateEvent(newEvent);
+                                } else {
+                                  ref
+                                      .read(calendarControllerProvider.notifier)
+                                      .addEvent(newEvent);
+                                }
+
+                                Navigator.pop(ctx);
+                              },
+                              child: const Text('Save event'),
+                            ),
+                          ),
+                          if (existingEvent != null)
+                            TextButton.icon(
+                              style: TextButton.styleFrom(
+                                foregroundColor: ctx.colors.error,
+                                minimumSize: const Size.fromHeight(
+                                  AppSizes.minTouchTarget,
+                                ),
+                              ),
+                              icon: const Icon(Icons.delete_outline_rounded),
+                              label: const Text('Delete event'),
                               onPressed: () async {
-                                final TimeOfDay? picked = await showTimePicker(
-                                  context: ctx,
-                                  initialTime: eventTime,
-                                );
-                                if (picked != null) {
-                                  setModalState(() => eventTime = picked);
+                                if (await _confirmDelete(existingEvent) &&
+                                    ctx.mounted) {
+                                  Navigator.pop(ctx);
                                 }
                               },
-                              icon: const Icon(
-                                Icons.access_time_rounded,
-                                size: 18,
-                              ),
-                              label: Text(eventTime.format(ctx)),
                             ),
-                          ),
                         ],
                       ),
-                      AppSpacing.gapMd,
-                      Row(
-                        children: <Widget>[
-                          Expanded(
-                            child: DropdownButtonFormField<int>(
-                              initialValue: durationMinutes,
-                              decoration: const InputDecoration(
-                                labelText: 'Duration',
-                                border: OutlineInputBorder(
-                                  borderRadius: AppRadius.medium,
-                                ),
-                              ),
-                              items: const <DropdownMenuItem<int>>[
-                                DropdownMenuItem<int>(
-                                  value: 30,
-                                  child: Text('30 mins'),
-                                ),
-                                DropdownMenuItem<int>(
-                                  value: 45,
-                                  child: Text('45 mins'),
-                                ),
-                                DropdownMenuItem<int>(
-                                  value: 60,
-                                  child: Text('1 hour'),
-                                ),
-                                DropdownMenuItem<int>(
-                                  value: 90,
-                                  child: Text('1.5 hours'),
-                                ),
-                                DropdownMenuItem<int>(
-                                  value: 120,
-                                  child: Text('2 hours'),
-                                ),
-                              ],
-                              onChanged: (int? val) {
-                                if (val != null) {
-                                  setModalState(() => durationMinutes = val);
-                                }
-                              },
-                            ),
-                          ),
-                          AppSpacing.gapSm,
-                          Expanded(
-                            child: DropdownButtonFormField<String>(
-                              initialValue: recurrence,
-                              decoration: const InputDecoration(
-                                labelText: 'Repeat',
-                                border: OutlineInputBorder(
-                                  borderRadius: AppRadius.medium,
-                                ),
-                              ),
-                              items: const <DropdownMenuItem<String>>[
-                                DropdownMenuItem<String>(
-                                  value: 'none',
-                                  child: Text('Does not repeat'),
-                                ),
-                                DropdownMenuItem<String>(
-                                  value: 'daily',
-                                  child: Text('Daily'),
-                                ),
-                                DropdownMenuItem<String>(
-                                  value: 'weekly',
-                                  child: Text('Weekly'),
-                                ),
-                                DropdownMenuItem<String>(
-                                  value: 'monthly',
-                                  child: Text('Monthly'),
-                                ),
-                              ],
-                              onChanged: (String? val) {
-                                if (val != null) {
-                                  setModalState(() => recurrence = val);
-                                }
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                      AppSpacing.gapMd,
-                      ReminderField(
-                        value: reminderMinutes,
-                        onChanged: (int? v) => setModalState(() {
-                          reminderMinutes = v;
-                          reminderTouched = true;
-                        }),
-                      ),
-                      AppSpacing.gapMd,
-                      TextFormField(
-                        controller: locationController,
-                        decoration: const InputDecoration(
-                          labelText: 'Location (optional)',
-                          hintText: 'e.g. Room 304, Science Lab',
-                          border: OutlineInputBorder(
-                            borderRadius: AppRadius.medium,
-                          ),
-                        ),
-                      ),
-                      AppSpacing.gapMd,
-                      TextFormField(
-                        controller: notesController,
-                        focusNode: notesFocus,
-                        maxLines: 3,
-                        decoration: const InputDecoration(
-                          labelText: 'Notes & Checklist (optional)',
-                          hintText: 'e.g. - [ ] Bring calculator\n- [ ] Review formula sheet',
-                          border: OutlineInputBorder(
-                            borderRadius: AppRadius.medium,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: TextButton.icon(
-                          onPressed: () {
-                            final String current = notesController.text;
-                            final String prefix =
-                                current.isEmpty || current.endsWith('\n')
-                                ? ''
-                                : '\n';
-                            notesController.text = '$current$prefix- [ ] ';
-                            notesController
-                                .selection = TextSelection.fromPosition(
-                              TextPosition(offset: notesController.text.length),
-                            );
-                            // So the item's text is typed here, not in
-                            // whichever field had the cursor.
-                            notesFocus.requestFocus();
-                            setModalState(() {});
-                          },
-                          icon: const Icon(Icons.add_task_rounded, size: 16),
-                          label: Text(
-                            'Add checklist item',
-                            style: Theme.of(context).textTheme.labelMedium,
-                          ),
-                        ),
-                      ),
-                      AppSpacing.gapLg,
-                      SizedBox(
-                        height: AppSizes.buttonHeight,
-                        child: FilledButton(
-                          onPressed: () {
-                            if (!formKey.currentState!.validate()) return;
-                            final DateTime combinedStart = DateTime(
-                              eventDate.year,
-                              eventDate.month,
-                              eventDate.day,
-                              eventTime.hour,
-                              eventTime.minute,
-                            );
-
-                            final String? combinedNotes =
-                                CalendarEvent.notesWithType(
-                                  notesController.text,
-                                  eventType,
-                                );
-
-                            final CalendarEvent newEvent = CalendarEvent(
-                              id: existingEvent?.id ?? 0,
-                              title: titleController.text.trim(),
-                              startsAt: combinedStart,
-                              durationMinutes: durationMinutes,
-                              location:
-                                  locationController.text.trim().isNotEmpty
-                                  ? locationController.text.trim()
-                                  : null,
-                              notes: combinedNotes,
-                              recurrence: recurrence,
-                              recurrenceUntil: existingEvent?.recurrenceUntil,
-                              reminderMinutes: reminderMinutes,
-                              noteId: existingEvent?.noteId,
-                            );
-
-                            if (existingEvent != null) {
-                              ref
-                                  .read(calendarControllerProvider.notifier)
-                                  .updateEvent(newEvent);
-                            } else {
-                              ref
-                                  .read(calendarControllerProvider.notifier)
-                                  .addEvent(newEvent);
-                            }
-
-                            Navigator.pop(ctx);
-                          },
-                          child: Text(
-                            existingEvent != null
-                                ? 'Update Event'
-                                : 'Save Event',
-                          ),
-                        ),
-                      ),
-                      if (existingEvent != null)
-                        TextButton.icon(
-                          style: TextButton.styleFrom(
-                            foregroundColor: ctx.colors.error,
-                            minimumSize: const Size.fromHeight(
-                              AppSizes.minTouchTarget,
-                            ),
-                          ),
-                          icon: const Icon(Icons.delete_outline_rounded),
-                          label: const Text('Delete event'),
-                          onPressed: () async {
-                            if (await _confirmDelete(existingEvent) &&
-                                ctx.mounted) {
-                              Navigator.pop(ctx);
-                            }
-                          },
-                        ),
-                    ],
+                    ),
                   ),
-                ),
-              ),
-            );
-          },
+                );
+              },
+            ),
+          ),
         );
       },
     );
   }
+}
+
+/// Lengths the event editor offers, plus [current] when it is not one of
+/// them (an imported or older event), so the dropdown always has a match.
+List<int> durationChoices(int current) {
+  const List<int> standard = <int>[30, 45, 60, 90, 120, 150, 180, 240];
+  return <int>{...standard, current}.toList()..sort();
 }
 
 class _WeekdayHeader extends StatelessWidget {
@@ -1451,18 +1551,22 @@ class _WeekdayHeader extends StatelessWidget {
 
 /// The pinned "day title + This day" strip above the event list.
 class _AgendaHeader extends SliverPersistentHeaderDelegate {
-  const _AgendaHeader({required this.background, required this.child});
+  const _AgendaHeader({
+    required this.height,
+    required this.background,
+    required this.child,
+  });
+
+  final double height;
 
   final Color background;
   final Widget child;
 
-  static const double _height = 48;
+  @override
+  double get minExtent => height;
 
   @override
-  double get minExtent => _height;
-
-  @override
-  double get maxExtent => _height;
+  double get maxExtent => height;
 
   @override
   Widget build(
@@ -1478,5 +1582,54 @@ class _AgendaHeader extends SliverPersistentHeaderDelegate {
 
   @override
   bool shouldRebuild(_AgendaHeader oldDelegate) =>
-      oldDelegate.background != background || oldDelegate.child != child;
+      oldDelegate.height != height ||
+      oldDelegate.background != background ||
+      oldDelegate.child != child;
+}
+
+/// A small outlined status pill ("Done", "Exam · Tomorrow") above a title.
+class _StatusPill extends StatelessWidget {
+  const _StatusPill({
+    required this.icon,
+    required this.label,
+    required this.background,
+    required this.foreground,
+    required this.border,
+  });
+
+  final IconData icon;
+  final String label;
+  final Color background;
+  final Color foreground;
+  final Color border;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 2),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 1),
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: AppRadius.pill,
+        border: Border.all(color: border.withValues(alpha: 0.3), width: 0.75),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          Icon(icon, size: 13, color: foreground),
+          AppSpacing.gapXs,
+          Flexible(
+            child: Text(
+              label,
+              style: context.textStyles.labelSmall?.copyWith(
+                color: foreground,
+                fontWeight: FontWeight.bold,
+                fontFeatures: _tabular,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }

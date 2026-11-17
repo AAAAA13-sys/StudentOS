@@ -1,3 +1,4 @@
+import '../../core/checklist.dart';
 import '../../core/widgets/ponpon.dart';
 import '../calendar/event.dart';
 import '../notes/note.dart';
@@ -46,8 +47,25 @@ List<PonponInsight> notesInsights({
             : '$quizzable notes have quiz cards. Quiz yourself?',
         mood: PonponMood.focused,
         priority: 2,
+        action: PonponAction.quizNotes,
       ),
     );
+  }
+
+  // The first note (in list order) with unticked checklist items.
+  for (final Note n in notes) {
+    final int open = parseChecklist(n.body).where((i) => !i.done).length;
+    if (open == 0) continue;
+    final String title = n.title.trim().isEmpty ? 'Untitled' : n.title.trim();
+    out.add(
+      PonponInsight(
+        text: open == 1
+            ? '1 unticked item in $title'
+            : '$open unticked items in $title',
+        priority: 2,
+      ),
+    );
+    break;
   }
 
   // The tag on the most notes, when it is on at least two.

@@ -25,6 +25,36 @@ class BackupService {
   /// files restore with none of what they lack.
   static const int formatVersion = 4;
 
+  /// Settings key holding when a backup was last saved (UTC ISO 8601).
+  static const String lastBackupKey = 'last_backup_at';
+
+  /// Records that a backup was just saved.
+  Future<void> markBackedUp(DateTime at) {
+    return _db
+        .into(_db.settingRows)
+        .insertOnConflictUpdate(
+          SettingRowsCompanion.insert(
+            key: lastBackupKey,
+            value: at.toUtc().toIso8601String(),
+          ),
+        );
+  }
+
+  /// When a backup was last saved, or null when never.
+  Future<DateTime?> lastBackupAt() async {
+    final SettingRow? row = await (_db.select(
+      _db.settingRows,
+    )..where((t) => t.key.equals(lastBackupKey))).getSingleOrNull();
+    return row == null ? null : DateTime.tryParse(row.value)?.toLocal();
+  }
+
+  /// True when there is anything worth backing up.
+  Future<bool> hasData() async {
+    return (await _db.select(_db.eventRows).get()).isNotEmpty ||
+        (await _db.select(_db.transactionRows).get()).isNotEmpty ||
+        (await _db.select(_db.noteRows).get()).isNotEmpty;
+  }
+
   Future<String> exportJson() async {
     final List<EventRow> events = await _db.select(_db.eventRows).get();
     final List<TransactionRow> transactions = await _db
@@ -97,7 +127,13 @@ class BackupService {
       }
       List<Map<String, dynamic>> rows(String key) =>
           (decoded[key] as List<dynamic>).cast<Map<String, dynamic>>();
-      events = rows('events').map(EventRow.fromJson).toList();
+      // Backups made before events could be ticked off have no `done` key.
+      events = rows('events')
+          .map(
+            (Map<String, dynamic> m) =>
+                EventRow.fromJson(<String, dynamic>{'done': false, ...m}),
+          )
+          .toList();
       transactions = rows('transactions').map(TransactionRow.fromJson).toList();
       // Backups made before pinning have no `pinned` key.
       notes = rows('notes')
@@ -164,3 +200,44 @@ class BackupService {
 final Provider<BackupService> backupServiceProvider = Provider<BackupService>(
   (ref) => BackupService(ref.watch(appDatabaseProvider)),
 );
+
+/// After this many days without a backup the menu icon shows a dot.
+const int backupStaleDays = 14;
+
+int _daysBetween(DateTime from, DateTime to) => DateTime(
+  to.year,
+  to.month,
+  to.day,
+).difference(DateTime(from.year, from.month, from.day)).inDays;
+
+/// `today`, `yesterday`, `3 days ago` or `never`, by calendar day.
+String backupAgeLabel(DateTime? last, DateTime now) {
+  if (last == null) return 'never';
+  final int days = _daysBetween(last, now);
+  if (days <= 0) return 'today';
+  if (days == 1) return 'yesterday';
+  return '$days days ago';
+}
+
+/// A dot on the menu icon: never backed up (with data), or [backupStaleDays]
+/// days or more ago.
+bool backupNeedsAttention(
+  DateTime? last,
+  DateTime now, {
+  required bool hasData,
+}) {
+  if (last == null) return hasData;
+  return _daysBetween(last, now) >= backupStaleDays;
+}
+
+/// What the drawer and the menu icon need to know about backups.
+typedef BackupStatus = ({DateTime? last, bool hasData});
+
+final FutureProvider<BackupStatus> backupStatusProvider =
+    FutureProvider.autoDispose<BackupStatus>((Ref ref) async {
+      final BackupService service = ref.watch(backupServiceProvider);
+      return (
+        last: await service.lastBackupAt(),
+        hasData: await service.hasData(),
+      );
+    });

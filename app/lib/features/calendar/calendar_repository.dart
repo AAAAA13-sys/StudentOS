@@ -39,6 +39,7 @@ class CalendarRepository {
     final DateTime now = DateTime.now();
     ({String title, DateTime startsAt, bool isExam, bool isAssignment})? best;
     for (final CalendarEvent event in await getEvents()) {
+      if (event.done) continue;
       final DateTime? next = event.nextOccurrence(now);
       if (next != null && (best == null || next.isBefore(best.startsAt))) {
         best = (
@@ -63,6 +64,7 @@ class CalendarRepository {
       recurrenceUntil: Value(event.recurrenceUntil),
       reminderMinutes: Value(event.reminderMinutes),
       noteId: Value(event.noteId),
+      done: Value(event.done),
     );
   }
 
@@ -78,6 +80,7 @@ class CalendarRepository {
       recurrenceUntil: row.recurrenceUntil,
       reminderMinutes: row.reminderMinutes,
       noteId: row.noteId,
+      done: row.done,
     );
   }
 }

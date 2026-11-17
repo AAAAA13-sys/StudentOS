@@ -48,12 +48,37 @@ Future<void> addShift(
     );
 }
 
+/// Asks for new details of [shift] and saves them.
+Future<void> editShift(BuildContext context, WidgetRef ref, Shift shift) async {
+  final WorkController controller = ref.read(workControllerProvider.notifier);
+  final List<CalendarEvent> events =
+      ref.read(calendarControllerProvider).value ?? const <CalendarEvent>[];
+  final List<Shift>? shifts = await showModalBottomSheet<List<Shift>>(
+    context: context,
+    useRootNavigator: true,
+    isScrollControlled: true,
+    showDragHandle: true,
+    builder: (BuildContext ctx) => _AddShiftSheet(
+      day: shift.startsAt,
+      last: shift,
+      events: events,
+      editing: shift,
+    ),
+  );
+  if (shifts == null || shifts.isEmpty) return;
+  await controller.updateShift(shifts.first);
+}
+
 class _AddShiftSheet extends StatefulWidget {
   const _AddShiftSheet({
     required this.day,
     required this.last,
     required this.events,
+    this.editing,
   });
+
+  /// The shift being edited; null when adding.
+  final Shift? editing;
 
   final DateTime day;
 
@@ -126,6 +151,27 @@ class _AddShiftSheetState extends State<_AddShiftSheet> {
   /// The shifts the form describes right now.
   List<Shift> _draft() {
     final double? rate = double.tryParse(_rate.text.trim());
+    final Shift? editing = widget.editing;
+    if (editing != null) {
+      return <Shift>[
+        Shift(
+          id: editing.id,
+          job: _job.text.trim(),
+          startsAt: DateTime(
+            _day.year,
+            _day.month,
+            _day.day,
+            _start.hour,
+            _start.minute,
+          ),
+          durationMinutes: _duration,
+          breakMinutes: editing.breakMinutes,
+          hourlyRateCents: rate == null || rate < 0 ? 0 : (rate * 100).round(),
+          paid: editing.paid,
+          seriesId: editing.seriesId,
+        ),
+      ];
+    }
     return buildShiftSeries(
       job: _job.text.trim(),
       weekdays: _repeats ? _weekdays : <int>{_day.weekday},
@@ -205,7 +251,7 @@ class _AddShiftSheetState extends State<_AddShiftSheet> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
               Text(
-                'Add a shift',
+                widget.editing == null ? 'Add a shift' : 'Edit shift',
                 style: textStyles.titleLarge?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -275,15 +321,16 @@ class _AddShiftSheetState extends State<_AddShiftSheet> {
                 },
               ),
               AppSpacing.gapSm,
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('Repeats every week'),
-                value: _repeats,
-                onChanged: (bool value) => setState(() {
-                  _repeats = value;
-                  if (value && _weekdays.isEmpty) _weekdays.add(_day.weekday);
-                }),
-              ),
+              if (widget.editing == null)
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('Repeats every week'),
+                  value: _repeats,
+                  onChanged: (bool value) => setState(() {
+                    _repeats = value;
+                    if (value && _weekdays.isEmpty) _weekdays.add(_day.weekday);
+                  }),
+                ),
               if (_repeats) ...<Widget>[
                 Wrap(
                   spacing: AppSpacing.sm,
@@ -359,7 +406,13 @@ class _AddShiftSheetState extends State<_AddShiftSheet> {
                 height: AppSizes.buttonHeight,
                 child: FilledButton(
                   onPressed: _save,
-                  child: Text(overlap == null ? 'Save shift' : 'Save anyway'),
+                  child: Text(
+                    overlap != null
+                        ? 'Save anyway'
+                        : widget.editing == null
+                        ? 'Save shift'
+                        : 'Save changes',
+                  ),
                 ),
               ),
               AppSpacing.gapLg,

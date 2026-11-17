@@ -489,3 +489,20 @@ Entries are appended, never edited. Corrections are new entries that reference t
 - "+" buttons (48dp target, 36dp violet circle) on the Money widget (both sizes) and the wide and narrow Today widgets; the small Today widget has no room. Launcher shortcuts are static (`res/xml/shortcuts.xml`). No network, no new permissions.
 **Open items:** Today widget "+" and the launcher shortcuts not tapped on a device. Not seen on the real phones.
 
+## Phase 39: Full-app iteration
+**Date:** 2026-11-17
+**Verified by:** agency-evidence-collector and lead-pm on `emulator-5554`
+**Evidence:** see the Phase 39 row in `PROGRESS.md`; QA reports kept outside the repo.
+**Decisions:**
+- Owner asked for "a major iteration involving all of the app features" with the agency. Round 1 assessed in parallel (product manager, UI finish-gate reviewer, device evidence collector); round 2 built with three developers on disjoint files; round 3 re-checked on the device and sent the failures back.
+- Database schema v8 adds `events.done`. Mark done applies to the whole series and removes the item from countdowns, the widget, Ponpon and reminders. Restore fills `done` for older backups.
+- Countdowns count to the occurrence shown. Day view sorts by time of day. Durations read "1 h 30 min"; all-day events read "All day". Week starts on Sunday everywhere.
+- "No alarm before <first class>" looks 3 h before the first timed event (today while it is over an hour away, otherwise tomorrow) and suggests a one-time alarm 60 min before.
+- "Again" chips: up to 3 amount and category pairs used at least twice in 30 days. Amounts must be above ₱0 and at most ₱1,000,000.
+- "I got paid" stores no link, so deleting the payout income unpays shifts by matching its note's workplaces and dates, per workplace. Two payouts for the same workplace on the same day cannot be told apart.
+- Recall cards are called "Quiz" everywhere; the quiz keeps a session tally and can retry missed cards.
+- Ponpon tips can carry an action (Quiz me, Focus), refresh every 30 s while shown, and show up to 4 lines.
+- Theme: light secondary text `#5E5873`; dark cards/sheets `#170E38` with a `#4A3A7A` hairline; sheets, dialogs and the drawer have no elevation. `DESIGN_SYSTEM.md` and `AGENTS.md` now list the colours the app actually ships.
+- Last backup time is stored (`last_backup_at`); the drawer shows its age and the menu icon gets a dot after 14 days.
+**Open items:** checklist ticks on a repeating event apply to every occurrence; shift rows in the calendar day view cannot be tapped; not seen on the real phones.
+

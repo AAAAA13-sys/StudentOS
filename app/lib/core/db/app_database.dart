@@ -32,6 +32,10 @@ class EventRows extends Table {
   /// The note attached to this event, if any. The note may have been
   /// deleted since; readers must cope with a missing note.
   IntColumn get noteId => integer().nullable()();
+
+  /// An exam or assignment the owner has marked done. Applies to the whole
+  /// series when the event repeats.
+  BoolColumn get done => boolean().withDefault(const Constant(false))();
 }
 
 @DataClassName('TransactionRow')
@@ -272,7 +276,7 @@ class AppDatabase extends _$AppDatabase {
     : super(executor ?? driftDatabase(name: 'studentos'));
 
   @override
-  int get schemaVersion => 7;
+  int get schemaVersion => 8;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -296,6 +300,9 @@ class AppDatabase extends _$AppDatabase {
       }
       if (from < 7) {
         await m.addColumn(noteRows, noteRows.pinned);
+      }
+      if (from < 8) {
+        await m.addColumn(eventRows, eventRows.done);
       }
     },
   );

@@ -33,7 +33,9 @@ abstract final class AppColors {
 
   // Hairlines & Surfaces
   static const Color hairlineLight = Color(0xFFE2D6F5);
-  static const Color hairlineDark = darkPurple; // #25134D
+  static const Color hairlineDark = Color(0xFF4A3A7A); // ~2:1 on #0B0720
+  static const Color mutedLight = Color(0xFF5E5873); // 5.7:1 on #F2E9FF
+  static const Color cardDark = Color(0xFF170E38); // one step above #0B0720
   static const Color obsidian950 = midnightIndigo; // #0B0720
   static const Color obsidian900 = darkPurple; // #25134D
   static const Color obsidian800 = Color(0xFF1B0F3A);

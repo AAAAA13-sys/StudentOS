@@ -43,6 +43,7 @@ Phase 33 (2026-11-17): the Clock tab is merged into Calendar (Schedule | Alarms 
 Ponpon talk bubble (Phase 36): `PonponTalk` in `lib/core/widgets/ponpon_talk.dart`, rules in `lib/features/insights/`, placed through `PonponTalkSlot`. See `DESIGN_SYSTEM.md` > Mascot > Talk bubble.
 Pinned notes and checklists (Phase 37): `notes.pinned` (schema v7) and the shared checklist parser in `lib/core/checklist.dart`, used by events and notes. Checklist rows show on the note card in `notes_screen.dart`.
 Quick capture (Phase 38): routes `add_expense`, `add_note`, `add_event` in `scaffold_with_nav_bar.dart`, opened through `lib/core/widgets/capture_request.dart`; widget "+" buttons and `res/xml/shortcuts.xml` send them.
+Phase 39 (full-app iteration): schema v8 `events.done`; `lib/features/focus/wake_plan.dart` (alarm-before-class), `lib/features/finance/quick_again.dart`, `amount_validation.dart`, `lib/features/work/payout_link.dart` (payout to shift matching), `lib/features/notes/quiz_session.dart`, `lib/features/calendar/linked_notes.dart`, shared `ChecklistRow` in `lib/core/checklist.dart`; insight actions in `lib/features/insights/ponpon_insight.dart`.
 
 Mascot (Phase 31): Ponpon, an orange puspin, drawn in `lib/core/widgets/ponpon.dart`; Android copies in `res/drawable-nodpi/` come from `tool/render_ponpon_test.dart`. See `DESIGN_SYSTEM.md` > Mascot.
 

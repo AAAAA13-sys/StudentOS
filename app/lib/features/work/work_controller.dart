@@ -3,7 +3,9 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../finance/finance_controller.dart';
+import '../finance/finance_repository.dart';
 import '../finance/transaction.dart';
+import 'payout_link.dart';
 import 'shift.dart';
 import 'work_repository.dart';
 
@@ -20,6 +22,28 @@ class WorkController extends AsyncNotifier<List<Shift>> {
 
   Future<void> addShifts(List<Shift> shifts) async {
     await _repo.createShifts(shifts);
+    await _reload();
+  }
+
+  Future<void> updateShift(Shift shift) async {
+    await _repo.updateShift(shift);
+    await _reload();
+  }
+
+  /// Call when [income] is about to be deleted: if it was created by "I got
+  /// paid", the shifts it settled go back to unpaid.
+  Future<void> unpayForDeletedIncome(Transaction income) async {
+    if (!isPayout(income)) return;
+    final List<Transaction> payouts = await ref
+        .read(financeRepositoryProvider)
+        .getTransactions(category: 'Part-time Job');
+    final List<Shift> settled = shiftsPaidBy(
+      income,
+      await _repo.getShifts(),
+      payouts,
+    );
+    if (settled.isEmpty) return;
+    await _repo.markUnpaid(settled.map((Shift s) => s.id));
     await _reload();
   }
 
