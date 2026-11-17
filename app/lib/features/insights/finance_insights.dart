@@ -1,5 +1,6 @@
 import '../../core/widgets/ponpon.dart';
 import '../finance/transaction.dart';
+import '../work/payday.dart';
 import 'ponpon_insight.dart';
 
 double _sum(Iterable<Transaction> tx) =>
@@ -11,8 +12,20 @@ List<PonponInsight> financeInsights({
   required List<Transaction> thisMonth,
   required List<Transaction> lastMonth,
   required DateTime now,
+  PaydaySchedule payday = PaydaySchedule.none,
+  int waitingPayCents = 0,
 }) {
-  if (thisMonth.isEmpty) return const <PonponInsight>[];
+  final PonponInsight? paydayTip =
+      waitingPayCents > 0 && isPaydayToday(payday, now)
+      ? PonponInsight(
+          text:
+              'Payday today: ${pesoText(waitingPayCents / 100)} waiting. Got paid?',
+          priority: 1,
+        )
+      : null;
+  if (thisMonth.isEmpty) {
+    return paydayTip == null ? const <PonponInsight>[] : [paydayTip];
+  }
   final List<Transaction> spent = <Transaction>[
     for (final Transaction t in thisMonth)
       if (t.type == 'expense') t,
@@ -120,6 +133,8 @@ List<PonponInsight> financeInsights({
       );
     }
   }
+
+  if (paydayTip != null) out.add(paydayTip);
 
   // Nothing spent yet today.
   if (today == 0) {

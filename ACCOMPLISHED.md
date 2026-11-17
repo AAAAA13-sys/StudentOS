@@ -517,3 +517,14 @@ Entries are appended, never edited. Corrections are new entries that reference t
 - Overlaps count only open, timed items that have not ended; done events no longer clash, in the Week list or the shift sheet.
 - Paid shifts show no amount and are left out of expected pay.
 **Open items:** all-day ordering and a paid shift row not seen on a device; TalkBack not checked; not seen on the real phones.
+
+## Phase 41: Payday on the Work pay row
+**Date:** 2026-11-18
+**Verified by:** lead-pm on `emulator-5554`
+**Evidence:** see the Phase 41 row in `PROGRESS.md`.
+**Decisions:**
+- Owner: "continue building a new feature. commit and push as me." Took the open backlog item 0, ranked second by the product lead.
+- Schedules: weekly, "15th and end of month" (the common Philippine kinsenas/katapusan payroll) and monthly on a day (clamped to the month's last day). Stored in the `settings` key `payday`; no schema change.
+- Payday only labels and reminds. It never adds money: income still enters only through "I got paid".
+- The Finance bubble now also shows on an empty month when it is payday and pay is waiting.
+**Open items:** semimonthly and monthly labels seen in unit tests only; not seen on the real phones.

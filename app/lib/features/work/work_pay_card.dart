@@ -7,6 +7,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/widgets/confirm_dialog.dart';
 import '../finance/amount_validation.dart';
 import 'add_shift_sheet.dart';
+import 'payday.dart';
 import 'shift.dart';
 import 'work_controller.dart';
 
@@ -30,13 +31,15 @@ class WorkPayRow extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final List<Shift> shifts =
         ref.watch(workControllerProvider).value ?? const <Shift>[];
-    final WorkSummary summary = WorkSummary.of(shifts, DateTime.now());
+    final DateTime now = DateTime.now();
+    final WorkSummary summary = WorkSummary.of(shifts, now);
+    final PaydaySchedule payday = ref.watch(paydayProvider);
     if (summary.isEmpty) return const SizedBox.shrink();
     final bool waiting = summary.workedMinutes > 0;
 
     return Padding(
       padding: const EdgeInsets.only(top: AppSpacing.md),
-      child: _card(context, ref, summary, waiting),
+      child: _card(context, ref, summary, waiting, payday, now),
     );
   }
 
@@ -45,9 +48,17 @@ class WorkPayRow extends ConsumerWidget {
     WidgetRef ref,
     WorkSummary summary,
     bool waiting,
+    PaydaySchedule payday,
+    DateTime now,
   ) {
     final ColorScheme colors = context.colors;
     final TextTheme textStyles = context.textStyles;
+    final TextStyle? subtitleStyle = textStyles.bodySmall?.copyWith(
+      color: colors.onSurfaceVariant,
+      fontFeatures: _tabular,
+    );
+    final String paydayText = paydayLabel(payday, now);
+    final bool today = waiting && isPaydayToday(payday, now);
     return Card(
       margin: EdgeInsets.zero,
       clipBehavior: Clip.antiAlias,
@@ -59,15 +70,26 @@ class WorkPayRow extends ConsumerWidget {
           'Work pay',
           style: textStyles.titleSmall?.copyWith(fontWeight: FontWeight.w700),
         ),
-        subtitle: Text(
-          waiting
-              ? '${_pesos(summary.workedPayCents)} waiting'
-              : '${formatHours(summary.upcomingMinutes)} hrs to work · '
-                    '${_pesos(summary.upcomingPayCents)}',
-          style: textStyles.bodySmall?.copyWith(
-            color: colors.onSurfaceVariant,
-            fontFeatures: _tabular,
+        subtitle: Text.rich(
+          TextSpan(
+            text: waiting
+                ? '${_pesos(summary.workedPayCents)} waiting'
+                : '${formatHours(summary.upcomingMinutes)} hrs to work · '
+                      '${_pesos(summary.upcomingPayCents)}',
+            children: <InlineSpan>[
+              if (paydayText.isNotEmpty)
+                TextSpan(
+                  text: ' · $paydayText',
+                  style: today
+                      ? TextStyle(
+                          color: colors.primary,
+                          fontWeight: FontWeight.w700,
+                        )
+                      : null,
+                ),
+            ],
           ),
+          style: subtitleStyle,
         ),
         trailing: waiting
             ? TextButton(
@@ -313,6 +335,7 @@ class _ShiftsSheet extends ConsumerWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
+            const _PaydayTile(),
             if (all.isEmpty)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: AppSpacing.xl),
@@ -339,6 +362,137 @@ class _ShiftsSheet extends ConsumerWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// The first row of the shifts sheet: when the pay arrives, tap to change.
+class _PaydayTile extends ConsumerWidget {
+  const _PaydayTile();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final PaydaySchedule schedule = ref.watch(paydayProvider);
+    final ColorScheme colors = context.colors;
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      minTileHeight: 56,
+      onTap: () async {
+        final PaydaySchedule? picked = await showDialog<PaydaySchedule>(
+          context: context,
+          builder: (BuildContext ctx) => _PaydayDialog(initial: schedule),
+        );
+        if (picked != null) {
+          await ref.read(paydayProvider.notifier).save(picked);
+        }
+      },
+      leading: Icon(Icons.event_available_rounded, color: colors.primary),
+      title: const Text('Payday'),
+      subtitle: Text(describePayday(schedule)),
+      trailing: Icon(
+        Icons.chevron_right_rounded,
+        color: colors.onSurfaceVariant,
+      ),
+    );
+  }
+}
+
+class _PaydayDialog extends StatefulWidget {
+  const _PaydayDialog({required this.initial});
+
+  final PaydaySchedule initial;
+
+  @override
+  State<_PaydayDialog> createState() => _PaydayDialogState();
+}
+
+class _PaydayDialogState extends State<_PaydayDialog> {
+  late PaydayKind _kind = widget.initial.kind;
+  late int _weekday = widget.initial.kind == PaydayKind.weekly
+      ? widget.initial.day
+      : DateTime.friday;
+  late int _monthDay = widget.initial.kind == PaydayKind.monthly
+      ? widget.initial.day
+      : 25;
+
+  PaydaySchedule get _result => switch (_kind) {
+    PaydayKind.none => PaydaySchedule.none,
+    PaydayKind.weekly => PaydaySchedule.weekly(_weekday),
+    PaydayKind.semimonthly => PaydaySchedule.semimonthly,
+    PaydayKind.monthly => PaydaySchedule.monthly(_monthDay),
+  };
+
+  Widget _option(PaydayKind kind, String label) {
+    final bool selected = _kind == kind;
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      minTileHeight: 48,
+      selected: selected,
+      onTap: () => setState(() => _kind = kind),
+      title: Text(label),
+      trailing: selected ? const Icon(Icons.check_rounded) : null,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Payday'),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            _option(PaydayKind.none, 'Not set'),
+            _option(PaydayKind.weekly, 'Weekly'),
+            if (_kind == PaydayKind.weekly)
+              Padding(
+                padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                child: Wrap(
+                  spacing: AppSpacing.sm,
+                  children: <Widget>[
+                    for (int d = 1; d <= 7; d++)
+                      ChoiceChip(
+                        label: Text(weekdayName(d).substring(0, 3)),
+                        selected: _weekday == d,
+                        onSelected: (_) => setState(() => _weekday = d),
+                      ),
+                  ],
+                ),
+              ),
+            _option(PaydayKind.semimonthly, '15th and end of month'),
+            _option(PaydayKind.monthly, 'Monthly'),
+            if (_kind == PaydayKind.monthly)
+              Padding(
+                padding: const EdgeInsets.only(top: AppSpacing.xs),
+                child: DropdownButtonFormField<int>(
+                  initialValue: _monthDay,
+                  decoration: const InputDecoration(
+                    labelText: 'Day of the month',
+                    border: OutlineInputBorder(),
+                  ),
+                  items: <DropdownMenuItem<int>>[
+                    for (int d = 1; d <= 31; d++)
+                      DropdownMenuItem<int>(value: d, child: Text('$d')),
+                  ],
+                  onChanged: (int? v) {
+                    if (v != null) setState(() => _monthDay = v);
+                  },
+                ),
+              ),
+          ],
+        ),
+      ),
+      actions: <Widget>[
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel'),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.pop(context, _result),
+          child: const Text('Save'),
+        ),
+      ],
     );
   }
 }

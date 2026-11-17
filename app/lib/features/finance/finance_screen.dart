@@ -16,6 +16,8 @@ import 'quick_again.dart';
 import 'transaction.dart';
 import 'widgets/quick_expense_sheet.dart';
 import '../work/work_controller.dart';
+import '../work/payday.dart';
+import '../work/shift.dart';
 import '../work/work_pay_card.dart';
 import '../../core/widgets/ponpon.dart';
 import '../insights/insights_providers.dart';
@@ -99,7 +101,12 @@ class FinanceScreen extends ConsumerWidget {
                                 .read(financeControllerProvider.notifier)
                                 .setMonth(DateFormat('yyyy-MM').format(month)),
                           ),
-                          if (thisMonth && state.transactions.isNotEmpty)
+                          // An empty month already shows Ponpon below, so
+                          // the bubble waits for a transaction, except on a
+                          // payday with pay still waiting.
+                          if (thisMonth &&
+                              (state.transactions.isNotEmpty ||
+                                  _paydayWithPayWaiting(ref)))
                             const PonponTalkSlot(
                               surface: PonponSurface.finance,
                               horizontalPadding: 0,
@@ -703,4 +710,12 @@ class _DayGroup extends StatelessWidget {
       ),
     );
   }
+}
+
+bool _paydayWithPayWaiting(WidgetRef ref) {
+  final DateTime now = DateTime.now();
+  if (!isPaydayToday(ref.watch(paydayProvider), now)) return false;
+  final List<Shift> shifts =
+      ref.watch(workControllerProvider).value ?? const <Shift>[];
+  return WorkSummary.of(shifts, now).workedPayCents > 0;
 }

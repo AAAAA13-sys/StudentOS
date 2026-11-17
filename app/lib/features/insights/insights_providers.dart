@@ -8,6 +8,8 @@ import '../finance/finance_controller.dart';
 import '../finance/finance_repository.dart';
 import '../finance/transaction.dart';
 import '../notes/notes_controller.dart';
+import '../work/payday.dart';
+import '../work/shift.dart';
 import '../work/work_controller.dart';
 import 'calendar_insights.dart';
 import 'finance_insights.dart';
@@ -71,10 +73,14 @@ final FutureProvider<List<PonponInsight>> financeInsightsProvider =
           .getTransactions(
             month: month.format(DateTime(now.year, now.month - 1)),
           );
+      final List<Shift> shifts =
+          ref.watch(workControllerProvider).value ?? const <Shift>[];
       return financeInsights(
         thisMonth: state.transactions,
         lastMonth: last,
         now: now,
+        payday: ref.watch(paydayProvider),
+        waitingPayCents: WorkSummary.of(shifts, now).workedPayCents,
       );
     });
 
