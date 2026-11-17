@@ -24,7 +24,11 @@ class MainActivity : FlutterActivity() {
     }
 
     private fun remember(intent: Intent?) {
-        intent?.getStringExtra(EXTRA_ROUTE)?.let { route = it }
+        intent?.getStringExtra(EXTRA_ROUTE)?.let {
+            route = it
+            // Taken once: a recreated activity must not replay the intent.
+            intent.removeExtra(EXTRA_ROUTE)
+        }
         if (intent?.getBooleanExtra(EXTRA_UNPIN_FOR_ALARM, false) == true) {
             intent.removeExtra(EXTRA_UNPIN_FOR_ALARM)
             // An alarm is ringing while light lockdown pins the app: unpin so

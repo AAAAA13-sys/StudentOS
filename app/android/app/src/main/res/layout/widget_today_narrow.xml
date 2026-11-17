@@ -59,6 +59,24 @@
                     android:textColor="@color/widget_text_2"
                     android:textSize="13sp" />
             </LinearLayout>
+        <FrameLayout
+            android:id="@+id/today_add"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="4dp"
+            android:contentDescription="@string/widget_add_event">
+            <ImageView
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_gravity="center"
+                android:background="@drawable/widget_button"
+                android:contentDescription="@null"
+                android:importantForAccessibility="no"
+                android:padding="8dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_widget_add" />
+        </FrameLayout>
         </LinearLayout>
 
         <ImageView

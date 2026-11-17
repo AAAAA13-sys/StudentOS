@@ -644,10 +644,7 @@ void main() {
         ],
         now: now,
       );
-      expect(
-        r.first.text,
-        'Review your note before 8:00 AM: Daily review.',
-      );
+      expect(r.first.text, 'Review your note before 8:00 AM: Daily review.');
     });
 
     test('most used tag needs two notes, ties go alphabetical', () {

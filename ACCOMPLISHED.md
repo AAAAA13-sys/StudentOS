@@ -478,3 +478,14 @@ Entries are appended, never edited. Corrections are new entries that reference t
 - Database schema v7 adds `notes.pinned`; restore fills it in for older backup files.
 **Open items:** no Ponpon tip for open checklist items. Not seen on the real phones.
 
+## Phase 38: Quick capture from the home screen
+**Date:** 2026-11-17
+**Verified by:** lead-pm on `emulator-5554`
+**Evidence:** see the Phase 38 row in `PROGRESS.md`.
+**Decisions:**
+- From the handover backlog (8.4): the home screen opens the capture sheet directly, not just the tab.
+- Three routes: `add_expense` (Finance, Quick expense), `add_note` (Notes, New Note), `add_event` (Calendar > Schedule on today, New Event for today). They reuse the same functions as each tab's "+".
+- One-shot request (`captureRequestProvider`), consumed when the sheet opens; the Android side removes the route extra after reading it, so a resume or a recreated activity does not replay it.
+- "+" buttons (48dp target, 36dp violet circle) on the Money widget (both sizes) and the wide and narrow Today widgets; the small Today widget has no room. Launcher shortcuts are static (`res/xml/shortcuts.xml`). No network, no new permissions.
+**Open items:** Today widget "+" and the launcher shortcuts not tapped on a device. Not seen on the real phones.
+

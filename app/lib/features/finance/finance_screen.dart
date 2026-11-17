@@ -6,6 +6,7 @@ import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/app_top_bar.dart';
+import '../../core/widgets/capture_request.dart';
 import '../../core/widgets/confirm_dialog.dart';
 import '../../core/widgets/month_switcher.dart';
 import 'finance_controller.dart';
@@ -38,124 +39,132 @@ class FinanceScreen extends ConsumerWidget {
     final ColorScheme colors = context.colors;
     final TextTheme textStyles = context.textStyles;
 
-    return Scaffold(
-      appBar: const AppTopBar(title: 'Finance'),
-      body: financeState.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (Object err, _) => Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Icon(Icons.error_outline_rounded, size: 48, color: colors.error),
-              AppSpacing.gapMd,
-              Text('Error loading finance data: $err'),
-              AppSpacing.gapLg,
-              FilledButton(
-                onPressed: () =>
-                    ref.read(financeControllerProvider.notifier).refresh(),
-                child: const Text('Retry'),
-              ),
-            ],
-          ),
-        ),
-        data: (FinanceState state) {
-          final DateTime currentMonthDate =
-              DateTime.tryParse('${state.month}-01') ?? DateTime.now();
-          final bool thisMonth =
-              state.month == DateFormat('yyyy-MM').format(DateTime.now());
-          final List<MapEntry<DateTime, List<Transaction>>> days = _groupByDay(
-            state.transactions,
-          );
-
-          return RefreshIndicator(
-            onRefresh: () =>
-                ref.read(financeControllerProvider.notifier).refresh(),
-            child: CustomScrollView(
-              slivers: <Widget>[
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(
-                      AppSpacing.lg,
-                      0,
-                      AppSpacing.lg,
-                      AppSpacing.sm,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: <Widget>[
-                        MonthSwitcher(
-                          month: currentMonthDate,
-                          onChanged: (DateTime month) => ref
-                              .read(financeControllerProvider.notifier)
-                              .setMonth(DateFormat('yyyy-MM').format(month)),
-                        ),
-                        if (thisMonth && state.transactions.isNotEmpty)
-                          const PonponTalkSlot(
-                            surface: PonponSurface.finance,
-                            horizontalPadding: 0,
-                          ),
-                        _MonthCard(summary: state.summary),
-                        if (thisMonth) const WorkPayRow(),
-                      ],
-                    ),
-                  ),
+    return CaptureListener(
+      action: CaptureAction.addExpense,
+      onCapture: () => _quickLog(context, ref),
+      child: Scaffold(
+        appBar: const AppTopBar(title: 'Finance'),
+        body: financeState.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (Object err, _) => Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Icon(
+                  Icons.error_outline_rounded,
+                  size: 48,
+                  color: colors.error,
                 ),
-                if (state.transactions.isEmpty)
-                  SliverFillRemaining(
-                    hasScrollBody: false,
-                    child: Center(
+                AppSpacing.gapMd,
+                Text('Error loading finance data: $err'),
+                AppSpacing.gapLg,
+                FilledButton(
+                  onPressed: () =>
+                      ref.read(financeControllerProvider.notifier).refresh(),
+                  child: const Text('Retry'),
+                ),
+              ],
+            ),
+          ),
+          data: (FinanceState state) {
+            final DateTime currentMonthDate =
+                DateTime.tryParse('${state.month}-01') ?? DateTime.now();
+            final bool thisMonth =
+                state.month == DateFormat('yyyy-MM').format(DateTime.now());
+            final List<MapEntry<DateTime, List<Transaction>>> days =
+                _groupByDay(state.transactions);
+
+            return RefreshIndicator(
+              onRefresh: () =>
+                  ref.read(financeControllerProvider.notifier).refresh(),
+              child: CustomScrollView(
+                slivers: <Widget>[
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(
+                        AppSpacing.lg,
+                        0,
+                        AppSpacing.lg,
+                        AppSpacing.sm,
+                      ),
                       child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: <Widget>[
-                          const Ponpon(size: 88),
-                          AppSpacing.gapMd,
-                          Text(
-                            'No transactions this month',
-                            textAlign: TextAlign.center,
-                            style: textStyles.titleMedium?.copyWith(
-                              color: colors.onSurfaceVariant,
-                            ),
+                          MonthSwitcher(
+                            month: currentMonthDate,
+                            onChanged: (DateTime month) => ref
+                                .read(financeControllerProvider.notifier)
+                                .setMonth(DateFormat('yyyy-MM').format(month)),
                           ),
+                          if (thisMonth && state.transactions.isNotEmpty)
+                            const PonponTalkSlot(
+                              surface: PonponSurface.finance,
+                              horizontalPadding: 0,
+                            ),
+                          _MonthCard(summary: state.summary),
+                          if (thisMonth) const WorkPayRow(),
                         ],
                       ),
                     ),
-                  )
-                else
-                  SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(
-                      AppSpacing.lg,
-                      0,
-                      AppSpacing.lg,
-                      96,
-                    ),
-                    sliver: SliverList(
-                      delegate: SliverChildBuilderDelegate((
-                        BuildContext context,
-                        int index,
-                      ) {
-                        final MapEntry<DateTime, List<Transaction>> day =
-                            days[index];
-                        return _DayGroup(
-                          day: day.key,
-                          transactions: day.value,
-                          onOpen: (Transaction tx) => _showAddTransactionDialog(
-                            context,
-                            ref,
-                            existing: tx,
-                          ),
-                        );
-                      }, childCount: days.length),
-                    ),
                   ),
-              ],
-            ),
-          );
-        },
-      ),
-      floatingActionButton: FloatingActionButton(
-        tooltip: 'Quick expense',
-        onPressed: () => _quickLog(context, ref),
-        child: const Icon(Icons.add_rounded),
+                  if (state.transactions.isEmpty)
+                    SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            const Ponpon(size: 88),
+                            AppSpacing.gapMd,
+                            Text(
+                              'No transactions this month',
+                              textAlign: TextAlign.center,
+                              style: textStyles.titleMedium?.copyWith(
+                                color: colors.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  else
+                    SliverPadding(
+                      padding: const EdgeInsets.fromLTRB(
+                        AppSpacing.lg,
+                        0,
+                        AppSpacing.lg,
+                        96,
+                      ),
+                      sliver: SliverList(
+                        delegate: SliverChildBuilderDelegate((
+                          BuildContext context,
+                          int index,
+                        ) {
+                          final MapEntry<DateTime, List<Transaction>> day =
+                              days[index];
+                          return _DayGroup(
+                            day: day.key,
+                            transactions: day.value,
+                            onOpen: (Transaction tx) =>
+                                _showAddTransactionDialog(
+                                  context,
+                                  ref,
+                                  existing: tx,
+                                ),
+                          );
+                        }, childCount: days.length),
+                      ),
+                    ),
+                ],
+              ),
+            );
+          },
+        ),
+        floatingActionButton: FloatingActionButton(
+          tooltip: 'Quick expense',
+          onPressed: () => _quickLog(context, ref),
+          child: const Icon(Icons.add_rounded),
+        ),
       ),
     );
   }

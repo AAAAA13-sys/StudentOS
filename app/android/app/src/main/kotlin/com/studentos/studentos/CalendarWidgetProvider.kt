@@ -187,6 +187,10 @@ class CalendarWidgetProvider : AppWidgetProvider() {
             views.setOnClickPendingIntent(R.id.today_event_area, calendar)
             views.setOnClickPendingIntent(R.id.today_alarm_area, WidgetSupport.openApp(ctx, "clock", 22))
 
+            if (!small) {
+                views.setOnClickPendingIntent(R.id.today_add, WidgetSupport.openApp(ctx, "add_event", 28))
+            }
+
             val phase = m.phase
             if (phase == null) {
                 views.setViewVisibility(R.id.today_chip, View.GONE)

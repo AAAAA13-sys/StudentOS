@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/theme/app_spacing.dart';
+import '../../core/widgets/capture_request.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/app_top_bar.dart';
 import '../../core/widgets/confirm_dialog.dart';
@@ -119,6 +120,25 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     final bool timerRunning =
         ref.watch(focusControllerProvider).value?.session != null;
 
+    return CaptureListener(
+      action: CaptureAction.addEvent,
+      onCapture: () {
+        final DateTime today = DateTime.now();
+        _showMonth(today);
+        _showAddEventDialog(
+          context,
+          prefilledDate: DateTime(today.year, today.month, today.day),
+        );
+      },
+      child: _buildScaffold(context, view, timerRunning),
+    );
+  }
+
+  Widget _buildScaffold(
+    BuildContext context,
+    CalendarView view,
+    bool timerRunning,
+  ) {
     return Scaffold(
       appBar: AppTopBar(
         title: 'Calendar',

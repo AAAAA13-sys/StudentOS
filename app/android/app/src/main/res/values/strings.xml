@@ -11,6 +11,14 @@
     <string name="widget_no_alarm">No alarm set</string>
     <string name="widget_start_focus">Start focus</string>
     <string name="widget_start_focus_short">Focus</string>
+    <string name="widget_add_expense">Add expense</string>
+    <string name="widget_add_event">Add event</string>
+    <string name="shortcut_add_expense">Add expense</string>
+    <string name="shortcut_add_expense_long">Log an expense</string>
+    <string name="shortcut_new_note">New note</string>
+    <string name="shortcut_new_note_long">Write a new note</string>
+    <string name="shortcut_new_event">New event</string>
+    <string name="shortcut_new_event_long">Add an event today</string>
     <string name="widget_spent_today">Spent today</string>
     <string name="widget_month_left">This month: %1$s left</string>
     <string name="widget_month_over">This month: %1$s over</string>

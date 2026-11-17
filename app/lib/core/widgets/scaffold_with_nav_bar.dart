@@ -11,6 +11,7 @@ import '../../features/focus/clock_panels.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_theme.dart';
 import 'app_drawer.dart';
+import 'capture_request.dart';
 
 class ScaffoldWithNavBar extends ConsumerStatefulWidget {
   const ScaffoldWithNavBar({required this.navigationShell, super.key});
@@ -65,6 +66,18 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar> {
         ref.read(calendarViewProvider.notifier).show(CalendarView.focus);
         shell.goBranch(0);
         await _startFocusFromWidget();
+      case 'add_expense' || 'add_note' || 'add_event':
+        final CaptureAction action = CaptureAction.fromRoute(route)!;
+        switch (action) {
+          case CaptureAction.addExpense:
+            shell.goBranch(1);
+          case CaptureAction.addNote:
+            shell.goBranch(2);
+          case CaptureAction.addEvent:
+            ref.read(calendarViewProvider.notifier).show(CalendarView.schedule);
+            shell.goBranch(0);
+        }
+        ref.read(captureRequestProvider.notifier).request(action);
       default:
         if (route.startsWith('day:')) {
           final DateTime? day = DateTime.tryParse(route.substring(4));

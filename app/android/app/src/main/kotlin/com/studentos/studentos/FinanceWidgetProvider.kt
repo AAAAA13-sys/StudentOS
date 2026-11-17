@@ -123,6 +123,7 @@ class FinanceWidgetProvider : AppWidgetProvider() {
                 if (negative) R.drawable.ponpon_smug else R.drawable.ponpon_happy,
             )
             views.setOnClickPendingIntent(android.R.id.background, WidgetSupport.openApp(ctx, "finance", 21))
+            views.setOnClickPendingIntent(R.id.money_add, WidgetSupport.openApp(ctx, "add_expense", 25))
             return views
         }
     }
