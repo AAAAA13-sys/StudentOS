@@ -138,6 +138,15 @@ void main() {
     expect(hits(DateTime(2027, 1, 4, 12, 30), 120), isEmpty);
     // An event that started the day before and runs past midnight.
     expect(hits(DateTime(2026, 11, 16, 0, 30), 60), <String>['Org night']);
+    // A done event no longer clashes.
+    expect(
+      eventsOverlapping(
+        start: DateTime(2026, 11, 16, 13, 30),
+        durationMinutes: 30,
+        events: <CalendarEvent>[exam.copyWith(done: true)],
+      ),
+      isEmpty,
+    );
   });
 
   test(

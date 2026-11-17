@@ -8,7 +8,10 @@ enum PonponAction {
   quizNotes('Quiz me'),
 
   /// Open Calendar > Focus.
-  startFocus('Focus');
+  startFocus('Focus'),
+
+  /// Switch Calendar > Schedule to the Week list.
+  seeWeek('See your week');
 
   const PonponAction(this.label);
 

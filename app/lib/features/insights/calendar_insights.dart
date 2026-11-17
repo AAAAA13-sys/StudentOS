@@ -2,6 +2,7 @@ import 'package:intl/intl.dart';
 
 import '../../core/widgets/ponpon.dart';
 import '../calendar/event.dart';
+import '../calendar/week_agenda.dart';
 import '../work/shift.dart';
 import 'ponpon_insight.dart';
 
@@ -154,6 +155,24 @@ List<PonponInsight> calendarInsights({
       PonponInsight(
         text: '$busiestDay is your busiest day: $busiest things.',
         priority: 4,
+      ),
+    );
+  }
+
+  // Two open items on top of each other in the next 7 days.
+  final int clashes = buildWeekAgenda(
+    events: events,
+    shifts: shifts,
+    start: today,
+    now: now,
+  ).overlapCount;
+  if (clashes > 0) {
+    out.add(
+      PonponInsight(
+        text: '$clashes things overlap this week. Take a look?',
+        mood: PonponMood.focused,
+        priority: 4,
+        action: PonponAction.seeWeek,
       ),
     );
   }

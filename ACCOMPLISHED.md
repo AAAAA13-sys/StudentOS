@@ -506,3 +506,14 @@ Entries are appended, never edited. Corrections are new entries that reference t
 - Last backup time is stored (`last_backup_at`); the drawer shows its age and the menu icon gets a dot after 14 days.
 **Open items:** checklist ticks on a repeating event apply to every occurrence; shift rows in the calendar day view cannot be tapped; not seen on the real phones.
 
+## Phase 40: Week view in Calendar > Schedule
+**Date:** 2026-11-18
+**Verified by:** agency-evidence-collector and lead-pm on `emulator-5554`
+**Evidence:** see the Phase 40 row in `PROGRESS.md`; screenshots kept outside the repo.
+**Decisions:**
+- Owner asked to continue with a new feature "with the agency". The product lead chose a 7-day list over a payday date and recurring bills because it answers the daily "does my week clash" question from data the app already has.
+- No schema change: the choice is the `settings` key `schedule_view` (`month`/`week`). The toggle is an app-bar icon, not a segmented row, so Month keeps its height.
+- The week runs 7 days from an anchor, not Monday to Sunday. Switching to Week (toggle or Ponpon) starts on today.
+- Overlaps count only open, timed items that have not ended; done events no longer clash, in the Week list or the shift sheet.
+- Paid shifts show no amount and are left out of expected pay.
+**Open items:** all-day ordering and a paid shift row not seen on a device; TalkBack not checked; not seen on the real phones.

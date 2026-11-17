@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/theme/app_spacing.dart';
 import '../../core/widgets/ponpon_talk.dart';
+import '../calendar/schedule_view.dart';
 import '../focus/clock_panels.dart';
 import '../notes/note.dart';
 import '../notes/notes_controller.dart';
@@ -72,6 +73,9 @@ void runPonponAction(BuildContext context, WidgetRef ref, PonponAction action) {
   switch (action) {
     case PonponAction.startFocus:
       ref.read(calendarViewProvider.notifier).show(CalendarView.focus);
+    case PonponAction.seeWeek:
+      ref.read(calendarViewProvider.notifier).show(CalendarView.schedule);
+      ref.read(scheduleViewProvider.notifier).show(ScheduleView.week);
     case PonponAction.quizNotes:
       final Note? note = firstQuizNote(
         ref.read(notesControllerProvider).value?.notes ?? const <Note>[],

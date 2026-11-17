@@ -27,6 +27,9 @@ import '../notes/notes_controller.dart';
 import '../notes/notes_repository.dart';
 import 'event.dart';
 import 'linked_notes.dart';
+import 'schedule_view.dart';
+import 'status_pill.dart';
+import 'week_agenda_view.dart';
 import '../notes/quiz_sheet.dart';
 import '../work/add_shift_sheet.dart';
 import '../work/day_shifts.dart';
@@ -77,6 +80,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
   late DateTime _selectedDate;
   late DateTime _viewMonth;
   bool _filterByDay = true;
+  late DateTime _weekAnchor;
   late final AppLifecycleListener _lifecycle;
 
   @override
@@ -85,6 +89,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     final DateTime now = DateTime.now();
     _selectedDate = DateTime(now.year, now.month, now.day);
     _viewMonth = DateTime(now.year, now.month, 1);
+    _weekAnchor = _selectedDate;
     // Back from Settings or from a ringing alarm: read Android again.
     _lifecycle = AppLifecycleListener(
       onResume: () {
@@ -163,10 +168,19 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
 
   @override
   Widget build(BuildContext context) {
-    ref.listen<int>(
-      calendarShowTodayProvider,
-      (_, _) => _showMonth(DateTime.now()),
-    );
+    // Opening Week (from the toggle or a Ponpon tip) starts on this week.
+    ref.listen<ScheduleView>(scheduleViewProvider, (
+      ScheduleView? previous,
+      ScheduleView next,
+    ) {
+      if (previous == ScheduleView.month && next == ScheduleView.week) {
+        _showWeekOf(DateTime.now());
+      }
+    });
+    ref.listen<int>(calendarShowTodayProvider, (_, _) {
+      _showMonth(DateTime.now());
+      _showWeekOf(DateTime.now());
+    });
     ref.listen<DateTime?>(calendarShowDayProvider, (_, DateTime? day) {
       if (day != null) _showDay(day);
     });
@@ -193,15 +207,30 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     CalendarView view,
     bool timerRunning,
   ) {
+    final bool isWeek = ref.watch(scheduleViewProvider) == ScheduleView.week;
     return Scaffold(
       appBar: AppTopBar(
         title: 'Calendar',
         actions: <Widget>[
           if (view == CalendarView.schedule) ...<Widget>[
             IconButton(
+              icon: Icon(
+                isWeek
+                    ? Icons.calendar_month_rounded
+                    : Icons.view_agenda_outlined,
+              ),
+              tooltip: isWeek ? 'Month view' : 'Week view',
+              onPressed: () => ref
+                  .read(scheduleViewProvider.notifier)
+                  .show(isWeek ? ScheduleView.month : ScheduleView.week),
+            ),
+            IconButton(
               icon: const Icon(Icons.today_rounded),
               tooltip: 'Today',
-              onPressed: () => _showMonth(DateTime.now()),
+              onPressed: () {
+                _showMonth(DateTime.now());
+                _showWeekOf(DateTime.now());
+              },
             ),
             PopupMenuButton<void>(
               icon: const Icon(Icons.more_vert_rounded),
@@ -297,6 +326,38 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     final ColorScheme colors = context.colors;
     final TextTheme textStyles = context.textStyles;
     final DateTime today = DateTime.now();
+    if (ref.watch(scheduleViewProvider) == ScheduleView.week) {
+      return eventsState.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (Object _, _) => Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Icon(Icons.error_outline_rounded, size: 48, color: colors.error),
+              AppSpacing.gapMd,
+              const Text("Couldn't load your events."),
+              AppSpacing.gapLg,
+              FilledButton(
+                onPressed: () =>
+                    ref.read(calendarControllerProvider.notifier).refresh(),
+                child: const Text('Retry'),
+              ),
+            ],
+          ),
+        ),
+        data: (List<CalendarEvent> allEvents) => WeekAgendaView(
+          events: allEvents,
+          shifts: ref.watch(workControllerProvider).value ?? const <Shift>[],
+          anchor: _weekAnchor,
+          onAnchorChanged: _showWeekOf,
+          onEventTap: (CalendarEvent e) =>
+              _showAddEventDialog(context, existingEvent: e),
+          onAddClass: _addClass,
+          onRefresh: () =>
+              ref.read(calendarControllerProvider.notifier).refresh(),
+        ),
+      );
+    }
     final Set<DateTime> shiftDays = <DateTime>{
       for (final Shift shift
           in ref.watch(workControllerProvider).value ?? const <Shift>[])
@@ -655,7 +716,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
                           if (trackable && event.done)
-                            _StatusPill(
+                            StatusPill(
                               icon: Icons.check_circle_rounded,
                               label: 'Done',
                               background: colors.primaryContainer,
@@ -663,7 +724,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                               border: colors.primary,
                             )
                           else if (countdown != null)
-                            _StatusPill(
+                            StatusPill(
                               icon: event.isExam
                                   ? Icons.error_outline_rounded
                                   : Icons.assignment_late_outlined,
@@ -1045,6 +1106,11 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
           ? DateTime(now.year, now.month, now.day)
           : _viewMonth;
     });
+  }
+
+  /// Starts the Week list on [day].
+  void _showWeekOf(DateTime day) {
+    setState(() => _weekAnchor = DateTime(day.year, day.month, day.day));
   }
 
   /// Opens exactly [day]: its month, with the day selected.
@@ -1585,51 +1651,4 @@ class _AgendaHeader extends SliverPersistentHeaderDelegate {
       oldDelegate.height != height ||
       oldDelegate.background != background ||
       oldDelegate.child != child;
-}
-
-/// A small outlined status pill ("Done", "Exam · Tomorrow") above a title.
-class _StatusPill extends StatelessWidget {
-  const _StatusPill({
-    required this.icon,
-    required this.label,
-    required this.background,
-    required this.foreground,
-    required this.border,
-  });
-
-  final IconData icon;
-  final String label;
-  final Color background;
-  final Color foreground;
-  final Color border;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 2),
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 1),
-      decoration: BoxDecoration(
-        color: background,
-        borderRadius: AppRadius.pill,
-        border: Border.all(color: border.withValues(alpha: 0.3), width: 0.75),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          Icon(icon, size: 13, color: foreground),
-          AppSpacing.gapXs,
-          Flexible(
-            child: Text(
-              label,
-              style: context.textStyles.labelSmall?.copyWith(
-                color: foreground,
-                fontWeight: FontWeight.bold,
-                fontFeatures: _tabular,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }

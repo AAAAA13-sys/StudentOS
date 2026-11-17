@@ -151,6 +151,8 @@ List<CalendarEvent> eventsOverlapping({
   final DateTime lastDay = DateTime(end.year, end.month, end.day);
   final List<CalendarEvent> found = <CalendarEvent>[];
   for (final CalendarEvent event in events) {
+    // A done event no longer takes up that time.
+    if (event.done) continue;
     final DateTime eventStart = event.startsAt.toLocal();
     // An event is listed on the day it starts, so one that began the day
     // before and runs past midnight is checked too.
