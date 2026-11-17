@@ -11,6 +11,8 @@ import 'note_editor_sheet.dart';
 import 'notes_controller.dart';
 import 'quiz_sheet.dart';
 import '../../core/widgets/ponpon.dart';
+import '../insights/insights_providers.dart';
+import '../insights/ponpon_talk_slot.dart';
 
 class NotesScreen extends ConsumerStatefulWidget {
   const NotesScreen({super.key});
@@ -72,6 +74,10 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
                 ref.read(notesControllerProvider.notifier).search(val.trim());
               },
             ),
+          ),
+          PonponTalkSlot(
+            surface: PonponSurface.notes,
+            suppress: notesState.value?.notes.isEmpty ?? true,
           ),
           notesState.when(
             loading: () => const Expanded(

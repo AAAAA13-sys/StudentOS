@@ -27,6 +27,8 @@ import '../work/day_shifts.dart';
 import '../work/shift.dart';
 import '../work/work_controller.dart';
 import '../../core/widgets/ponpon.dart';
+import '../insights/insights_providers.dart';
+import '../insights/ponpon_talk_slot.dart';
 
 const List<FontFeature> _tabular = <FontFeature>[FontFeature.tabularFigures()];
 
@@ -265,6 +267,12 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
           child: CustomScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             slivers: <Widget>[
+              SliverToBoxAdapter(
+                child: PonponTalkSlot(
+                  surface: PonponSurface.calendar,
+                  suppress: displayedEvents.isEmpty,
+                ),
+              ),
               SliverToBoxAdapter(
                 child: Column(
                   children: <Widget>[

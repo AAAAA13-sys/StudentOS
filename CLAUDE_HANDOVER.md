@@ -40,6 +40,8 @@ Widgets (Phase 30, reworked in Phase 33): two widgets. "StudentOS today" (`Calen
 
 Phase 33 (2026-11-17): the Clock tab is merged into Calendar (Schedule | Alarms | Focus, `lib/features/focus/clock_panels.dart`, `calendarViewProvider`); 3 bottom tabs. Safe-to-Spend is gone from the UI (owner: "i dont need safe allowance"); `safe_to_spend.dart`, the repository methods and the settings keys stay dormant. Finance top is one "Left this month" card. Commits are authored as the owner with the GitHub noreply address and carry no Claude co-author line; history was rewritten on 2026-11-17 at the owner's request, so hashes before that day changed.
 
+Ponpon talk bubble (Phase 36): `PonponTalk` in `lib/core/widgets/ponpon_talk.dart`, rules in `lib/features/insights/`, placed through `PonponTalkSlot`. See `DESIGN_SYSTEM.md` > Mascot > Talk bubble.
+
 Mascot (Phase 31): Ponpon, an orange puspin, drawn in `lib/core/widgets/ponpon.dart`; Android copies in `res/drawable-nodpi/` come from `tool/render_ponpon_test.dart`. See `DESIGN_SYSTEM.md` > Mascot.
 
 Still open, in suggested order:

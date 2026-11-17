@@ -173,3 +173,14 @@ Ponpon is an orange tabby puspin (pusang Pinoy), StudentOS's mascot. Use the `Po
 
 Sizes: 56-64 in headers, 88-120 in empty states, 48-56dp centred at the end of each home-screen widget. Ponpon's colours do not follow the theme. Android-side images come from `tool/render_ponpon_test.dart`.
 
+### Talk bubble ("Ponpon says")
+
+`PonponTalk` (`lib/core/widgets/ponpon_talk.dart`) is a compact row: Ponpon at 48dp and a speech bubble with its tail pointing at him. Use it for one-line, rule-based insights at the top of Calendar (Schedule view only), Finance and Notes, via `PonponTalkSlot`. Never on Alarms or Focus, and never next to an empty-state Ponpon (the slot is suppressed there).
+
+- Fill is `primaryContainer`, text `onPrimaryContainer` (so Midnight Lavender follows the theme), outline a 0.75px `outlineVariant` hairline, no shadow. Text is `bodyMedium`, two lines at most, tabular figures.
+- Tap the bubble for the next tip: 200ms `easeOutCubic` cross-fade, and Ponpon takes the tip's mood. The close button (48dp) hides the bubble for the rest of the app session; it is in memory only and returns on the next launch. No insights, no bubble.
+- At most 4 tips per screen, sorted by priority. Rules live in `lib/features/insights/` as pure functions of `now` and on-device data. No network, no AI.
+- Tone: short, plain, friendly, a little cheeky for `smug`. No emoji, no scolding, no exclamation marks. Money as `₱2,300` (whole pesos unless there are centavos); times as `8:00 AM`. Never mention Safe-to-Spend.
+- Screen readers hear "Ponpon says: <text>" with the hint "Next tip".
+
+

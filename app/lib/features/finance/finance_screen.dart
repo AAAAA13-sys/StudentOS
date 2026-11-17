@@ -14,6 +14,8 @@ import 'transaction.dart';
 import 'widgets/quick_expense_sheet.dart';
 import '../work/work_pay_card.dart';
 import '../../core/widgets/ponpon.dart';
+import '../insights/insights_providers.dart';
+import '../insights/ponpon_talk_slot.dart';
 
 const List<FontFeature> _tabular = <FontFeature>[FontFeature.tabularFigures()];
 
@@ -87,6 +89,11 @@ class FinanceScreen extends ConsumerWidget {
                               .read(financeControllerProvider.notifier)
                               .setMonth(DateFormat('yyyy-MM').format(month)),
                         ),
+                        if (thisMonth && state.transactions.isNotEmpty)
+                          const PonponTalkSlot(
+                            surface: PonponSurface.finance,
+                            horizontalPadding: 0,
+                          ),
                         _MonthCard(summary: state.summary),
                         if (thisMonth) const WorkPayRow(),
                       ],

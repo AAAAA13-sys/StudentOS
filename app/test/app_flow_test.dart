@@ -310,6 +310,8 @@ void main() {
     }
 
     await settle();
+    await tester.tap(find.byTooltip('Hide Ponpon tips'));
+    await tester.pump();
     await tester.tap(find.byTooltip('Add note'));
     await settle();
 

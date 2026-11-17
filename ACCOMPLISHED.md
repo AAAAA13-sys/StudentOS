@@ -454,3 +454,14 @@ Entries are appended, never edited. Corrections are new entries that reference t
 - Skipped and counted: INTERVAL above 1, BYMONTHDAY/BYSETPOS, other frequencies, cancelled events, edited single occurrences. EXDATE is ignored with a warning (those dates still show).
 - Timed events get the 10 min reminder (exams 1 day); all-day events get none.
 **Open items:** the file picker is not filtered to `.ics`. A TZID other than the phone's zone is not converted. Not seen on the real phones.
+
+## Phase 36: "Ponpon says" talk bubble
+**Date:** 2026-11-17
+**Verified by:** lead-pm on `emulator-5554` (light and dark)
+**Evidence:** see the Phase 36 row in `PROGRESS.md`.
+**Decisions:**
+- Owner asked for "mascot insights. more of a talk cloud". Ponpon (48dp) with a speech bubble at the top of Calendar > Schedule, Finance (current month) and Notes. Not on Alarms or Focus, and not where an empty-state Ponpon already shows.
+- Insights are fixed rules over on-device data (`lib/features/insights/`), no AI and no network; at most 4 per screen, tap for the next, Ponpon's mood follows the tip. The close button hides it until the app restarts (not saved).
+- Event tips put the timing before the title ("In 25 min · Room 301: Physics 101") so a long title is what gets cut.
+- Thresholds: next event within 2 h; exam/assignment within 7 days; late night from 22:00 with a start before 10:00; busiest day needs 3+ things; spending today vs the daily average needs 1.5x (or 0.5x) and ₱50 difference with 3+ prior days; top category from 30%; month-on-month from ₱100 and 15%.
+**Open items:** tips refresh when data changes or the screen rebuilds, not every minute, so "in 25 min" can go stale. Closing is per session only. Not seen on the real phones.
