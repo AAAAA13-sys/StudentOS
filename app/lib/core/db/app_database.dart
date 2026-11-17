@@ -72,6 +72,8 @@ class NoteRows extends Table {
   DateTimeColumn get createdAt => dateTime()();
 
   DateTimeColumn get updatedAt => dateTime()();
+
+  BoolColumn get pinned => boolean().withDefault(const Constant(false))();
 }
 
 /// Small named values, such as the next allowance day.
@@ -270,7 +272,7 @@ class AppDatabase extends _$AppDatabase {
     : super(executor ?? driftDatabase(name: 'studentos'));
 
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 7;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -291,6 +293,9 @@ class AppDatabase extends _$AppDatabase {
       if (from < 6) {
         await m.createTable(alarmRows);
         await m.createTable(focusLogRows);
+      }
+      if (from < 7) {
+        await m.addColumn(noteRows, noteRows.pinned);
       }
     },
   );

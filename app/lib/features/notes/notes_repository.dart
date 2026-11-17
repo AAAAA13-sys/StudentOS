@@ -11,12 +11,16 @@ class NotesRepository {
 
   final AppDatabase _db;
 
-  /// Most recently edited first. [q] matches title, body or any tag,
+  /// Pinned notes first, then most recently edited first. [q] matches title, body or any tag,
   /// ignoring case; [tag] must match a tag exactly.
   Future<List<Note>> getNotes({String? q, String? tag}) async {
-    final List<NoteRow> rows = await (_db.select(
-      _db.noteRows,
-    )..orderBy([(t) => OrderingTerm.desc(t.updatedAt)])).get();
+    final List<NoteRow> rows =
+        await (_db.select(_db.noteRows)..orderBy([
+              (t) => OrderingTerm.desc(t.pinned),
+              (t) => OrderingTerm.desc(t.updatedAt),
+              (t) => OrderingTerm.desc(t.id),
+            ]))
+            .get();
 
     final String needle = (q ?? '').trim().toLowerCase();
     return rows.map(_fromRow).where((Note note) {
@@ -49,6 +53,7 @@ class NotesRepository {
             title: note.title,
             body: note.body,
             tags: jsonEncode(_normalizeTags(note.tags)),
+            pinned: Value(note.pinned),
             createdAt: now,
             updatedAt: now,
           ),
@@ -68,6 +73,13 @@ class NotesRepository {
         tags: Value(jsonEncode(_normalizeTags(tags))),
         updatedAt: Value(DateTime.now()),
       ),
+    );
+  }
+
+  /// Pins or unpins a note without changing its last-modified time.
+  Future<void> setPinned(int id, {required bool pinned}) {
+    return (_db.update(_db.noteRows)..where((t) => t.id.equals(id))).write(
+      NoteRowsCompanion(pinned: Value(pinned)),
     );
   }
 
@@ -99,6 +111,7 @@ class NotesRepository {
       tags: (jsonDecode(row.tags) as List<dynamic>).cast<String>(),
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
+      pinned: row.pinned,
     );
   }
 }

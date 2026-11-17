@@ -1,3 +1,5 @@
+import '../../core/checklist.dart';
+
 class CalendarEvent {
   const CalendarEvent({
     required this.id,
@@ -121,73 +123,13 @@ class CalendarEvent {
   }
 
   /// Parses markdown task items from [notes] (e.g. `- [ ] Item` or `[ ] Item`).
-  List<({String text, bool done})> get checklistItems {
-    if (notes == null || notes!.isEmpty) {
-      return const <({String text, bool done})>[];
-    }
-    final List<({String text, bool done})> items =
-        <({String text, bool done})>[];
-    for (final String rawLine in notes!.split('\n')) {
-      final String trimmed = rawLine.trim();
-      if (trimmed.startsWith('- [ ] ') || trimmed.startsWith('[ ] ')) {
-        final String text = trimmed.startsWith('- [ ] ')
-            ? trimmed.substring(6).trim()
-            : trimmed.substring(4).trim();
-        if (text.isNotEmpty) items.add((text: text, done: false));
-      } else if (trimmed.startsWith('- [x] ') ||
-          trimmed.startsWith('[x] ') ||
-          trimmed.startsWith('- [X] ') ||
-          trimmed.startsWith('[X] ')) {
-        final String text =
-            (trimmed.startsWith('- [x] ') || trimmed.startsWith('- [X] '))
-            ? trimmed.substring(6).trim()
-            : trimmed.substring(4).trim();
-        if (text.isNotEmpty) items.add((text: text, done: true));
-      }
-    }
-    return items;
-  }
+  List<({String text, bool done})> get checklistItems => parseChecklist(notes);
 
   /// Toggles the checklist item at [targetIndex] between done and undone.
   CalendarEvent toggleChecklistItem(int targetIndex) {
-    if (notes == null || notes!.isEmpty) return this;
-    final List<String> lines = notes!.split('\n');
-    int currentIndex = 0;
-    for (int i = 0; i < lines.length; i++) {
-      final String line = lines[i];
-      final String trimmed = line.trim();
-      final bool isUnchecked =
-          trimmed.startsWith('- [ ] ') || trimmed.startsWith('[ ] ');
-      final bool isChecked =
-          trimmed.startsWith('- [x] ') ||
-          trimmed.startsWith('[x] ') ||
-          trimmed.startsWith('- [X] ') ||
-          trimmed.startsWith('[X] ');
-      if (isUnchecked || isChecked) {
-        if (currentIndex == targetIndex) {
-          if (isUnchecked) {
-            if (line.contains('- [ ]')) {
-              lines[i] = line.replaceFirst('- [ ]', '- [x]');
-            } else {
-              lines[i] = line.replaceFirst('[ ]', '[x]');
-            }
-          } else {
-            if (line.contains('- [x]')) {
-              lines[i] = line.replaceFirst('- [x]', '- [ ]');
-            } else if (line.contains('- [X]')) {
-              lines[i] = line.replaceFirst('- [X]', '- [ ]');
-            } else if (line.contains('[X]')) {
-              lines[i] = line.replaceFirst('[X]', '[ ]');
-            } else {
-              lines[i] = line.replaceFirst('[x]', '[ ]');
-            }
-          }
-          break;
-        }
-        currentIndex++;
-      }
-    }
-    return copyWith(notes: lines.join('\n'));
+    final String? current = notes;
+    if (current == null || current.isEmpty) return this;
+    return copyWith(notes: toggleChecklistLine(current, targetIndex));
   }
 
   /// Whether an occurrence of this event falls on the calendar day [date].

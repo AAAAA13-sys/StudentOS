@@ -93,6 +93,13 @@ class NotesController extends AsyncNotifier<NotesState> {
     state = await AsyncValue.guard(() => _fetchState(query: q, tag: tag));
   }
 
+  Future<void> setPinned(int id, {required bool pinned}) async {
+    await _repo.setPinned(id, pinned: pinned);
+    final String q = state.value?.searchQuery ?? '';
+    final String? tag = state.value?.selectedTag;
+    state = await AsyncValue.guard(() => _fetchState(query: q, tag: tag));
+  }
+
   Future<void> deleteNote(int id) async {
     await _repo.deleteNote(id);
     final String q = state.value?.searchQuery ?? '';

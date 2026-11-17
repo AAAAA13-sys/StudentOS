@@ -1,3 +1,5 @@
+import '../../core/checklist.dart';
+
 class Note {
   const Note({
     required this.id,
@@ -6,6 +8,7 @@ class Note {
     required this.tags,
     this.createdAt,
     this.updatedAt,
+    this.pinned = false,
   });
 
   final int id;
@@ -14,9 +17,13 @@ class Note {
   final List<String> tags;
   final DateTime? createdAt;
   final DateTime? updatedAt;
+  final bool pinned;
 
   /// Active recall question-answer cards extracted from [body].
   List<RecallCard> get recallCards => extractRecallCards(body);
+
+  /// Tickable `- [ ] text` lines in [body].
+  List<ChecklistItem> get checklistItems => parseChecklist(body);
 }
 
 class RecallCard {
@@ -87,7 +94,9 @@ List<RecallCard> extractRecallCards(String text) {
 String? noteTitleFor(String title, String body) {
   final String typed = title.trim();
   if (typed.isNotEmpty) return typed;
-  final String firstLine = body.trim().split('\n').first.trim();
+  final String firstLine = stripChecklistMarker(
+    body.trim().split('\n').first.trim(),
+  ).trim();
   if (firstLine.isEmpty) return null;
   return firstLine.length <= 60 ? firstLine : '${firstLine.substring(0, 60)}…';
 }

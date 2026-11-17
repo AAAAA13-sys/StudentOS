@@ -465,3 +465,16 @@ Entries are appended, never edited. Corrections are new entries that reference t
 - Event tips put the timing before the title ("In 25 min · Room 301: Physics 101") so a long title is what gets cut.
 - Thresholds: next event within 2 h; exam/assignment within 7 days; late night from 22:00 with a start before 10:00; busiest day needs 3+ things; spending today vs the daily average needs 1.5x (or 0.5x) and ₱50 difference with 3+ prior days; top category from 30%; month-on-month from ₱100 and 15%.
 **Open items:** tips refresh when data changes or the screen rebuilds, not every minute, so "in 25 min" can go stale. Closing is per session only. Not seen on the real phones.
+
+## Phase 37: Pinned notes and checklists in notes
+**Date:** 2026-11-17
+**Verified by:** lead-pm on `emulator-5554`
+**Evidence:** see the Phase 37 row in `PROGRESS.md`.
+**Decisions:**
+- From the handover backlog (8.3). Note colour tints stay cut, per the 2026-11-16 team review.
+- Pin is a 48dp pin button on each card ("Pin note" / "Unpin note"); long-press still deletes. Pinned notes sort first, then last modified, in the list and in search. "Pinned" / "Others" labels show only when something is pinned. Pinning does not change the modified time.
+- Checklist lines are `- [ ] text` / `- [x] text` (or without the dash) in the plain-text body, the same format events already used; one parser in `lib/core/checklist.dart` serves both. The card shows "N of M done" and up to 5 rows, then "+N more". Ticking saves the note.
+- A note whose first line is a checklist item takes the item text as its title.
+- Database schema v7 adds `notes.pinned`; restore fills it in for older backup files.
+**Open items:** no Ponpon tip for open checklist items. Not seen on the real phones.
+

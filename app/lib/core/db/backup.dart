@@ -99,7 +99,13 @@ class BackupService {
           (decoded[key] as List<dynamic>).cast<Map<String, dynamic>>();
       events = rows('events').map(EventRow.fromJson).toList();
       transactions = rows('transactions').map(TransactionRow.fromJson).toList();
-      notes = rows('notes').map(NoteRow.fromJson).toList();
+      // Backups made before pinning have no `pinned` key.
+      notes = rows('notes')
+          .map(
+            (Map<String, dynamic> m) =>
+                NoteRow.fromJson(<String, dynamic>{'pinned': false, ...m}),
+          )
+          .toList();
       // Backups made before settings existed have no such list.
       settings = decoded['settings'] == null
           ? <SettingRow>[]

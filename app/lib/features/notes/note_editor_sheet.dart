@@ -85,28 +85,51 @@ Future<void> showNoteEditor(
                   ),
                 ),
                 const SizedBox(height: 4),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: TextButton.icon(
-                    onPressed: () {
-                      final String text = bodyController.text;
-                      final String prefix = text.isEmpty || text.endsWith('\n')
-                          ? ''
-                          : '\n\n';
-                      bodyController.text = '$text${prefix}Q: \nA: ';
-                      bodyController.selection = TextSelection.fromPosition(
-                        TextPosition(offset: bodyController.text.length - 4),
-                      );
-                      // So the question is typed here, not in whichever
-                      // field had the cursor.
-                      bodyFocus.requestFocus();
-                    },
-                    icon: const Icon(Icons.bolt_rounded, size: 16),
-                    label: Text(
-                      'Add Q&A recall card',
-                      style: Theme.of(ctx).textTheme.labelMedium,
+                Wrap(
+                  children: <Widget>[
+                    TextButton.icon(
+                      onPressed: () {
+                        final String text = bodyController.text;
+                        final int cursor = bodyController.selection.isValid
+                            ? bodyController.selection.start
+                            : text.length;
+                        final String before = text.substring(0, cursor);
+                        final String after = text.substring(cursor);
+                        final String prefix =
+                            before.isEmpty || before.endsWith('\n') ? '' : '\n';
+                        final String inserted = '$before$prefix- [ ] ';
+                        bodyController.text = '$inserted$after';
+                        bodyController.selection = TextSelection.fromPosition(
+                          TextPosition(offset: inserted.length),
+                        );
+                        bodyFocus.requestFocus();
+                      },
+                      icon: const Icon(Icons.add_task_rounded, size: 16),
+                      label: Text(
+                        'Add checklist item',
+                        style: Theme.of(ctx).textTheme.labelMedium,
+                      ),
                     ),
-                  ),
+                    TextButton.icon(
+                      onPressed: () {
+                        final String text = bodyController.text;
+                        final String prefix =
+                            text.isEmpty || text.endsWith('\n') ? '' : '\n\n';
+                        bodyController.text = '$text${prefix}Q: \nA: ';
+                        bodyController.selection = TextSelection.fromPosition(
+                          TextPosition(offset: bodyController.text.length - 4),
+                        );
+                        // So the question is typed here, not in whichever
+                        // field had the cursor.
+                        bodyFocus.requestFocus();
+                      },
+                      icon: const Icon(Icons.bolt_rounded, size: 16),
+                      label: Text(
+                        'Add Q&A recall card',
+                        style: Theme.of(ctx).textTheme.labelMedium,
+                      ),
+                    ),
+                  ],
                 ),
                 AppSpacing.gapMd,
                 TextFormField(

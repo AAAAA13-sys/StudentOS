@@ -6,6 +6,7 @@ import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/app_top_bar.dart';
 import '../../core/widgets/confirm_dialog.dart';
+import '../../core/checklist.dart';
 import 'note.dart';
 import 'note_editor_sheet.dart';
 import 'notes_controller.dart';
@@ -106,6 +107,7 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
               ),
             ),
             data: (NotesState state) {
+              final List<Object> rows = _listRows(state.notes);
               return Expanded(
                 child: Column(
                   children: <Widget>[
@@ -182,11 +184,14 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
                                   AppSpacing.lg,
                                   96,
                                 ),
-                                itemCount: state.notes.length,
+                                itemCount: rows.length,
                                 separatorBuilder: (_, _) => AppSpacing.gapSm,
                                 itemBuilder: (BuildContext context, int index) {
-                                  final Note note = state.notes[index];
-                                  return _NoteCard(note: note);
+                                  final Object row = rows[index];
+                                  if (row is String) {
+                                    return _SectionLabel(row);
+                                  }
+                                  return _NoteCard(note: row as Note);
                                 },
                               ),
                             ),
@@ -205,6 +210,19 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
     );
   }
 
+  /// Notes with "Pinned" and "Others" labels, but only when something is
+  /// pinned; otherwise the plain list.
+  List<Object> _listRows(List<Note> notes) {
+    final List<Note> pinned = notes.where((Note n) => n.pinned).toList();
+    if (pinned.isEmpty) return notes;
+    final List<Note> others = notes.where((Note n) => !n.pinned).toList();
+    return <Object>[
+      'Pinned',
+      ...pinned,
+      if (others.isNotEmpty) ...<Object>['Others', ...others],
+    ];
+  }
+
   Future<void> _showAddNoteDialog(BuildContext context) {
     return showNoteEditor(
       context,
@@ -216,9 +234,29 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
   }
 }
 
-/// One note in the list: title, a two-line preview, and one meta row with the
-/// date, the recall-card chip and the tags. Long-press deletes; the editor
-/// sheet has a delete button too.
+class _SectionLabel extends StatelessWidget {
+  const _SectionLabel(this.label);
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: AppSpacing.xs),
+      child: Text(
+        label,
+        style: context.textStyles.labelMedium?.copyWith(
+          color: context.colors.onSurfaceVariant,
+        ),
+      ),
+    );
+  }
+}
+
+/// One note in the list: title with a pin button, a two-line preview, up to
+/// five tickable checklist rows, and one meta row with the date, the
+/// recall-card chip and the tags. Long-press deletes; the editor sheet has a
+/// delete button too.
 class _NoteCard extends ConsumerWidget {
   const _NoteCard({required this.note});
 
@@ -229,6 +267,17 @@ class _NoteCard extends ConsumerWidget {
     final ColorScheme colors = context.colors;
     final TextTheme textStyles = context.textStyles;
     final DateTime? updated = note.updatedAt?.toLocal();
+    final List<ChecklistItem> items = note.checklistItems;
+    final int doneCount = items.where((ChecklistItem i) => i.done).length;
+    // The checklist lines are shown as rows, so keep them out of the preview.
+    final String preview = items.isEmpty
+        ? note.body
+        : note.body
+              .split('\n')
+              .where(
+                (String l) => parseChecklist(l).isEmpty && l.trim().isNotEmpty,
+              )
+              .join('\n');
 
     return Card(
       margin: EdgeInsets.zero,
@@ -248,31 +297,122 @@ class _NoteCard extends ConsumerWidget {
           }
         },
         child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.lg,
-            vertical: AppSpacing.md,
+          padding: const EdgeInsets.only(
+            left: AppSpacing.lg,
+            right: AppSpacing.lg,
+            bottom: AppSpacing.md,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Text(
-                note.title,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: textStyles.titleSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+              Row(
+                children: <Widget>[
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: AppSpacing.md),
+                      child: Text(
+                        note.title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: textStyles.titleSmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    tooltip: note.pinned ? 'Unpin note' : 'Pin note',
+                    constraints: const BoxConstraints(
+                      minWidth: 48,
+                      minHeight: 48,
+                    ),
+                    icon: Icon(
+                      note.pinned
+                          ? Icons.push_pin_rounded
+                          : Icons.push_pin_outlined,
+                      size: 20,
+                      color: note.pinned
+                          ? colors.primary
+                          : colors.onSurfaceVariant,
+                    ),
+                    onPressed: () => ref
+                        .read(notesControllerProvider.notifier)
+                        .setPinned(note.id, pinned: !note.pinned),
+                  ),
+                ],
               ),
-              if (note.body.isNotEmpty) ...<Widget>[
-                const SizedBox(height: AppSpacing.xs),
+              if (preview.isNotEmpty) ...<Widget>[
                 Text(
-                  note.body,
+                  preview,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: textStyles.bodyMedium?.copyWith(
                     color: colors.onSurfaceVariant,
                   ),
                 ),
+              ],
+              if (items.isNotEmpty) ...<Widget>[
+                const SizedBox(height: AppSpacing.xs),
+                Text(
+                  '$doneCount of ${items.length} done',
+                  style: textStyles.labelSmall?.copyWith(
+                    color: colors.onSurfaceVariant,
+                    fontFeatures: const <FontFeature>[
+                      FontFeature.tabularFigures(),
+                    ],
+                  ),
+                ),
+                for (int i = 0; i < items.length && i < 5; i++)
+                  InkWell(
+                    borderRadius: AppRadius.small,
+                    onTap: () => ref
+                        .read(notesControllerProvider.notifier)
+                        .updateNote(
+                          note.id,
+                          title: note.title,
+                          body: toggleChecklistLine(note.body, i),
+                          tags: note.tags,
+                        ),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(minHeight: 48),
+                      child: Row(
+                        children: <Widget>[
+                          Icon(
+                            items[i].done
+                                ? Icons.check_box_rounded
+                                : Icons.check_box_outline_blank_rounded,
+                            size: 18,
+                            color: items[i].done
+                                ? colors.primary
+                                : colors.onSurfaceVariant,
+                          ),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              items[i].text,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: textStyles.bodySmall?.copyWith(
+                                decoration: items[i].done
+                                    ? TextDecoration.lineThrough
+                                    : null,
+                                color: items[i].done
+                                    ? colors.onSurfaceVariant
+                                    : colors.onSurface,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                if (items.length > 5)
+                  Text(
+                    '+${items.length - 5} more',
+                    style: textStyles.labelSmall?.copyWith(
+                      color: colors.onSurfaceVariant,
+                    ),
+                  ),
               ],
               const SizedBox(height: AppSpacing.sm),
               Wrap(
