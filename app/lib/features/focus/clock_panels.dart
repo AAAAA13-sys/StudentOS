@@ -117,6 +117,11 @@ class _AlarmCard extends ConsumerWidget {
     final ColorScheme colors = context.colors;
     final DateTime now = DateTime.now();
     final DateTime? next = alarm.nextRing(now);
+    final Map<int, DateTime>? snoozes = ref.watch(alarmSnoozesProvider).value;
+    final DateTime? snoozedUntil = (alarm.enabled && snoozes != null)
+        ? snoozes[alarm.id]
+        : null;
+    final bool snoozed = snoozedUntil != null && snoozedUntil.isAfter(now);
     final Color dim = alarm.enabled
         ? colors.onSurface
         : colors.onSurfaceVariant.withValues(alpha: 0.6);
@@ -162,7 +167,15 @@ class _AlarmCard extends ConsumerWidget {
                         color: colors.onSurfaceVariant,
                       ),
                     ),
-                    if (next != null)
+                    if (snoozed)
+                      Text(
+                        'Snoozed until ${TimeOfDay.fromDateTime(snoozedUntil).format(context)}',
+                        style: text.bodySmall?.copyWith(
+                          color: colors.primary,
+                          fontFeatures: _tabular,
+                        ),
+                      )
+                    else if (next != null)
                       Text(
                         'Rings ${ringsIn(next.difference(now))}',
                         style: text.bodySmall?.copyWith(

@@ -30,6 +30,11 @@ class FakeFocusPlatform implements FocusPlatform {
     return ids;
   }
 
+  Map<int, DateTime> snoozed = <int, DateTime>{};
+
+  @override
+  Future<Map<int, DateTime>> snoozes() async => snoozed;
+
   @override
   Future<void> testAlarm(Map<String, Object?> alarm) async {}
 

@@ -11,6 +11,7 @@ class MainActivity : FlutterActivity() {
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         UsageChannel(applicationContext, flutterEngine.dartExecutor.binaryMessenger)
+        ReminderChannel(applicationContext, flutterEngine.dartExecutor.binaryMessenger)
         focus = FocusChannel(this, flutterEngine.dartExecutor.binaryMessenger)
         remember(intent)
     }

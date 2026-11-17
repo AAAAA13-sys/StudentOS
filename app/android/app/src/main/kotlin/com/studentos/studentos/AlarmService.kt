@@ -296,6 +296,7 @@ class AlarmService : Service() {
     private fun dismiss() {
         val s = spec
         val wasCheck = isCheck
+        if (s != null && s.id != AlarmStore.TEST_ID) AlarmStore.clearSnoozedUntil(this, s.id)
         if (s != null && !wasCheck && s.wakeCheck && s.id != AlarmStore.TEST_ID) {
             AlarmStore.schedule(
                 this, s.id, AlarmStore.KIND_CHECK,
@@ -311,10 +312,9 @@ class AlarmService : Service() {
         if (used >= s.snoozeLimit) return
         if (s.id != AlarmStore.TEST_ID) {
             AlarmStore.setSnoozesUsed(this, s.id, used + 1)
-            AlarmStore.schedule(
-                this, s.id, AlarmStore.KIND_SNOOZE,
-                System.currentTimeMillis() + s.snoozeMinutes * 60_000L,
-            )
+            val until = System.currentTimeMillis() + s.snoozeMinutes * 60_000L
+            AlarmStore.setSnoozedUntil(this, s.id, until)
+            AlarmStore.schedule(this, s.id, AlarmStore.KIND_SNOOZE, until)
         }
         finish()
     }

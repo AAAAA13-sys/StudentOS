@@ -9,6 +9,7 @@ import '../../core/widgets/confirm_dialog.dart';
 import '../../core/widgets/month_switcher.dart';
 import 'calendar_controller.dart';
 import 'class_schedule_sheet.dart';
+import 'reminder_field.dart';
 import '../focus/alarm_editor_sheet.dart';
 import '../focus/clock_panels.dart';
 import '../focus/focus_controller.dart';
@@ -45,6 +46,21 @@ class CalendarShowToday extends Notifier<int> {
   int build() => 0;
 
   void request() => state++;
+}
+
+/// Asks the Calendar tab to open on one day (a reminder notification tap).
+final NotifierProvider<CalendarShowDay, DateTime?> calendarShowDayProvider =
+    NotifierProvider<CalendarShowDay, DateTime?>(CalendarShowDay.new);
+
+class CalendarShowDay extends Notifier<DateTime?> {
+  @override
+  DateTime? build() => null;
+
+  void show(DateTime date) {
+    // Reset first so asking for the same day again still notifies.
+    state = null;
+    state = DateTime(date.year, date.month, date.day);
+  }
 }
 
 class _CalendarScreenState extends ConsumerState<CalendarScreen> {
@@ -92,6 +108,9 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
       calendarShowTodayProvider,
       (_, _) => _showMonth(DateTime.now()),
     );
+    ref.listen<DateTime?>(calendarShowDayProvider, (_, DateTime? day) {
+      if (day != null) _showDay(day);
+    });
     final CalendarView view = ref.watch(calendarViewProvider);
     final bool timerRunning =
         ref.watch(focusControllerProvider).value?.session != null;
@@ -907,6 +926,14 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     });
   }
 
+  /// Opens exactly [day]: its month, with the day selected.
+  void _showDay(DateTime day) {
+    setState(() {
+      _viewMonth = DateTime(day.year, day.month);
+      _selectedDate = DateTime(day.year, day.month, day.day);
+    });
+  }
+
   /// Asks, then deletes [event]. True when it was deleted.
   Future<bool> _confirmDelete(CalendarEvent event) async {
     final bool repeats = event.recurrence != 'none';
@@ -952,6 +979,11 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
 
     int durationMinutes = existingEvent?.durationMinutes ?? 60;
     String recurrence = existingEvent?.recurrence ?? 'none';
+    // New events remind 10 min before; editing keeps what was stored.
+    int? reminderMinutes = existingEvent == null
+        ? defaultReminderMinutes
+        : existingEvent.reminderMinutes;
+    bool reminderTouched = false;
     String eventType = existingEvent?.isExam == true
         ? 'exam'
         : (existingEvent?.isAssignment == true ? 'assignment' : 'general');
@@ -1021,15 +1053,23 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                             ChoiceChip(
                               label: const Text('Exam / Quiz'),
                               selected: eventType == 'exam',
-                              onSelected: (_) =>
-                                  setModalState(() => eventType = 'exam'),
+                              onSelected: (_) => setModalState(() {
+                                eventType = 'exam';
+                                if (existingEvent == null && !reminderTouched) {
+                                  reminderMinutes = examReminderMinutes;
+                                }
+                              }),
                             ),
                             const SizedBox(width: 8),
                             ChoiceChip(
                               label: const Text('Assignment'),
                               selected: eventType == 'assignment',
-                              onSelected: (_) =>
-                                  setModalState(() => eventType = 'assignment'),
+                              onSelected: (_) => setModalState(() {
+                                eventType = 'assignment';
+                                if (existingEvent == null && !reminderTouched) {
+                                  reminderMinutes = examReminderMinutes;
+                                }
+                              }),
                             ),
                           ],
                         ),
@@ -1174,6 +1214,14 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                         ],
                       ),
                       AppSpacing.gapMd,
+                      ReminderField(
+                        value: reminderMinutes,
+                        onChanged: (int? v) => setModalState(() {
+                          reminderMinutes = v;
+                          reminderTouched = true;
+                        }),
+                      ),
+                      AppSpacing.gapMd,
                       TextFormField(
                         controller: locationController,
                         decoration: const InputDecoration(
@@ -1256,7 +1304,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                               notes: combinedNotes,
                               recurrence: recurrence,
                               recurrenceUntil: existingEvent?.recurrenceUntil,
-                              reminderMinutes: existingEvent?.reminderMinutes,
+                              reminderMinutes: reminderMinutes,
                               noteId: existingEvent?.noteId,
                             );
 

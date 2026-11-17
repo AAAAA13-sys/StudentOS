@@ -46,7 +46,7 @@ Still open, in suggested order:
 0. See the shift overlap warning on a device; add a payday date to the Work pay card.
 1. Import a timetable from an `.ics` file (Calendar menu; `file_picker` is already a dependency).
 2. ~~Grade "what-if" calculator~~ dropped: the owner rejected school modules.
-3. Event reminders as local notifications (`reminder_minutes` is stored but nothing fires; needs a notification package and permission).
+3. ~~Event reminders as local notifications~~ done in Phase 34 without a package: `reminder_schedule.dart` computes the next 14 days, `ReminderStore.kt` fires them with exact alarms, a tap opens that day.
 4. ~~Widget spending line~~ now its own Money widget, seen on a home screen (Phase 30). Old note: the spending line is stamped with its date and hidden once that day is over (the widget re-checks every 30 minutes), but it only reappears after the app is opened. Not yet viewed on a home screen. A true background recompute is still open.
 5. A repeating allowance schedule; notes pinning.
 

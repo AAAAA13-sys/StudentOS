@@ -279,6 +279,14 @@ final StreamProvider<DateTime> minutesProvider =
       ),
     );
 
+/// Alarms snoozed right now (id to the time they ring again). Read again
+/// whenever the alarm list changes or the app comes back to the front.
+final FutureProvider<Map<int, DateTime>> alarmSnoozesProvider =
+    FutureProvider<Map<int, DateTime>>((ref) {
+      ref.watch(alarmControllerProvider);
+      return ref.read(focusPlatformProvider).snoozes();
+    });
+
 /// Android phone settings, read again whenever asked.
 final FutureProvider<PhoneReadiness> readinessProvider =
     FutureProvider<PhoneReadiness>(

@@ -431,3 +431,14 @@ Entries are appended, never edited. Corrections are new entries that reference t
 - Commits authored as the owner (`108907185+AAAAA13-sys@users.noreply.github.com`), no Claude co-author line. On 2026-11-17 the owner asked for the existing history to be rewritten the same way; it was force-pushed after a backup bundle was made.
 **Correction (references in earlier entries):** the rewrite changed every hash before this phase. Earlier entries cite `0fb3ab5` (now `814afe6`), `7e286de` (now `13bfc9c`) and `292ee29` (now `f0d4b22`).
 **Open items:** lockdown modes other than Off and a ringing alarm not re-checked after the merge; nothing from this phase seen on the real phones.
+
+## Phase 34: Event reminders as notifications; snoozed alarms show when they ring again
+**Date:** 2026-11-17
+**Verified by:** lead-pm on `emulator-5554`
+**Evidence:** see the Phase 34 row in `PROGRESS.md` (exact alarm in `dumpsys alarm`, notification posted on time, tap opened the right day cold and warm).
+**Decisions:**
+- No notification package: Dart computes the reminders due in the next 14 days (at most 64, recurring events expanded) and hands them to `ReminderStore` over `com.studentos/reminders`; Android fires them with exact alarms, so they work with the app closed. The list is re-sent on every event change and whenever the app returns to the front, and `BootReceiver` reschedules it.
+- New events default to 10 min before; exams and assignments to 1 day before. Choices: None, At start, 5, 10, 15, 30, 60 min, 1 day.
+- Tapping a reminder opens Calendar > Schedule on that day (`day:` route).
+- Alarm cards show "Snoozed until h:mm" while an alarm waits out a snooze (`AlarmStore` `snoozed_until`, cleared when it rings or is dismissed).
+**Open items:** a reminder beyond 14 days ahead is only scheduled once the app is opened within 14 days of it. Reboot, the snooze line and the notifications-off hint not seen on a device.

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/calendar/calendar_controller.dart';
 import '../../features/calendar/calendar_screen.dart';
 import '../../features/focus/focus_controller.dart';
 import '../../features/focus/focus_plan.dart';
@@ -30,6 +31,8 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar> {
       onResume: () {
         _followAndroid();
         ref.read(focusControllerProvider.notifier).resumed();
+        ref.read(calendarControllerProvider.notifier).syncReminders();
+        ref.invalidate(alarmSnoozesProvider);
       },
     );
     ref.read(focusPlatformProvider).onRouteWaiting(_followAndroid);
@@ -63,7 +66,13 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar> {
         shell.goBranch(0);
         await _startFocusFromWidget();
       default:
-        if (isTimerRoute(route)) {
+        if (route.startsWith('day:')) {
+          final DateTime? day = DateTime.tryParse(route.substring(4));
+          if (day == null) return;
+          ref.read(calendarViewProvider.notifier).show(CalendarView.schedule);
+          ref.read(calendarShowDayProvider.notifier).show(day);
+          shell.goBranch(0);
+        } else if (isTimerRoute(route)) {
           ref.read(calendarViewProvider.notifier).show(CalendarView.focus);
           shell.goBranch(0);
         }

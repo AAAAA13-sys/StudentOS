@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_theme.dart';
 import 'event.dart';
+import 'reminder_field.dart';
 
 /// One weekly event per weekday in [weekdays] (`DateTime.monday` ..
 /// `DateTime.sunday`), each starting on its first such day on or after
@@ -17,6 +18,7 @@ List<CalendarEvent> buildClassSchedule({
   required int durationMinutes,
   required DateTime from,
   required DateTime until,
+  int? reminderMinutes,
 }) {
   final String untilKey = DateFormat('yyyy-MM-dd').format(until);
   final List<int> ordered = weekdays.toList()..sort();
@@ -36,6 +38,7 @@ List<CalendarEvent> buildClassSchedule({
         location: location,
         recurrence: 'weekly',
         recurrenceUntil: untilKey,
+        reminderMinutes: reminderMinutes,
       ),
   ];
 }
@@ -75,6 +78,7 @@ class _ClassScheduleSheetState extends State<_ClassScheduleSheet> {
   final Set<int> _weekdays = <int>{};
   TimeOfDay _time = const TimeOfDay(hour: 9, minute: 0);
   int _duration = 60;
+  int? _reminder = defaultReminderMinutes;
   late DateTime _until;
   bool _showDayError = false;
 
@@ -109,6 +113,7 @@ class _ClassScheduleSheetState extends State<_ClassScheduleSheet> {
         durationMinutes: _duration,
         from: DateTime.now(),
         until: _until,
+        reminderMinutes: _reminder,
       ),
     );
   }
@@ -258,6 +263,11 @@ class _ClassScheduleSheetState extends State<_ClassScheduleSheet> {
                   );
                   if (picked != null) setState(() => _until = picked);
                 },
+              ),
+              AppSpacing.gapMd,
+              ReminderField(
+                value: _reminder,
+                onChanged: (int? v) => setState(() => _reminder = v),
               ),
               AppSpacing.gapXl,
               SizedBox(

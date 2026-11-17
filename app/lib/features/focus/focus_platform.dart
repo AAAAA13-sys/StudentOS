@@ -56,6 +56,9 @@ abstract class FocusPlatform {
   /// them off in its own list.
   Future<List<int>> takeFiredOnce();
 
+  /// Alarms waiting out a snooze right now: alarm id to when it rings again.
+  Future<Map<int, DateTime>> snoozes();
+
   /// Rings [alarm] right away so its settings can be tried.
   Future<void> testAlarm(Map<String, Object?> alarm);
 
@@ -122,6 +125,21 @@ class ChannelFocusPlatform implements FocusPlatform {
       for (final Object? id in ids ?? <Object?>[])
         if (id is num) id.toInt(),
     ];
+  }
+
+  @override
+  Future<Map<int, DateTime>> snoozes() async {
+    final Map<Object?, Object?>? raw = await _call<Map<Object?, Object?>>(
+      'snoozes',
+    );
+    return <int, DateTime>{
+      for (final MapEntry<Object?, Object?> e
+          in (raw ?? <Object?, Object?>{}).entries)
+        if (e.key is num && e.value is num)
+          (e.key! as num).toInt(): DateTime.fromMillisecondsSinceEpoch(
+            (e.value! as num).toInt(),
+          ),
+    };
   }
 
   @override

@@ -13,6 +13,9 @@ class AlarmReceiver : BroadcastReceiver() {
         val kind = intent.getIntExtra(EXTRA_KIND, AlarmStore.KIND_MAIN)
         val spec = AlarmStore.find(context, id) ?: return
 
+        // It is ringing again, so it is no longer waiting out a snooze.
+        if (kind != AlarmStore.KIND_CHECK) AlarmStore.clearSnoozedUntil(context, id)
+
         if (kind == AlarmStore.KIND_MAIN) {
             // A fresh morning: snoozes start over.
             AlarmStore.setSnoozesUsed(context, id, 0)
@@ -50,6 +53,7 @@ class AlarmReceiver : BroadcastReceiver() {
 class BootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         AlarmStore.scheduleAll(context)
+        ReminderStore.scheduleAll(context)
         FocusStore.reschedule(context)
     }
 }

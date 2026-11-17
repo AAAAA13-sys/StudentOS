@@ -6,6 +6,8 @@ import 'package:home_widget/home_widget.dart';
 
 import 'calendar_repository.dart';
 import 'event.dart';
+import 'reminder_platform.dart';
+import 'reminder_schedule.dart';
 
 class CalendarController extends AsyncNotifier<List<CalendarEvent>> {
   CalendarRepository get _repo => ref.read(calendarRepositoryProvider);
@@ -18,6 +20,7 @@ class CalendarController extends AsyncNotifier<List<CalendarEvent>> {
   Future<List<CalendarEvent>> _fetchEvents() async {
     final List<CalendarEvent> events = await _repo.getEvents();
     unawaited(syncWidget());
+    unawaited(syncReminders());
     return events;
   }
 
@@ -33,6 +36,7 @@ class CalendarController extends AsyncNotifier<List<CalendarEvent>> {
       created,
     ]);
     unawaited(syncWidget());
+    unawaited(syncReminders());
   }
 
   Future<void> addEvents(List<CalendarEvent> events) async {
@@ -44,6 +48,7 @@ class CalendarController extends AsyncNotifier<List<CalendarEvent>> {
       ...created,
     ]);
     unawaited(syncWidget());
+    unawaited(syncReminders());
   }
 
   Future<void> updateEvent(CalendarEvent event) async {
@@ -54,6 +59,7 @@ class CalendarController extends AsyncNotifier<List<CalendarEvent>> {
           .toList(),
     );
     unawaited(syncWidget());
+    unawaited(syncReminders());
   }
 
   Future<void> deleteEvent(int id) async {
@@ -62,6 +68,22 @@ class CalendarController extends AsyncNotifier<List<CalendarEvent>> {
       (state.value ?? <CalendarEvent>[]).where((e) => e.id != id).toList(),
     );
     unawaited(syncWidget());
+    unawaited(syncReminders());
+  }
+
+  /// Gives Android the reminders due in the next two weeks.
+  Future<void> syncReminders() async {
+    try {
+      final List<ReminderFire> fires = upcomingReminders(
+        await _repo.getEvents(),
+        DateTime.now(),
+      );
+      await ref.read(reminderPlatformProvider).sync(<Map<String, Object?>>[
+        for (final ReminderFire f in fires) f.toNative(),
+      ]);
+    } catch (_) {
+      // Best-effort, like the widget sync.
+    }
   }
 
   /// Writes the next few occurrences across all events as epoch millis, so

@@ -86,6 +86,7 @@ object AlarmStore {
     private const val KEY_ALARMS = "alarms"
     private const val KEY_FIRED = "fired_once"
     private const val KEY_SNOOZES = "snoozes_used"
+    private const val KEY_SNOOZED_UNTIL = "snoozed_until"
 
     const val KIND_MAIN = 0
     const val KIND_SNOOZE = 1
@@ -151,6 +152,26 @@ object AlarmStore {
 
     fun setSnoozesUsed(ctx: Context, id: Int, n: Int) =
         prefs(ctx).edit().putInt("$KEY_SNOOZES.$id", n).apply()
+
+    /** When a snoozed alarm rings again (epoch millis), or 0 when it is not snoozed. */
+    fun snoozedUntil(ctx: Context, id: Int) = prefs(ctx).getLong("$KEY_SNOOZED_UNTIL.$id", 0L)
+
+    fun setSnoozedUntil(ctx: Context, id: Int, atMs: Long) =
+        prefs(ctx).edit().putLong("$KEY_SNOOZED_UNTIL.$id", atMs).apply()
+
+    fun clearSnoozedUntil(ctx: Context, id: Int) =
+        prefs(ctx).edit().remove("$KEY_SNOOZED_UNTIL.$id").apply()
+
+    /** Alarm id to snooze end for every alarm that is snoozed right now. */
+    fun activeSnoozes(ctx: Context): Map<Int, Long> {
+        val now = System.currentTimeMillis()
+        val out = HashMap<Int, Long>()
+        for (a in all(ctx)) {
+            val until = snoozedUntil(ctx, a.id)
+            if (until > now) out[a.id] = until
+        }
+        return out
+    }
 
     private fun requestCode(id: Int, kind: Int) = 100_000 + id * 10 + kind
 

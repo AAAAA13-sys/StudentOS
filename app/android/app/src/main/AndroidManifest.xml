@@ -51,6 +51,9 @@
             android:name=".AlarmReceiver"
             android:exported="false" />
         <receiver
+            android:name=".ReminderReceiver"
+            android:exported="false" />
+        <receiver
             android:name=".FocusReceiver"
             android:exported="false" />
         <receiver

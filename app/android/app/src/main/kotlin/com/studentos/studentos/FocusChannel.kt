@@ -38,6 +38,7 @@ class FocusChannel(private val activity: MainActivity, messenger: BinaryMessenge
                 AlarmStore.replace(ctx, JSONArray(list.map { JSONObject(it) }))
                 result.success(null)
             }
+            "snoozes" -> result.success(AlarmStore.activeSnoozes(ctx))
             "takeFiredOnce" -> result.success(AlarmStore.takeFiredOnce(ctx))
             "testAlarm" -> {
                 val alarm = call.argument<Map<String, Any?>>("alarm")
