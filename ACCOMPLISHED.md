@@ -563,3 +563,14 @@ Entries are appended, never edited. Corrections are new entries that reference t
 - Completed `BackupService.hasData()` (`shiftRows` + `alarmRows`), converted `backupStatusProvider` to a reactive stream via `db.tableUpdates`, and extended `AppDrawer._restore` toast counts cleanly via `restoreJsonWithCounts`.
 - `AGENTS.md` reviewed after QA passed: no updates required (zero schema, Kotlin, or architectural changes).
 **Open items:** tag-removal recovery, reactive backup badge update, and hardware Clock/phone checks remain for real-phone verification (`app-arm64-v8a-release.apk`).
+
+## Phase 45: Tasks Module (`Notes | Tasks` + `Calendar DayTasks`) & Research Roadmap
+**Date:** 2026-11-24
+**Verified by:** qa-verifier (`a99ce8bb`) on `emulator-5554` (Light Mode, Dark Mode, and `1.3x` font scale)
+**Evidence:** see `docs/AGENCY_RESEARCH_ROADMAP_P45_P48.md` and the Phase 45 row in `PROGRESS.md`; `flutter analyze` clean (0 issues); `flutter test` **278/278 passed** (`tasks_test.dart`, `backup_test.dart`, `insights_test.dart`, full suite); release split APKs built (`x86_64` 24.0MB, `arm64-v8a` 22.6MB, `armeabi-v7a` 20.3MB); device screenshots kept in QA scratchpad.
+**Decisions:**
+- Deployed the 6-unit Agency-Agents Research Department to author `docs/AGENCY_RESEARCH_ROADMAP_P45_P48.md` with 4 new strictly local-only modules (zero accounts, zero payments, zero Safe-to-Spend, zero school/grade bloat): Tasks (Phase 45, RICE 15.8), Savings Pockets (Phase 46, RICE 12.0), IOUs & Splits (Phase 47, RICE 7.9), and Spaced Recall Deck (Phase 48, RICE 6.8).
+- Kept `NavigationBar` strictly at 3 destinations (`Calendar`, `Finance`, `Notes`) by placing Tasks inside `NotesScreen` via `SegmentedButton<NotesView>` (`Notes | Tasks`, `/tasks` route redirect, Back pops `Tasks -> Notes`) and surfacing due/overdue tasks in `Calendar > Schedule` day view (`DayTasks` below `DayShifts`).
+- Drift `schemaVersion` bumped 9 -> 10 (`TaskRows`), `BackupService.formatVersion` bumped 5 -> 6 (`tasks` list, automatic `[]` fallback for v1–v5 backups, reactive `backupStatusProvider` over `taskRows`, and `AppDrawer` restore invalidation/summary).
+- Updated `AGENTS.md` Part 6.7 (`Dual-Tier Navigation` item 1) to reflect `Notes | Tasks` and `Calendar DayTasks`.
+**Open items:** repeating-task `dueOn` advance on tap (unit tested) and real-phone verification remain for device testing (`app-arm64-v8a-release.apk`).

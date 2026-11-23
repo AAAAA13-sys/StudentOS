@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import '../../core/widgets/ponpon.dart';
 import '../calendar/event.dart';
 import '../calendar/week_agenda.dart';
+import '../tasks/task_item.dart';
 import '../work/shift.dart';
 import 'ponpon_insight.dart';
 
@@ -36,6 +37,7 @@ List<_Occurrence> _occurrencesOn(List<CalendarEvent> events, DateTime day) {
 List<PonponInsight> calendarInsights({
   required List<CalendarEvent> events,
   List<Shift> shifts = const <Shift>[],
+  List<TaskItem> tasks = const <TaskItem>[],
   required DateTime now,
 }) {
   final DateTime today = _day(now);
@@ -187,8 +189,45 @@ List<PonponInsight> calendarInsights({
     );
   }
 
+  // Open tasks overdue or due today.
+  final List<TaskItem> openTasks = tasks
+      .where((TaskItem t) => !t.done)
+      .toList();
+  final List<TaskItem> overdueTasks = openTasks
+      .where((TaskItem t) => t.dueStatus(now) == TaskDueStatus.overdue)
+      .toList();
+  final List<TaskItem> todayTasks = openTasks
+      .where((TaskItem t) => t.dueStatus(now) == TaskDueStatus.today)
+      .toList();
+  if (overdueTasks.isNotEmpty) {
+    out.add(
+      PonponInsight(
+        text: overdueTasks.length == 1
+            ? '1 task from earlier is still open: ${overdueTasks.first.title}.'
+            : '${overdueTasks.length} tasks from earlier are still open.',
+        mood: PonponMood.happy,
+        priority: 2,
+        action: PonponAction.seeTasks,
+      ),
+    );
+  } else if (todayTasks.isNotEmpty) {
+    out.add(
+      PonponInsight(
+        text: todayTasks.length == 1
+            ? 'Task due today: ${todayTasks.first.title}.'
+            : '${todayTasks.length} tasks due today.',
+        mood: PonponMood.focused,
+        priority: 2,
+        action: PonponAction.seeTasks,
+      ),
+    );
+  }
+
   // The day's events are all behind us.
-  if (todayAll.isNotEmpty && todayLeft.isEmpty && shiftsLeft.isEmpty) {
+  if (todayAll.isNotEmpty &&
+      todayLeft.isEmpty &&
+      shiftsLeft.isEmpty &&
+      todayTasks.isEmpty) {
     out.add(
       const PonponInsight(
         text: 'Nothing else today. Rest up.',

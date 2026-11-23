@@ -2,17 +2,64 @@ import '../../core/checklist.dart';
 import '../../core/widgets/ponpon.dart';
 import '../calendar/event.dart';
 import '../notes/note.dart';
+import '../tasks/task_item.dart';
 import 'ponpon_insight.dart';
 
-/// What Ponpon says about notes. With no notes it says nothing, because the
-/// empty state already has Ponpon. Pure.
+/// What Ponpon says about notes and tasks. With neither, it says nothing,
+/// because the empty state already has Ponpon. Pure.
 List<PonponInsight> notesInsights({
   required List<Note> notes,
   List<CalendarEvent> events = const <CalendarEvent>[],
+  List<TaskItem> tasks = const <TaskItem>[],
   required DateTime now,
 }) {
-  if (notes.isEmpty) return const <PonponInsight>[];
+  if (notes.isEmpty && tasks.isEmpty) return const <PonponInsight>[];
   final List<PonponInsight> out = <PonponInsight>[];
+
+  final List<TaskItem> openTasks = tasks
+      .where((TaskItem t) => !t.done)
+      .toList();
+  final List<TaskItem> overdueTasks = openTasks
+      .where((TaskItem t) => t.dueStatus(now) == TaskDueStatus.overdue)
+      .toList();
+  final List<TaskItem> todayTasks = openTasks
+      .where((TaskItem t) => t.dueStatus(now) == TaskDueStatus.today)
+      .toList();
+
+  if (overdueTasks.isNotEmpty) {
+    out.add(
+      PonponInsight(
+        text: overdueTasks.length == 1
+            ? '1 task is past due: ${overdueTasks.first.title}.'
+            : '${overdueTasks.length} tasks are past due. Want to check them?',
+        mood: PonponMood.happy,
+        priority: 1,
+        action: PonponAction.seeTasks,
+      ),
+    );
+  }
+  if (todayTasks.isNotEmpty) {
+    out.add(
+      PonponInsight(
+        text: todayTasks.length == 1
+            ? 'Task due today: ${todayTasks.first.title}.'
+            : '${todayTasks.length} tasks due today.',
+        mood: PonponMood.focused,
+        priority: 2,
+        action: PonponAction.seeTasks,
+      ),
+    );
+  } else if (overdueTasks.isEmpty && openTasks.isNotEmpty) {
+    out.add(
+      PonponInsight(
+        text: openTasks.length == 1
+            ? '1 open task waiting when you are ready.'
+            : '${openTasks.length} open tasks waiting when you are ready.',
+        priority: 3,
+        action: PonponAction.seeTasks,
+      ),
+    );
+  }
 
   // The next event within 24 hours that has a note attached.
   final Set<int> noteIds = <int>{for (final Note n in notes) n.id};

@@ -283,6 +283,31 @@ class BillRows extends Table {
   BoolColumn get autoLog => boolean().withDefault(const Constant(false))();
 }
 
+/// One student task or to-do item, optionally due on a day and repeating.
+@DataClassName('TaskRow')
+class TaskRows extends Table {
+  @override
+  String get tableName => 'tasks';
+
+  IntColumn get id => integer().autoIncrement()();
+
+  TextColumn get title => text()();
+
+  TextColumn get notes => text().nullable()();
+
+  /// `YYYY-MM-DD`, or null for unscheduled ("anytime") tasks.
+  TextColumn get dueOn => text().nullable()();
+
+  /// `none`, `daily`, `weekly` or `monthly`.
+  TextColumn get repeat => text().withDefault(const Constant('none'))();
+
+  BoolColumn get done => boolean().withDefault(const Constant(false))();
+
+  DateTimeColumn get doneAt => dateTime().nullable()();
+
+  DateTimeColumn get createdAt => dateTime()();
+}
+
 /// The app's only data store. Everything lives on this device.
 @DriftDatabase(
   tables: <Type>[
@@ -296,6 +321,7 @@ class BillRows extends Table {
     AlarmRows,
     FocusLogRows,
     BillRows,
+    TaskRows,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -303,7 +329,7 @@ class AppDatabase extends _$AppDatabase {
     : super(executor ?? driftDatabase(name: 'studentos'));
 
   @override
-  int get schemaVersion => 9;
+  int get schemaVersion => 10;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -333,6 +359,9 @@ class AppDatabase extends _$AppDatabase {
       }
       if (from < 9) {
         await m.createTable(billRows);
+      }
+      if (from < 10) {
+        await m.createTable(taskRows);
       }
     },
   );

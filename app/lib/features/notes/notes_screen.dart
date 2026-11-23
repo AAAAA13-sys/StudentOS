@@ -15,6 +15,8 @@ import 'quiz_sheet.dart';
 import '../../core/widgets/ponpon.dart';
 import '../insights/insights_providers.dart';
 import '../insights/ponpon_talk_slot.dart';
+import '../tasks/tasks_controller.dart';
+import '../tasks/tasks_panel.dart';
 
 class NotesScreen extends ConsumerStatefulWidget {
   const NotesScreen({super.key});
@@ -34,6 +36,7 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final NotesView view = ref.watch(notesViewProvider);
     final AsyncValue<NotesState> notesState = ref.watch(
       notesControllerProvider,
     );
@@ -42,177 +45,238 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
 
     return CaptureListener(
       action: CaptureAction.addNote,
-      onCapture: () => _showAddNoteDialog(context),
+      onCapture: () {
+        ref.read(notesViewProvider.notifier).show(NotesView.notes);
+        _showAddNoteDialog(context);
+      },
       child: Scaffold(
         appBar: const AppTopBar(title: 'Notes'),
         body: Column(
           children: <Widget>[
             Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.lg,
-                vertical: AppSpacing.sm,
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.lg,
+                AppSpacing.xs,
+                AppSpacing.lg,
+                AppSpacing.xs,
               ),
-              child: TextField(
-                controller: _searchController,
-                decoration: InputDecoration(
-                  hintText: 'Search notes',
-                  prefixIcon: const Icon(Icons.search_rounded),
-                  suffixIcon: _searchController.text.isNotEmpty
-                      ? IconButton(
-                          icon: const Icon(Icons.clear_rounded),
-                          tooltip: 'Clear search',
-                          onPressed: () {
-                            _searchController.clear();
-                            ref
-                                .read(notesControllerProvider.notifier)
-                                .search('');
-                          },
-                        )
-                      : null,
-                  border: const OutlineInputBorder(
-                    borderRadius: AppRadius.medium,
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(
-                    vertical: 0,
-                    horizontal: AppSpacing.md,
-                  ),
-                ),
-                onChanged: (String val) {
-                  ref.read(notesControllerProvider.notifier).search(val.trim());
-                },
-              ),
-            ),
-            if (notesState.value case final NotesState loaded
-                when loaded.tags.isNotEmpty)
-              _tagRow(loaded),
-            PonponTalkSlot(
-              surface: PonponSurface.notes,
-              suppress: notesState.value?.notes.isEmpty ?? true,
-            ),
-            notesState.when(
-              loading: () => const Expanded(
-                child: Center(child: CircularProgressIndicator()),
-              ),
-              error: (Object err, _) => Expanded(
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      Icon(
-                        Icons.error_outline_rounded,
-                        size: 48,
-                        color: colors.error,
-                      ),
-                      AppSpacing.gapMd,
-                      const Text('Couldn’t load your notes.'),
-                      AppSpacing.gapLg,
-                      FilledButton(
-                        onPressed: () => ref
-                            .read(notesControllerProvider.notifier)
-                            .refresh(),
-                        child: const Text('Retry'),
-                      ),
-                    ],
-                  ),
+              child: SizedBox(
+                width: double.infinity,
+                child: SegmentedButton<NotesView>(
+                  showSelectedIcon: false,
+                  segments: const <ButtonSegment<NotesView>>[
+                    ButtonSegment<NotesView>(
+                      value: NotesView.notes,
+                      label: Text('Notes'),
+                    ),
+                    ButtonSegment<NotesView>(
+                      value: NotesView.tasks,
+                      label: Text('Tasks'),
+                    ),
+                  ],
+                  selected: <NotesView>{view},
+                  onSelectionChanged: (Set<NotesView> s) =>
+                      ref.read(notesViewProvider.notifier).show(s.first),
                 ),
               ),
-              data: (NotesState state) {
-                final List<Object> rows = _listRows(state.notes);
-                final bool hasFilter =
-                    state.searchQuery.isNotEmpty || state.selectedTag != null;
-                final String emptyMessage;
-                if (state.searchQuery.isNotEmpty && state.selectedTag != null) {
-                  emptyMessage =
-                      'No notes match "${state.searchQuery}" in #${state.selectedTag}';
-                } else if (state.searchQuery.isNotEmpty) {
-                  emptyMessage = 'No notes match "${state.searchQuery}"';
-                } else if (state.selectedTag != null) {
-                  emptyMessage = 'No notes tagged #${state.selectedTag}';
-                } else {
-                  emptyMessage = 'No notes yet';
-                }
-                return Expanded(
-                  child: Column(
-                    children: <Widget>[
-                      Expanded(
-                        child: state.notes.isEmpty
-                            ? Center(
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: AppSpacing.lg,
-                                  ),
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: <Widget>[
-                                      Ponpon(
-                                        mood: hasFilter
-                                            ? PonponMood.smug
-                                            : PonponMood.happy,
-                                        size: 88,
-                                      ),
-                                      AppSpacing.gapMd,
-                                      Text(
-                                        emptyMessage,
-                                        textAlign: TextAlign.center,
-                                        style: textStyles.titleMedium?.copyWith(
-                                          color: colors.onSurfaceVariant,
-                                        ),
-                                      ),
-                                      if (hasFilter) ...<Widget>[
-                                        AppSpacing.gapMd,
-                                        OutlinedButton(
-                                          onPressed: () {
-                                            _searchController.clear();
-                                            ref
-                                                .read(
-                                                  notesControllerProvider
-                                                      .notifier,
-                                                )
-                                                .clearFilters();
-                                          },
-                                          child: const Text('Clear filters'),
-                                        ),
-                                      ],
-                                    ],
-                                  ),
-                                ),
-                              )
-                            : RefreshIndicator(
-                                onRefresh: () => ref
+            ),
+            if (view == NotesView.tasks)
+              const Expanded(child: TasksPanel())
+            else
+              Expanded(
+                child: Column(
+                  children: <Widget>[
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.lg,
+                        vertical: AppSpacing.sm,
+                      ),
+                      child: TextField(
+                        controller: _searchController,
+                        decoration: InputDecoration(
+                          hintText: 'Search notes',
+                          prefixIcon: const Icon(Icons.search_rounded),
+                          suffixIcon: _searchController.text.isNotEmpty
+                              ? IconButton(
+                                  icon: const Icon(Icons.clear_rounded),
+                                  tooltip: 'Clear search',
+                                  onPressed: () {
+                                    _searchController.clear();
+                                    ref
+                                        .read(notesControllerProvider.notifier)
+                                        .search('');
+                                  },
+                                )
+                              : null,
+                          border: const OutlineInputBorder(
+                            borderRadius: AppRadius.medium,
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 0,
+                            horizontal: AppSpacing.md,
+                          ),
+                        ),
+                        onChanged: (String val) {
+                          ref
+                              .read(notesControllerProvider.notifier)
+                              .search(val.trim());
+                        },
+                      ),
+                    ),
+                    if (notesState.value case final NotesState loaded
+                        when loaded.tags.isNotEmpty)
+                      _tagRow(loaded),
+                    PonponTalkSlot(
+                      surface: PonponSurface.notes,
+                      suppress: notesState.value?.notes.isEmpty ?? true,
+                    ),
+                    notesState.when(
+                      loading: () => const Expanded(
+                        child: Center(child: CircularProgressIndicator()),
+                      ),
+                      error: (Object err, _) => Expanded(
+                        child: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              Icon(
+                                Icons.error_outline_rounded,
+                                size: 48,
+                                color: colors.error,
+                              ),
+                              AppSpacing.gapMd,
+                              const Text('Couldn’t load your notes.'),
+                              AppSpacing.gapLg,
+                              FilledButton(
+                                onPressed: () => ref
                                     .read(notesControllerProvider.notifier)
                                     .refresh(),
-                                child: ListView.separated(
-                                  padding: const EdgeInsets.fromLTRB(
-                                    AppSpacing.lg,
-                                    AppSpacing.sm,
-                                    AppSpacing.lg,
-                                    96,
-                                  ),
-                                  itemCount: rows.length,
-                                  separatorBuilder: (_, _) => AppSpacing.gapSm,
-                                  itemBuilder:
-                                      (BuildContext context, int index) {
-                                        final Object row = rows[index];
-                                        if (row is String) {
-                                          return _SectionLabel(row);
-                                        }
-                                        return _NoteCard(note: row as Note);
-                                      },
-                                ),
+                                child: const Text('Retry'),
                               ),
+                            ],
+                          ),
+                        ),
                       ),
-                    ],
-                  ),
-                );
-              },
-            ),
+                      data: (NotesState state) {
+                        final List<Object> rows = _listRows(state.notes);
+                        final bool hasFilter =
+                            state.searchQuery.isNotEmpty ||
+                            state.selectedTag != null;
+                        final String emptyMessage;
+                        if (state.searchQuery.isNotEmpty &&
+                            state.selectedTag != null) {
+                          emptyMessage =
+                              'No notes match "${state.searchQuery}" in #${state.selectedTag}';
+                        } else if (state.searchQuery.isNotEmpty) {
+                          emptyMessage =
+                              'No notes match "${state.searchQuery}"';
+                        } else if (state.selectedTag != null) {
+                          emptyMessage = 'No notes tagged #${state.selectedTag}';
+                        } else {
+                          emptyMessage = 'No notes yet';
+                        }
+                        return Expanded(
+                          child: Column(
+                            children: <Widget>[
+                              Expanded(
+                                child: state.notes.isEmpty
+                                    ? Center(
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: AppSpacing.lg,
+                                          ),
+                                          child: Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: <Widget>[
+                                              Ponpon(
+                                                mood: hasFilter
+                                                    ? PonponMood.smug
+                                                    : PonponMood.happy,
+                                                size: 88,
+                                              ),
+                                              AppSpacing.gapMd,
+                                              Text(
+                                                emptyMessage,
+                                                textAlign: TextAlign.center,
+                                                style: textStyles.titleMedium
+                                                    ?.copyWith(
+                                                      color: colors
+                                                          .onSurfaceVariant,
+                                                    ),
+                                              ),
+                                              if (hasFilter) ...<Widget>[
+                                                AppSpacing.gapMd,
+                                                OutlinedButton(
+                                                  onPressed: () {
+                                                    _searchController.clear();
+                                                    ref
+                                                        .read(
+                                                          notesControllerProvider
+                                                              .notifier,
+                                                        )
+                                                        .clearFilters();
+                                                  },
+                                                  child: const Text(
+                                                    'Clear filters',
+                                                  ),
+                                                ),
+                                              ],
+                                            ],
+                                          ),
+                                        ),
+                                      )
+                                    : RefreshIndicator(
+                                        onRefresh: () => ref
+                                            .read(
+                                              notesControllerProvider.notifier,
+                                            )
+                                            .refresh(),
+                                        child: ListView.separated(
+                                          padding: const EdgeInsets.fromLTRB(
+                                            AppSpacing.lg,
+                                            AppSpacing.sm,
+                                            AppSpacing.lg,
+                                            96,
+                                          ),
+                                          itemCount: rows.length,
+                                          separatorBuilder: (_, _) =>
+                                              AppSpacing.gapSm,
+                                          itemBuilder:
+                                              (BuildContext context, int index) {
+                                                final Object row = rows[index];
+                                                if (row is String) {
+                                                  return _SectionLabel(row);
+                                                }
+                                                return _NoteCard(
+                                                  note: row as Note,
+                                                );
+                                              },
+                                        ),
+                                      ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
           ],
         ),
-        floatingActionButton: FloatingActionButton(
-          tooltip: 'New note',
-          onPressed: () => _showAddNoteDialog(context),
-          child: const Icon(Icons.add_rounded),
-        ),
+        floatingActionButton: switch (view) {
+          NotesView.notes => FloatingActionButton(
+            tooltip: 'New note',
+            onPressed: () => _showAddNoteDialog(context),
+            child: const Icon(Icons.add_rounded),
+          ),
+          NotesView.tasks => FloatingActionButton(
+            tooltip: 'New task',
+            onPressed: () => showTaskEditor(context, ref),
+            child: const Icon(Icons.add_rounded),
+          ),
+        },
       ),
     );
   }

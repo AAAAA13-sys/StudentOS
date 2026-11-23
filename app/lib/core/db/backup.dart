@@ -23,8 +23,9 @@ class BackupService {
   final AppDatabase _db;
 
   /// 2 added work shifts, 3 phone use, 4 alarms and focus sessions,
-  /// 5 recurring bills. Older files restore with none of what they lack.
-  static const int formatVersion = 5;
+  /// 5 recurring bills, 6 tasks. Older files restore with none of what they
+  /// lack.
+  static const int formatVersion = 6;
 
   /// Settings key holding when a backup was last saved (UTC ISO 8601).
   static const String lastBackupKey = 'last_backup_at';
@@ -56,7 +57,8 @@ class BackupService {
         (await _db.select(_db.noteRows).get()).isNotEmpty ||
         (await _db.select(_db.billRows).get()).isNotEmpty ||
         (await _db.select(_db.shiftRows).get()).isNotEmpty ||
-        (await _db.select(_db.alarmRows).get()).isNotEmpty;
+        (await _db.select(_db.alarmRows).get()).isNotEmpty ||
+        (await _db.select(_db.taskRows).get()).isNotEmpty;
   }
 
   Future<String> exportJson() async {
@@ -78,6 +80,7 @@ class BackupService {
         .select(_db.focusLogRows)
         .get();
     final List<BillRow> bills = await _db.select(_db.billRows).get();
+    final List<TaskRow> tasks = await _db.select(_db.taskRows).get();
 
     return const JsonEncoder.withIndent('  ').convert(<String, Object?>{
       'app': 'studentos',
@@ -103,6 +106,7 @@ class BackupService {
         for (final FocusLogRow row in focusLogs) row.toJson(),
       ],
       'bills': <Object?>[for (final BillRow row in bills) row.toJson()],
+      'tasks': <Object?>[for (final TaskRow row in tasks) row.toJson()],
     });
   }
 
@@ -129,6 +133,7 @@ class BackupService {
       int bills,
       int shifts,
       int alarms,
+      int tasks,
     })
   >
   restoreJsonWithCounts(String json) async {
@@ -142,6 +147,7 @@ class BackupService {
     final List<AlarmRow> alarms;
     final List<FocusLogRow> focusLogs;
     final List<BillRow> bills;
+    final List<TaskRow> tasks;
     try {
       final Object? decoded = jsonDecode(json);
       if (decoded is! Map<String, dynamic> || decoded['app'] != 'studentos') {
@@ -202,6 +208,19 @@ class BackupService {
                   ),
                 )
                 .toList();
+      tasks = decoded['tasks'] == null
+          ? <TaskRow>[]
+          : rows('tasks')
+                .map(
+                  (Map<String, dynamic> m) => TaskRow.fromJson(
+                    <String, dynamic>{
+                      'repeat': 'none',
+                      'done': false,
+                      ...m,
+                    },
+                  ),
+                )
+                .toList();
     } on BackupFormatException {
       rethrow;
     } catch (_) {
@@ -219,6 +238,7 @@ class BackupService {
       await _db.delete(_db.alarmRows).go();
       await _db.delete(_db.focusLogRows).go();
       await _db.delete(_db.billRows).go();
+      await _db.delete(_db.taskRows).go();
       await _db.batch((batch) {
         batch.insertAll(_db.eventRows, events);
         batch.insertAll(_db.transactionRows, transactions);
@@ -230,6 +250,7 @@ class BackupService {
         batch.insertAll(_db.alarmRows, alarms);
         batch.insertAll(_db.focusLogRows, focusLogs);
         batch.insertAll(_db.billRows, bills);
+        batch.insertAll(_db.taskRows, tasks);
       });
     });
     return (
@@ -239,6 +260,7 @@ class BackupService {
       bills: bills.length,
       shifts: shifts.length,
       alarms: alarms.length,
+      tasks: tasks.length,
     );
   }
 }
@@ -296,6 +318,7 @@ final StreamProvider<BackupStatus> backupStatusProvider =
           db.billRows,
           db.shiftRows,
           db.alarmRows,
+          db.taskRows,
           db.settingRows,
         ]),
       )) {

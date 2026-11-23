@@ -6,6 +6,7 @@ import '../../features/calendar/calendar_screen.dart';
 import '../../features/finance/finance_screen.dart';
 import '../../features/notes/notes_screen.dart';
 import '../../features/focus/clock_panels.dart';
+import '../../features/tasks/tasks_controller.dart';
 import '../widgets/scaffold_with_nav_bar.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>(
@@ -20,6 +21,8 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((ref) {
       // The old Clock and Focus pages now live inside the Calendar tab.
       GoRoute(path: '/clock', redirect: (_, _) => '/calendar?view=alarm'),
       GoRoute(path: '/focus', redirect: (_, _) => '/calendar?view=focus'),
+      // Tasks live inside the Notes tab.
+      GoRoute(path: '/tasks', redirect: (_, _) => '/notes?view=tasks'),
       StatefulShellRoute.indexedStack(
         builder:
             (
@@ -56,7 +59,10 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: '/notes',
                 builder: (BuildContext context, GoRouterState state) =>
-                    const NotesScreen(),
+                    _NotesViewFromQuery(
+                      view: state.uri.queryParameters['view'],
+                      child: const NotesScreen(),
+                    ),
               ),
             ],
           ),
@@ -100,6 +106,47 @@ class _ViewFromQueryState extends ConsumerState<_ViewFromQuery> {
     if (view == null) return;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) ref.read(calendarViewProvider.notifier).show(view);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
+}
+
+/// Opens the Notes tab on the view named by `?view=` (`notes`, `tasks`).
+class _NotesViewFromQuery extends ConsumerStatefulWidget {
+  const _NotesViewFromQuery({required this.view, required this.child});
+
+  final String? view;
+  final Widget child;
+
+  @override
+  ConsumerState<_NotesViewFromQuery> createState() =>
+      _NotesViewFromQueryState();
+}
+
+class _NotesViewFromQueryState extends ConsumerState<_NotesViewFromQuery> {
+  @override
+  void initState() {
+    super.initState();
+    _apply();
+  }
+
+  @override
+  void didUpdateWidget(_NotesViewFromQuery old) {
+    super.didUpdateWidget(old);
+    if (old.view != widget.view) _apply();
+  }
+
+  void _apply() {
+    final NotesView? view = switch (widget.view) {
+      'tasks' => NotesView.tasks,
+      'notes' => NotesView.notes,
+      _ => null,
+    };
+    if (view == null) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) ref.read(notesViewProvider.notifier).show(view);
     });
   }
 

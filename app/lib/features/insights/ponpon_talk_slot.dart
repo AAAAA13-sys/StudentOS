@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_spacing.dart';
 import '../../core/widgets/ponpon_talk.dart';
@@ -8,6 +9,7 @@ import '../focus/clock_panels.dart';
 import '../notes/note.dart';
 import '../notes/notes_controller.dart';
 import '../notes/quiz_sheet.dart';
+import '../tasks/tasks_controller.dart';
 import 'insights_providers.dart';
 import 'ponpon_insight.dart';
 
@@ -81,5 +83,8 @@ void runPonponAction(BuildContext context, WidgetRef ref, PonponAction action) {
         ref.read(notesControllerProvider).value?.notes ?? const <Note>[],
       );
       if (note != null) showQuizSheet(context, note);
+    case PonponAction.seeTasks:
+      ref.read(notesViewProvider.notifier).show(NotesView.tasks);
+      GoRouter.maybeOf(context)?.go('/notes?view=tasks');
   }
 }

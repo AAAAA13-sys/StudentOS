@@ -8,6 +8,7 @@ import 'package:studentos/features/insights/finance_insights.dart';
 import 'package:studentos/features/insights/notes_insights.dart';
 import 'package:studentos/features/insights/ponpon_insight.dart';
 import 'package:studentos/features/notes/note.dart';
+import 'package:studentos/features/tasks/task_item.dart';
 import 'package:studentos/features/work/shift.dart';
 
 void main() {
@@ -854,6 +855,71 @@ void main() {
         ),
         isEmpty,
       );
+    });
+
+    test('surfaces overdue and today tasks with seeTasks action, non-scolding', () {
+      final List<PonponInsight> overdue = notesInsights(
+        notes: const <Note>[],
+        tasks: <TaskItem>[
+          const TaskItem(
+            id: 1,
+            title: 'Submit lab report',
+            dueOn: '2026-11-16',
+          ),
+          const TaskItem(
+            id: 2,
+            title: 'Done old task',
+            dueOn: '2026-11-15',
+            done: true,
+          ),
+        ],
+        now: now,
+      );
+      expect(overdue.single.text, '1 task is past due: Submit lab report.');
+      expect(overdue.single.action, PonponAction.seeTasks);
+      expect(overdue.single.text.contains('!'), isFalse);
+
+      final List<PonponInsight> todayOnly = notesInsights(
+        notes: const <Note>[],
+        tasks: <TaskItem>[
+          const TaskItem(id: 1, title: 'Read chapter 4', dueOn: '2026-11-17'),
+          const TaskItem(id: 2, title: 'Pack bag', dueOn: '2026-11-17'),
+        ],
+        now: now,
+      );
+      expect(todayOnly.single.text, '2 tasks due today.');
+      expect(todayOnly.single.mood, PonponMood.focused);
+      expect(todayOnly.single.action, PonponAction.seeTasks);
+    });
+  });
+
+  group('calendarInsights task rules', () {
+    final DateTime now = DateTime(2026, 11, 17, 14);
+
+    test('nudges overdue and due-today tasks with seeTasks action', () {
+      final List<PonponInsight> overdue = calendarInsights(
+        events: const <CalendarEvent>[],
+        tasks: const <TaskItem>[
+          TaskItem(id: 1, title: 'Email prof', dueOn: '2026-11-16'),
+        ],
+        now: now,
+      );
+      expect(
+        overdue.single.text,
+        '1 task from earlier is still open: Email prof.',
+      );
+      expect(overdue.single.action, PonponAction.seeTasks);
+      expect(overdue.single.text.contains('!'), isFalse);
+
+      final List<PonponInsight> today = calendarInsights(
+        events: const <CalendarEvent>[],
+        tasks: const <TaskItem>[
+          TaskItem(id: 2, title: 'Finish worksheet', dueOn: '2026-11-17'),
+        ],
+        now: now,
+      );
+      expect(today.single.text, 'Task due today: Finish worksheet.');
+      expect(today.single.action, PonponAction.seeTasks);
     });
   });
 }

@@ -9,6 +9,7 @@ import '../../features/focus/focus_controller.dart';
 import '../../features/focus/focus_plan.dart';
 import '../../features/focus/focus_platform.dart';
 import '../../features/focus/clock_panels.dart';
+import '../../features/tasks/tasks_controller.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_theme.dart';
 import 'app_drawer.dart';
@@ -74,6 +75,7 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar> {
           case CaptureAction.addExpense:
             shell.goBranch(1);
           case CaptureAction.addNote:
+            ref.read(notesViewProvider.notifier).show(NotesView.notes);
             shell.goBranch(2);
           case CaptureAction.addEvent:
             ref.read(calendarViewProvider.notifier).show(CalendarView.schedule);
@@ -120,13 +122,22 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar> {
 
     final CalendarView view = ref.watch(calendarViewProvider);
     final bool onCalendar = shell.currentIndex == 0;
+    final NotesView notesView = ref.watch(notesViewProvider);
+    final bool onNotes = shell.currentIndex == 2;
 
-    // Back on the Alarms or Focus view returns to the Schedule first.
+    // Back on Alarms/Focus returns to Schedule first; Back on Notes > Tasks
+    // returns to Notes > Notes first.
     return PopScope(
-      canPop: !(onCalendar && view != CalendarView.schedule),
+      canPop:
+          !(onCalendar && view != CalendarView.schedule) &&
+          !(onNotes && notesView != NotesView.notes),
       onPopInvokedWithResult: (bool didPop, Object? _) {
         if (!didPop) {
-          ref.read(calendarViewProvider.notifier).show(CalendarView.schedule);
+          if (onCalendar && view != CalendarView.schedule) {
+            ref.read(calendarViewProvider.notifier).show(CalendarView.schedule);
+          } else if (onNotes && notesView != NotesView.notes) {
+            ref.read(notesViewProvider.notifier).show(NotesView.notes);
+          }
         }
       },
       child: Scaffold(

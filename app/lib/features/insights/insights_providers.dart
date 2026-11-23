@@ -9,7 +9,10 @@ import '../finance/bills_controller.dart';
 import '../finance/finance_controller.dart';
 import '../finance/finance_repository.dart';
 import '../finance/transaction.dart';
+import '../notes/note.dart';
 import '../notes/notes_controller.dart';
+import '../tasks/task_item.dart';
+import '../tasks/tasks_controller.dart';
 import '../work/payday.dart';
 import '../work/shift.dart';
 import '../work/work_controller.dart';
@@ -56,6 +59,7 @@ final Provider<List<PonponInsight>> calendarInsightsProvider =
       return calendarInsights(
         events: ref.watch(calendarControllerProvider).value ?? const [],
         shifts: ref.watch(workControllerProvider).value ?? const [],
+        tasks: ref.watch(tasksControllerProvider).value ?? const <TaskItem>[],
         now: ref.read(ponponClockProvider)(),
       );
     });
@@ -89,19 +93,24 @@ final FutureProvider<List<PonponInsight>> financeInsightsProvider =
       );
     });
 
-/// Silent while a search or tag filter narrows the list.
+/// Silent while a search or tag filter narrows the Notes list.
 final Provider<List<PonponInsight>> notesInsightsProvider =
     Provider.autoDispose<List<PonponInsight>>((Ref ref) {
       ref.watch(ponponTickProvider);
+      final NotesView view = ref.watch(notesViewProvider);
       final NotesState? state = ref.watch(notesControllerProvider).value;
-      if (state == null ||
-          state.searchQuery.isNotEmpty ||
-          state.selectedTag != null) {
+      final List<TaskItem> tasks =
+          ref.watch(tasksControllerProvider).value ?? const <TaskItem>[];
+      if (view == NotesView.notes &&
+          (state == null ||
+              state.searchQuery.isNotEmpty ||
+              state.selectedTag != null)) {
         return const <PonponInsight>[];
       }
       return notesInsights(
-        notes: state.notes,
+        notes: state?.notes ?? const <Note>[],
         events: ref.watch(calendarControllerProvider).value ?? const [],
+        tasks: tasks,
         now: ref.read(ponponClockProvider)(),
       );
     });

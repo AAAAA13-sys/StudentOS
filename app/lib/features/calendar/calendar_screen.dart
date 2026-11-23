@@ -35,6 +35,7 @@ import '../work/add_shift_sheet.dart';
 import '../work/day_shifts.dart';
 import '../work/shift.dart';
 import '../work/work_controller.dart';
+import '../tasks/day_tasks.dart';
 import '../../core/widgets/ponpon.dart';
 import '../insights/insights_providers.dart';
 import '../insights/ponpon_talk_slot.dart';
@@ -523,8 +524,10 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                   ),
                 ),
               ),
-              if (_filterByDay)
+              if (_filterByDay) ...<Widget>[
                 SliverToBoxAdapter(child: DayShifts(day: _selectedDate)),
+                SliverToBoxAdapter(child: DayTasks(day: _selectedDate)),
+              ],
               if (displayedEvents.isEmpty)
                 SliverToBoxAdapter(
                   child: Padding(

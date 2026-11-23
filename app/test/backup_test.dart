@@ -15,6 +15,8 @@ import 'package:studentos/features/focus/alarm.dart';
 import 'package:studentos/features/focus/focus_repository.dart';
 import 'package:studentos/features/notes/note.dart';
 import 'package:studentos/features/notes/notes_repository.dart';
+import 'package:studentos/features/tasks/task_item.dart';
+import 'package:studentos/features/tasks/tasks_repository.dart';
 import 'package:studentos/features/work/payday.dart';
 import 'package:studentos/features/work/shift.dart';
 import 'package:studentos/features/work/work_repository.dart';
@@ -247,6 +249,16 @@ void main() {
     await FocusRepository(source).createAlarm(
       const Alarm(id: 0, hour: 6, minute: 30, label: 'Class'),
     );
+    await TaskRepository(source).createTask(
+      TaskItem(
+        id: 0,
+        title: 'Submit lab report',
+        notes: 'Section 3',
+        dueOn: '2026-11-24',
+        repeat: TaskRepeat.weekly,
+        createdAt: DateTime(2026, 11, 20),
+      ),
+    );
 
     final String json = await BackupService(source).exportJson();
     final counts = await BackupService(target).restoreJsonWithCounts(json);
@@ -257,7 +269,51 @@ void main() {
       bills: 1,
       shifts: 1,
       alarms: 1,
+      tasks: 1,
     ));
+
+    final TaskItem restoredTask = (await TaskRepository(target).getTasks()).single;
+    expect(restoredTask.title, 'Submit lab report');
+    expect(restoredTask.notes, 'Section 3');
+    expect(restoredTask.dueOn, '2026-11-24');
+    expect(restoredTask.repeat, TaskRepeat.weekly);
+    expect(restoredTask.done, isFalse);
+  });
+
+  test('Restoring a v5 backup without tasks defaults tasks to empty', () async {
+    final AppDatabase db = AppDatabase(NativeDatabase.memory());
+    addTearDown(db.close);
+    await TaskRepository(db).createTask(
+      TaskItem(
+        id: 0,
+        title: 'Old task',
+        createdAt: DateTime(2026, 11, 20),
+      ),
+    );
+    expect(await BackupService(db).hasData(), isTrue);
+
+    final String v5Json = jsonEncode(<String, Object?>{
+      'app': 'studentos',
+      'format': 5,
+      'exported_at': '2026-11-20T00:00:00.000Z',
+      'events': <Object?>[],
+      'transactions': <Object?>[],
+      'notes': <Object?>[],
+      'bills': <Object?>[],
+    });
+    final counts = await BackupService(db).restoreJsonWithCounts(v5Json);
+    expect(counts.tasks, 0);
+    expect(await TaskRepository(db).getTasks(), isEmpty);
+  });
+
+  test('hasData counts tasks too', () async {
+    final AppDatabase db = AppDatabase(NativeDatabase.memory());
+    addTearDown(db.close);
+    expect(await BackupService(db).hasData(), isFalse);
+    await TaskRepository(db).createTask(
+      TaskItem(id: 0, title: 'Buy pens', createdAt: DateTime(2026, 11, 20)),
+    );
+    expect(await BackupService(db).hasData(), isTrue);
   });
 
   test('backupStatusProvider reacts to local writes and backup markers', () async {

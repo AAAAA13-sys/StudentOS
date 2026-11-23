@@ -11,7 +11,10 @@ enum PonponAction {
   startFocus('Focus'),
 
   /// Switch Calendar > Schedule to the Week list.
-  seeWeek('See your week');
+  seeWeek('See your week'),
+
+  /// Open Notes > Tasks.
+  seeTasks('See tasks');
 
   const PonponAction(this.label);
 

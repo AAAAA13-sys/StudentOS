@@ -15,6 +15,7 @@ import '../../features/phone/phone_controller.dart';
 import '../../features/work/payday.dart';
 import '../../features/work/work_controller.dart';
 import '../../features/notes/notes_controller.dart';
+import '../../features/tasks/tasks_controller.dart';
 import '../db/backup.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_theme.dart';
@@ -28,7 +29,7 @@ class AppDrawer extends ConsumerWidget {
   static String _count(int n, String noun) => '$n $noun${n == 1 ? '' : 's'}';
 
   /// Formats the restore snackbar message, omitting zero counts for optional
-  /// modules (`bills`, `shifts`, `alarms`).
+  /// modules (`bills`, `shifts`, `alarms`, `tasks`).
   static String formatRestoreSummary({
     required int events,
     required int transactions,
@@ -36,6 +37,7 @@ class AppDrawer extends ConsumerWidget {
     int bills = 0,
     int shifts = 0,
     int alarms = 0,
+    int tasks = 0,
   }) {
     final List<String> parts = <String>[
       _count(events, 'event'),
@@ -44,6 +46,7 @@ class AppDrawer extends ConsumerWidget {
       if (bills > 0) _count(bills, 'bill'),
       if (shifts > 0) _count(shifts, 'shift'),
       if (alarms > 0) _count(alarms, 'alarm'),
+      if (tasks > 0) _count(tasks, 'task'),
     ];
     final String head = parts.sublist(0, parts.length - 1).join(', ');
     return 'Restored $head and ${parts.last}';
@@ -101,6 +104,8 @@ class AppDrawer extends ConsumerWidget {
         ..invalidate(financeControllerProvider)
         ..invalidate(billsControllerProvider)
         ..invalidate(notesControllerProvider)
+        ..invalidate(notesViewProvider)
+        ..invalidate(tasksControllerProvider)
         ..invalidate(workControllerProvider)
         ..invalidate(paydayProvider)
         ..invalidate(phoneControllerProvider)
@@ -117,6 +122,7 @@ class AppDrawer extends ConsumerWidget {
               bills: counts.bills,
               shifts: counts.shifts,
               alarms: counts.alarms,
+              tasks: counts.tasks,
             ),
           ),
         ),

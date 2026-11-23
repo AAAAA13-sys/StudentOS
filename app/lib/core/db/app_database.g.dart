@@ -5082,6 +5082,493 @@ class BillRowsCompanion extends UpdateCompanion<BillRow> {
   }
 }
 
+class $TaskRowsTable extends TaskRows with TableInfo<$TaskRowsTable, TaskRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $TaskRowsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _titleMeta = const VerificationMeta('title');
+  @override
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
+    'title',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _notesMeta = const VerificationMeta('notes');
+  @override
+  late final GeneratedColumn<String> notes = GeneratedColumn<String>(
+    'notes',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _dueOnMeta = const VerificationMeta('dueOn');
+  @override
+  late final GeneratedColumn<String> dueOn = GeneratedColumn<String>(
+    'due_on',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _repeatMeta = const VerificationMeta('repeat');
+  @override
+  late final GeneratedColumn<String> repeat = GeneratedColumn<String>(
+    'repeat',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('none'),
+  );
+  static const VerificationMeta _doneMeta = const VerificationMeta('done');
+  @override
+  late final GeneratedColumn<bool> done = GeneratedColumn<bool>(
+    'done',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("done" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _doneAtMeta = const VerificationMeta('doneAt');
+  @override
+  late final GeneratedColumn<DateTime> doneAt = GeneratedColumn<DateTime>(
+    'done_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    title,
+    notes,
+    dueOn,
+    repeat,
+    done,
+    doneAt,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'tasks';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<TaskRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('title')) {
+      context.handle(
+        _titleMeta,
+        title.isAcceptableOrUnknown(data['title']!, _titleMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_titleMeta);
+    }
+    if (data.containsKey('notes')) {
+      context.handle(
+        _notesMeta,
+        notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
+      );
+    }
+    if (data.containsKey('due_on')) {
+      context.handle(
+        _dueOnMeta,
+        dueOn.isAcceptableOrUnknown(data['due_on']!, _dueOnMeta),
+      );
+    }
+    if (data.containsKey('repeat')) {
+      context.handle(
+        _repeatMeta,
+        repeat.isAcceptableOrUnknown(data['repeat']!, _repeatMeta),
+      );
+    }
+    if (data.containsKey('done')) {
+      context.handle(
+        _doneMeta,
+        done.isAcceptableOrUnknown(data['done']!, _doneMeta),
+      );
+    }
+    if (data.containsKey('done_at')) {
+      context.handle(
+        _doneAtMeta,
+        doneAt.isAcceptableOrUnknown(data['done_at']!, _doneAtMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  TaskRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return TaskRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      title: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}title'],
+      )!,
+      notes: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}notes'],
+      ),
+      dueOn: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}due_on'],
+      ),
+      repeat: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}repeat'],
+      )!,
+      done: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}done'],
+      )!,
+      doneAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}done_at'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $TaskRowsTable createAlias(String alias) {
+    return $TaskRowsTable(attachedDatabase, alias);
+  }
+}
+
+class TaskRow extends DataClass implements Insertable<TaskRow> {
+  final int id;
+  final String title;
+  final String? notes;
+
+  /// `YYYY-MM-DD`, or null for unscheduled ("anytime") tasks.
+  final String? dueOn;
+
+  /// `none`, `daily`, `weekly` or `monthly`.
+  final String repeat;
+  final bool done;
+  final DateTime? doneAt;
+  final DateTime createdAt;
+  const TaskRow({
+    required this.id,
+    required this.title,
+    this.notes,
+    this.dueOn,
+    required this.repeat,
+    required this.done,
+    this.doneAt,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['title'] = Variable<String>(title);
+    if (!nullToAbsent || notes != null) {
+      map['notes'] = Variable<String>(notes);
+    }
+    if (!nullToAbsent || dueOn != null) {
+      map['due_on'] = Variable<String>(dueOn);
+    }
+    map['repeat'] = Variable<String>(repeat);
+    map['done'] = Variable<bool>(done);
+    if (!nullToAbsent || doneAt != null) {
+      map['done_at'] = Variable<DateTime>(doneAt);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  TaskRowsCompanion toCompanion(bool nullToAbsent) {
+    return TaskRowsCompanion(
+      id: Value(id),
+      title: Value(title),
+      notes: notes == null && nullToAbsent
+          ? const Value.absent()
+          : Value(notes),
+      dueOn: dueOn == null && nullToAbsent
+          ? const Value.absent()
+          : Value(dueOn),
+      repeat: Value(repeat),
+      done: Value(done),
+      doneAt: doneAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(doneAt),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory TaskRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return TaskRow(
+      id: serializer.fromJson<int>(json['id']),
+      title: serializer.fromJson<String>(json['title']),
+      notes: serializer.fromJson<String?>(json['notes']),
+      dueOn: serializer.fromJson<String?>(json['dueOn']),
+      repeat: serializer.fromJson<String>(json['repeat']),
+      done: serializer.fromJson<bool>(json['done']),
+      doneAt: serializer.fromJson<DateTime?>(json['doneAt']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'title': serializer.toJson<String>(title),
+      'notes': serializer.toJson<String?>(notes),
+      'dueOn': serializer.toJson<String?>(dueOn),
+      'repeat': serializer.toJson<String>(repeat),
+      'done': serializer.toJson<bool>(done),
+      'doneAt': serializer.toJson<DateTime?>(doneAt),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  TaskRow copyWith({
+    int? id,
+    String? title,
+    Value<String?> notes = const Value.absent(),
+    Value<String?> dueOn = const Value.absent(),
+    String? repeat,
+    bool? done,
+    Value<DateTime?> doneAt = const Value.absent(),
+    DateTime? createdAt,
+  }) => TaskRow(
+    id: id ?? this.id,
+    title: title ?? this.title,
+    notes: notes.present ? notes.value : this.notes,
+    dueOn: dueOn.present ? dueOn.value : this.dueOn,
+    repeat: repeat ?? this.repeat,
+    done: done ?? this.done,
+    doneAt: doneAt.present ? doneAt.value : this.doneAt,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  TaskRow copyWithCompanion(TaskRowsCompanion data) {
+    return TaskRow(
+      id: data.id.present ? data.id.value : this.id,
+      title: data.title.present ? data.title.value : this.title,
+      notes: data.notes.present ? data.notes.value : this.notes,
+      dueOn: data.dueOn.present ? data.dueOn.value : this.dueOn,
+      repeat: data.repeat.present ? data.repeat.value : this.repeat,
+      done: data.done.present ? data.done.value : this.done,
+      doneAt: data.doneAt.present ? data.doneAt.value : this.doneAt,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TaskRow(')
+          ..write('id: $id, ')
+          ..write('title: $title, ')
+          ..write('notes: $notes, ')
+          ..write('dueOn: $dueOn, ')
+          ..write('repeat: $repeat, ')
+          ..write('done: $done, ')
+          ..write('doneAt: $doneAt, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, title, notes, dueOn, repeat, done, doneAt, createdAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is TaskRow &&
+          other.id == this.id &&
+          other.title == this.title &&
+          other.notes == this.notes &&
+          other.dueOn == this.dueOn &&
+          other.repeat == this.repeat &&
+          other.done == this.done &&
+          other.doneAt == this.doneAt &&
+          other.createdAt == this.createdAt);
+}
+
+class TaskRowsCompanion extends UpdateCompanion<TaskRow> {
+  final Value<int> id;
+  final Value<String> title;
+  final Value<String?> notes;
+  final Value<String?> dueOn;
+  final Value<String> repeat;
+  final Value<bool> done;
+  final Value<DateTime?> doneAt;
+  final Value<DateTime> createdAt;
+  const TaskRowsCompanion({
+    this.id = const Value.absent(),
+    this.title = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.dueOn = const Value.absent(),
+    this.repeat = const Value.absent(),
+    this.done = const Value.absent(),
+    this.doneAt = const Value.absent(),
+    this.createdAt = const Value.absent(),
+  });
+  TaskRowsCompanion.insert({
+    this.id = const Value.absent(),
+    required String title,
+    this.notes = const Value.absent(),
+    this.dueOn = const Value.absent(),
+    this.repeat = const Value.absent(),
+    this.done = const Value.absent(),
+    this.doneAt = const Value.absent(),
+    required DateTime createdAt,
+  }) : title = Value(title),
+       createdAt = Value(createdAt);
+  static Insertable<TaskRow> custom({
+    Expression<int>? id,
+    Expression<String>? title,
+    Expression<String>? notes,
+    Expression<String>? dueOn,
+    Expression<String>? repeat,
+    Expression<bool>? done,
+    Expression<DateTime>? doneAt,
+    Expression<DateTime>? createdAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (title != null) 'title': title,
+      if (notes != null) 'notes': notes,
+      if (dueOn != null) 'due_on': dueOn,
+      if (repeat != null) 'repeat': repeat,
+      if (done != null) 'done': done,
+      if (doneAt != null) 'done_at': doneAt,
+      if (createdAt != null) 'created_at': createdAt,
+    });
+  }
+
+  TaskRowsCompanion copyWith({
+    Value<int>? id,
+    Value<String>? title,
+    Value<String?>? notes,
+    Value<String?>? dueOn,
+    Value<String>? repeat,
+    Value<bool>? done,
+    Value<DateTime?>? doneAt,
+    Value<DateTime>? createdAt,
+  }) {
+    return TaskRowsCompanion(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      notes: notes ?? this.notes,
+      dueOn: dueOn ?? this.dueOn,
+      repeat: repeat ?? this.repeat,
+      done: done ?? this.done,
+      doneAt: doneAt ?? this.doneAt,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (title.present) {
+      map['title'] = Variable<String>(title.value);
+    }
+    if (notes.present) {
+      map['notes'] = Variable<String>(notes.value);
+    }
+    if (dueOn.present) {
+      map['due_on'] = Variable<String>(dueOn.value);
+    }
+    if (repeat.present) {
+      map['repeat'] = Variable<String>(repeat.value);
+    }
+    if (done.present) {
+      map['done'] = Variable<bool>(done.value);
+    }
+    if (doneAt.present) {
+      map['done_at'] = Variable<DateTime>(doneAt.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TaskRowsCompanion(')
+          ..write('id: $id, ')
+          ..write('title: $title, ')
+          ..write('notes: $notes, ')
+          ..write('dueOn: $dueOn, ')
+          ..write('repeat: $repeat, ')
+          ..write('done: $done, ')
+          ..write('doneAt: $doneAt, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -5099,6 +5586,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $AlarmRowsTable alarmRows = $AlarmRowsTable(this);
   late final $FocusLogRowsTable focusLogRows = $FocusLogRowsTable(this);
   late final $BillRowsTable billRows = $BillRowsTable(this);
+  late final $TaskRowsTable taskRows = $TaskRowsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -5114,6 +5602,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     alarmRows,
     focusLogRows,
     billRows,
+    taskRows,
   ];
 }
 
@@ -7725,6 +8214,258 @@ typedef $$BillRowsTableProcessedTableManager =
       BillRow,
       PrefetchHooks Function()
     >;
+typedef $$TaskRowsTableCreateCompanionBuilder = TaskRowsCompanion Function({
+  Value<int> id,
+  required String title,
+  Value<String?> notes,
+  Value<String?> dueOn,
+  Value<String> repeat,
+  Value<bool> done,
+  Value<DateTime?> doneAt,
+  required DateTime createdAt,
+});
+typedef $$TaskRowsTableUpdateCompanionBuilder = TaskRowsCompanion Function({
+  Value<int> id,
+  Value<String> title,
+  Value<String?> notes,
+  Value<String?> dueOn,
+  Value<String> repeat,
+  Value<bool> done,
+  Value<DateTime?> doneAt,
+  Value<DateTime> createdAt,
+});
+
+class $$TaskRowsTableFilterComposer
+    extends Composer<_$AppDatabase, $TaskRowsTable> {
+  $$TaskRowsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get dueOn => $composableBuilder(
+    column: $table.dueOn,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get repeat => $composableBuilder(
+    column: $table.repeat,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get done => $composableBuilder(
+    column: $table.done,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get doneAt => $composableBuilder(
+    column: $table.doneAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$TaskRowsTableOrderingComposer
+    extends Composer<_$AppDatabase, $TaskRowsTable> {
+  $$TaskRowsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get dueOn => $composableBuilder(
+    column: $table.dueOn,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get repeat => $composableBuilder(
+    column: $table.repeat,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get done => $composableBuilder(
+    column: $table.done,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get doneAt => $composableBuilder(
+    column: $table.doneAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$TaskRowsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $TaskRowsTable> {
+  $$TaskRowsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => column);
+
+  GeneratedColumn<String> get notes =>
+      $composableBuilder(column: $table.notes, builder: (column) => column);
+
+  GeneratedColumn<String> get dueOn =>
+      $composableBuilder(column: $table.dueOn, builder: (column) => column);
+
+  GeneratedColumn<String> get repeat =>
+      $composableBuilder(column: $table.repeat, builder: (column) => column);
+
+  GeneratedColumn<bool> get done =>
+      $composableBuilder(column: $table.done, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get doneAt =>
+      $composableBuilder(column: $table.doneAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+}
+
+class $$TaskRowsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $TaskRowsTable,
+          TaskRow,
+          $$TaskRowsTableFilterComposer,
+          $$TaskRowsTableOrderingComposer,
+          $$TaskRowsTableAnnotationComposer,
+          $$TaskRowsTableCreateCompanionBuilder,
+          $$TaskRowsTableUpdateCompanionBuilder,
+          (TaskRow, BaseReferences<_$AppDatabase, $TaskRowsTable, TaskRow>),
+          TaskRow,
+          PrefetchHooks Function()
+        > {
+  $$TaskRowsTableTableManager(_$AppDatabase db, $TaskRowsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$TaskRowsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$TaskRowsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$TaskRowsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> title = const Value.absent(),
+                Value<String?> notes = const Value.absent(),
+                Value<String?> dueOn = const Value.absent(),
+                Value<String> repeat = const Value.absent(),
+                Value<bool> done = const Value.absent(),
+                Value<DateTime?> doneAt = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+              }) => TaskRowsCompanion(
+                id: id,
+                title: title,
+                notes: notes,
+                dueOn: dueOn,
+                repeat: repeat,
+                done: done,
+                doneAt: doneAt,
+                createdAt: createdAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String title,
+                Value<String?> notes = const Value.absent(),
+                Value<String?> dueOn = const Value.absent(),
+                Value<String> repeat = const Value.absent(),
+                Value<bool> done = const Value.absent(),
+                Value<DateTime?> doneAt = const Value.absent(),
+                required DateTime createdAt,
+              }) => TaskRowsCompanion.insert(
+                id: id,
+                title: title,
+                notes: notes,
+                dueOn: dueOn,
+                repeat: repeat,
+                done: done,
+                doneAt: doneAt,
+                createdAt: createdAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$TaskRowsTable, TaskRow>(table),
+                  BaseReferences<_$AppDatabase, $TaskRowsTable, TaskRow>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$TaskRowsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $TaskRowsTable,
+      TaskRow,
+      $$TaskRowsTableFilterComposer,
+      $$TaskRowsTableOrderingComposer,
+      $$TaskRowsTableAnnotationComposer,
+      $$TaskRowsTableCreateCompanionBuilder,
+      $$TaskRowsTableUpdateCompanionBuilder,
+      (TaskRow, BaseReferences<_$AppDatabase, $TaskRowsTable, TaskRow>),
+      TaskRow,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -7749,4 +8490,6 @@ class $AppDatabaseManager {
       $$FocusLogRowsTableTableManager(_db, _db.focusLogRows);
   $$BillRowsTableTableManager get billRows =>
       $$BillRowsTableTableManager(_db, _db.billRows);
+  $$TaskRowsTableTableManager get taskRows =>
+      $$TaskRowsTableTableManager(_db, _db.taskRows);
 }
