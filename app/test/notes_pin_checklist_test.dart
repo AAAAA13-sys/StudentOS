@@ -7,8 +7,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:studentos/core/checklist.dart';
 import 'package:studentos/core/db/app_database.dart';
 import 'package:studentos/core/db/backup.dart';
+import 'package:studentos/core/widgets/ponpon.dart';
 import 'package:studentos/features/calendar/event.dart';
 import 'package:studentos/features/notes/note.dart';
+import 'package:studentos/features/notes/notes_controller.dart';
 import 'package:studentos/features/notes/notes_repository.dart';
 import 'package:studentos/features/notes/notes_screen.dart';
 
@@ -250,5 +252,133 @@ void main() {
       );
       expect(find.byTooltip('Unpin note'), findsOneWidget);
     });
+
+    testWidgets(
+      'checklist rows on note cards expose TalkBack checkbox semantics and >= 48dp height',
+      (WidgetTester tester) async {
+        await tester.runAsync(
+          () => NotesRepository(db).createNote(
+            const Note(
+              id: 0,
+              title: 'Tasks',
+              body: '- [ ] Read chapter one with a very long title\n- [x] Done',
+              tags: <String>[],
+            ),
+          ),
+        );
+        await pumpScreen(tester);
+
+        final Finder rows = find.byType(ChecklistRow);
+        expect(rows, findsNWidgets(2));
+        expect(tester.getSize(rows.first).height, greaterThanOrEqualTo(48));
+
+        final Text rowText = tester.widget<Text>(
+          find.text('Read chapter one with a very long title'),
+        );
+        expect(rowText.maxLines, 1);
+
+        final SemanticsHandle handle = tester.ensureSemantics();
+        try {
+          expect(
+            tester.getSemantics(rows.first),
+            matchesSemantics(
+              label: 'Read chapter one with a very long title',
+              hasCheckedState: true,
+              isChecked: false,
+              hasTapAction: true,
+            ),
+          );
+          expect(
+            tester.getSemantics(rows.last),
+            matchesSemantics(
+              label: 'Done',
+              hasCheckedState: true,
+              isChecked: true,
+              hasTapAction: true,
+            ),
+          );
+        } finally {
+          handle.dispose();
+        }
+      },
+    );
+
+    testWidgets(
+      'deleting or untagging the last note for a selected tag clears the tag filter',
+      (WidgetTester tester) async {
+        late int mathId;
+        await tester.runAsync(() async {
+          final NotesRepository repo = NotesRepository(db);
+          mathId = await repo.createNote(
+            const Note(
+              id: 0,
+              title: 'Calculus',
+              body: 'Integrals',
+              tags: <String>['math'],
+            ),
+          );
+          await repo.createNote(
+            const Note(
+              id: 0,
+              title: 'History',
+              body: 'Notes',
+              tags: <String>['reading'],
+            ),
+          );
+        });
+        await pumpScreen(tester);
+
+        await tester.tap(find.widgetWithText(FilterChip, '#math'));
+        await settle(tester);
+        expect(find.text('Calculus'), findsOneWidget);
+        expect(find.text('History'), findsNothing);
+
+        final ProviderContainer container = ProviderScope.containerOf(
+          tester.element(find.byType(NotesScreen)),
+        );
+        await tester.runAsync(
+          () => container.read(notesControllerProvider.notifier).deleteNote(mathId),
+        );
+        await settle(tester);
+
+        final NotesState current =
+            container.read(notesControllerProvider).value!;
+        expect(current.selectedTag, isNull);
+        expect(find.text('History'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'filtered empty state shows smug Ponpon and Clear filters button',
+      (WidgetTester tester) async {
+        await tester.runAsync(() async {
+          final NotesRepository repo = NotesRepository(db);
+          await repo.createNote(
+            const Note(
+              id: 0,
+              title: 'Physics',
+              body: 'Kinematics',
+              tags: <String>['science'],
+            ),
+          );
+        });
+        await pumpScreen(tester);
+
+        await tester.enterText(find.byType(TextField), 'chemistry');
+        await settle(tester);
+
+        expect(find.text('No notes match "chemistry"'), findsOneWidget);
+        expect(find.text('No notes yet'), findsNothing);
+        expect(find.text('Clear filters'), findsOneWidget);
+        final Ponpon ponpon = tester.widget<Ponpon>(find.byType(Ponpon));
+        expect(ponpon.mood, PonponMood.smug);
+
+        await tester.tap(find.text('Clear filters'));
+        await settle(tester);
+
+        expect(find.text('Physics'), findsOneWidget);
+        expect(find.text('Clear filters'), findsNothing);
+      },
+    );
   });
 }

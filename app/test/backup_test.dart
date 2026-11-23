@@ -11,9 +11,13 @@ import 'package:studentos/features/finance/bill.dart';
 import 'package:studentos/features/finance/bills_repository.dart';
 import 'package:studentos/features/finance/finance_repository.dart';
 import 'package:studentos/features/finance/transaction.dart';
+import 'package:studentos/features/focus/alarm.dart';
+import 'package:studentos/features/focus/focus_repository.dart';
 import 'package:studentos/features/notes/note.dart';
 import 'package:studentos/features/notes/notes_repository.dart';
 import 'package:studentos/features/work/payday.dart';
+import 'package:studentos/features/work/shift.dart';
+import 'package:studentos/features/work/work_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 void main() {
@@ -190,5 +194,111 @@ void main() {
 
     expect(container.read(paydayProvider), PaydaySchedule.weekly(5));
     expect(container.read(scheduleViewProvider), ScheduleView.week);
+  });
+
+  test('hasData counts shifts and alarms too', () async {
+    final AppDatabase shiftDb = AppDatabase(NativeDatabase.memory());
+    final AppDatabase alarmDb = AppDatabase(NativeDatabase.memory());
+    addTearDown(shiftDb.close);
+    addTearDown(alarmDb.close);
+
+    expect(await BackupService(shiftDb).hasData(), isFalse);
+    await WorkRepository(shiftDb).createShifts(<Shift>[
+      Shift(
+        id: 0,
+        job: 'Library',
+        startsAt: DateTime(2026, 11, 20, 14),
+        durationMinutes: 120,
+      ),
+    ]);
+    expect(await BackupService(shiftDb).hasData(), isTrue);
+
+    expect(await BackupService(alarmDb).hasData(), isFalse);
+    await FocusRepository(alarmDb).createAlarm(
+      const Alarm(id: 0, hour: 7, minute: 0),
+    );
+    expect(await BackupService(alarmDb).hasData(), isTrue);
+  });
+
+  test('restoreJsonWithCounts reports bills, shifts and alarms', () async {
+    final AppDatabase source = AppDatabase(NativeDatabase.memory());
+    final AppDatabase target = AppDatabase(NativeDatabase.memory());
+    addTearDown(source.close);
+    addTearDown(target.close);
+
+    await BillsRepository(source).createBill(
+      const Bill(
+        id: 0,
+        title: 'Internet',
+        amountCents: 129900,
+        category: 'Other',
+        cadence: 'monthly:5',
+        nextDueOn: '2026-12-05',
+      ),
+    );
+    await WorkRepository(source).createShifts(<Shift>[
+      Shift(
+        id: 0,
+        job: 'Cafe',
+        startsAt: DateTime(2026, 11, 21, 9),
+        durationMinutes: 240,
+      ),
+    ]);
+    await FocusRepository(source).createAlarm(
+      const Alarm(id: 0, hour: 6, minute: 30, label: 'Class'),
+    );
+
+    final String json = await BackupService(source).exportJson();
+    final counts = await BackupService(target).restoreJsonWithCounts(json);
+    expect(counts, (
+      events: 0,
+      transactions: 0,
+      notes: 0,
+      bills: 1,
+      shifts: 1,
+      alarms: 1,
+    ));
+  });
+
+  test('backupStatusProvider reacts to local writes and backup markers', () async {
+    final AppDatabase db = AppDatabase(NativeDatabase.memory());
+    final ProviderContainer container = ProviderContainer(
+      overrides: [appDatabaseProvider.overrideWithValue(db)],
+    );
+    addTearDown(() async {
+      container.dispose();
+      await db.close();
+    });
+
+    final List<BackupStatus> seen = <BackupStatus>[];
+    final sub = container.listen<AsyncValue<BackupStatus>>(
+      backupStatusProvider,
+      (_, AsyncValue<BackupStatus> next) {
+        if (next.hasValue) seen.add(next.requireValue);
+      },
+      fireImmediately: true,
+    );
+    addTearDown(sub.close);
+
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+    expect(seen.last, (last: null, hasData: false));
+
+    await WorkRepository(db).createShifts(<Shift>[
+      Shift(
+        id: 0,
+        job: 'Tutor',
+        startsAt: DateTime(2026, 11, 22, 10),
+        durationMinutes: 90,
+      ),
+    ]);
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+    expect(seen.last.hasData, isTrue);
+    expect(seen.last.last, isNull);
+
+    final DateTime backedUpAt = DateTime(2026, 11, 22, 12);
+    await BackupService(db).markBackedUp(backedUpAt);
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+    expect(seen.last.hasData, isTrue);
+    expect(seen.last.last, backedUpAt);
   });
 }

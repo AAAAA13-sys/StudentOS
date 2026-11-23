@@ -118,32 +118,63 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
               ),
               data: (NotesState state) {
                 final List<Object> rows = _listRows(state.notes);
+                final bool hasFilter =
+                    state.searchQuery.isNotEmpty || state.selectedTag != null;
+                final String emptyMessage;
+                if (state.searchQuery.isNotEmpty && state.selectedTag != null) {
+                  emptyMessage =
+                      'No notes match "${state.searchQuery}" in #${state.selectedTag}';
+                } else if (state.searchQuery.isNotEmpty) {
+                  emptyMessage = 'No notes match "${state.searchQuery}"';
+                } else if (state.selectedTag != null) {
+                  emptyMessage = 'No notes tagged #${state.selectedTag}';
+                } else {
+                  emptyMessage = 'No notes yet';
+                }
                 return Expanded(
                   child: Column(
                     children: <Widget>[
                       Expanded(
                         child: state.notes.isEmpty
                             ? Center(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: <Widget>[
-                                    Ponpon(
-                                      mood: state.searchQuery.isNotEmpty
-                                          ? PonponMood.smug
-                                          : PonponMood.happy,
-                                      size: 88,
-                                    ),
-                                    AppSpacing.gapMd,
-                                    Text(
-                                      state.searchQuery.isNotEmpty
-                                          ? 'No notes match "${state.searchQuery}"'
-                                          : 'No notes yet',
-                                      textAlign: TextAlign.center,
-                                      style: textStyles.titleMedium?.copyWith(
-                                        color: colors.onSurfaceVariant,
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: AppSpacing.lg,
+                                  ),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: <Widget>[
+                                      Ponpon(
+                                        mood: hasFilter
+                                            ? PonponMood.smug
+                                            : PonponMood.happy,
+                                        size: 88,
                                       ),
-                                    ),
-                                  ],
+                                      AppSpacing.gapMd,
+                                      Text(
+                                        emptyMessage,
+                                        textAlign: TextAlign.center,
+                                        style: textStyles.titleMedium?.copyWith(
+                                          color: colors.onSurfaceVariant,
+                                        ),
+                                      ),
+                                      if (hasFilter) ...<Widget>[
+                                        AppSpacing.gapMd,
+                                        OutlinedButton(
+                                          onPressed: () {
+                                            _searchController.clear();
+                                            ref
+                                                .read(
+                                                  notesControllerProvider
+                                                      .notifier,
+                                                )
+                                                .clearFilters();
+                                          },
+                                          child: const Text('Clear filters'),
+                                        ),
+                                      ],
+                                    ],
+                                  ),
                                 ),
                               )
                             : RefreshIndicator(
@@ -378,9 +409,11 @@ class _NoteCard extends ConsumerWidget {
                   ),
                 ),
                 for (int i = 0; i < items.length && i < 5; i++)
-                  InkWell(
-                    borderRadius: AppRadius.small,
-                    onTap: () => ref
+                  ChecklistRow(
+                    text: items[i].text,
+                    done: items[i].done,
+                    maxLines: 1,
+                    onToggle: () => ref
                         .read(notesControllerProvider.notifier)
                         .updateNote(
                           note.id,
@@ -388,38 +421,6 @@ class _NoteCard extends ConsumerWidget {
                           body: toggleChecklistLine(note.body, i),
                           tags: note.tags,
                         ),
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(minHeight: 48),
-                      child: Row(
-                        children: <Widget>[
-                          Icon(
-                            items[i].done
-                                ? Icons.check_box_rounded
-                                : Icons.check_box_outline_blank_rounded,
-                            size: 18,
-                            color: items[i].done
-                                ? colors.primary
-                                : colors.onSurfaceVariant,
-                          ),
-                          const SizedBox(width: 6),
-                          Expanded(
-                            child: Text(
-                              items[i].text,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: textStyles.bodySmall?.copyWith(
-                                decoration: items[i].done
-                                    ? TextDecoration.lineThrough
-                                    : null,
-                                color: items[i].done
-                                    ? colors.onSurfaceVariant
-                                    : colors.onSurface,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
                   ),
                 if (items.length > 5)
                   Text(

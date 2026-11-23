@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/confirm_dialog.dart';
 import '../phone/phone_day.dart' show formatDuration;
 import '../phone/phone_controller.dart';
 import '../phone/phone_screen.dart';
@@ -220,6 +221,17 @@ class _AlarmCard extends ConsumerWidget {
       child: InkWell(
         borderRadius: AppRadius.large,
         onTap: () => showAlarmEditor(context, alarm: alarm),
+        onLongPress: () async {
+          final bool ok = await confirmDestructive(
+            context,
+            title: 'Delete this alarm?',
+            message: 'It will not ring again.',
+            confirmLabel: 'Delete',
+          );
+          if (ok) {
+            await ref.read(alarmControllerProvider.notifier).delete(alarm);
+          }
+        },
         child: Padding(
           padding: AppSpacing.card,
           child: Row(

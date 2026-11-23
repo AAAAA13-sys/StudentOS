@@ -57,12 +57,14 @@ class ChecklistRow extends StatelessWidget {
     required this.text,
     required this.done,
     required this.onToggle,
+    this.maxLines,
     super.key,
   });
 
   final String text;
   final bool done;
   final VoidCallback onToggle;
+  final int? maxLines;
 
   @override
   Widget build(BuildContext context) {
@@ -93,6 +95,8 @@ class ChecklistRow extends StatelessWidget {
                 Expanded(
                   child: Text(
                     text,
+                    maxLines: maxLines,
+                    overflow: maxLines != null ? TextOverflow.ellipsis : null,
                     style: context.textStyles.bodyMedium?.copyWith(
                       decoration: done ? TextDecoration.lineThrough : null,
                       color: done ? colors.onSurfaceVariant : colors.onSurface,

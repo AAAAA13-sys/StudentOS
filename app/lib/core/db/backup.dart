@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'app_database.dart';
@@ -53,7 +54,9 @@ class BackupService {
     return (await _db.select(_db.eventRows).get()).isNotEmpty ||
         (await _db.select(_db.transactionRows).get()).isNotEmpty ||
         (await _db.select(_db.noteRows).get()).isNotEmpty ||
-        (await _db.select(_db.billRows).get()).isNotEmpty;
+        (await _db.select(_db.billRows).get()).isNotEmpty ||
+        (await _db.select(_db.shiftRows).get()).isNotEmpty ||
+        (await _db.select(_db.alarmRows).get()).isNotEmpty;
   }
 
   Future<String> exportJson() async {
@@ -108,6 +111,27 @@ class BackupService {
   Future<({int events, int transactions, int notes})> restoreJson(
     String json,
   ) async {
+    final counts = await restoreJsonWithCounts(json);
+    return (
+      events: counts.events,
+      transactions: counts.transactions,
+      notes: counts.notes,
+    );
+  }
+
+  /// Replaces everything in the database with the contents of [json] and
+  /// returns counts for every user-facing record type.
+  Future<
+    ({
+      int events,
+      int transactions,
+      int notes,
+      int bills,
+      int shifts,
+      int alarms,
+    })
+  >
+  restoreJsonWithCounts(String json) async {
     final List<EventRow> events;
     final List<TransactionRow> transactions;
     final List<NoteRow> notes;
@@ -212,6 +236,9 @@ class BackupService {
       events: events.length,
       transactions: transactions.length,
       notes: notes.length,
+      bills: bills.length,
+      shifts: shifts.length,
+      alarms: alarms.length,
     );
   }
 }
@@ -252,11 +279,26 @@ bool backupNeedsAttention(
 /// What the drawer and the menu icon need to know about backups.
 typedef BackupStatus = ({DateTime? last, bool hasData});
 
-final FutureProvider<BackupStatus> backupStatusProvider =
-    FutureProvider.autoDispose<BackupStatus>((Ref ref) async {
+final StreamProvider<BackupStatus> backupStatusProvider =
+    StreamProvider.autoDispose<BackupStatus>((Ref ref) async* {
+      final AppDatabase db = ref.watch(appDatabaseProvider);
       final BackupService service = ref.watch(backupServiceProvider);
-      return (
+      Future<BackupStatus> read() async => (
         last: await service.lastBackupAt(),
         hasData: await service.hasData(),
       );
+      yield await read();
+      await for (final Set<TableUpdate> _ in db.tableUpdates(
+        TableUpdateQuery.onAllTables(<TableInfo<Table, Object?>>[
+          db.eventRows,
+          db.transactionRows,
+          db.noteRows,
+          db.billRows,
+          db.shiftRows,
+          db.alarmRows,
+          db.settingRows,
+        ]),
+      )) {
+        yield await read();
+      }
     });

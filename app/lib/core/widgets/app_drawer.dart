@@ -27,6 +27,28 @@ class AppDrawer extends ConsumerWidget {
 
   static String _count(int n, String noun) => '$n $noun${n == 1 ? '' : 's'}';
 
+  /// Formats the restore snackbar message, omitting zero counts for optional
+  /// modules (`bills`, `shifts`, `alarms`).
+  static String formatRestoreSummary({
+    required int events,
+    required int transactions,
+    required int notes,
+    int bills = 0,
+    int shifts = 0,
+    int alarms = 0,
+  }) {
+    final List<String> parts = <String>[
+      _count(events, 'event'),
+      _count(transactions, 'transaction'),
+      _count(notes, 'note'),
+      if (bills > 0) _count(bills, 'bill'),
+      if (shifts > 0) _count(shifts, 'shift'),
+      if (alarms > 0) _count(alarms, 'alarm'),
+    ];
+    final String head = parts.sublist(0, parts.length - 1).join(', ');
+    return 'Restored $head and ${parts.last}';
+  }
+
   Future<void> _backUp(BuildContext context, WidgetRef ref) async {
     // Everything needed is taken before the drawer closes; after that this
     // widget is gone and `ref` can no longer be used.
@@ -72,7 +94,7 @@ class AppDrawer extends ConsumerWidget {
       final PlatformFile? file = await FilePicker.pickFile();
       if (file == null) return;
       final String json = utf8.decode(await file.readAsBytes());
-      final counts = await backup.restoreJson(json);
+      final counts = await backup.restoreJsonWithCounts(json);
       container
         ..invalidate(calendarControllerProvider)
         ..invalidate(scheduleViewProvider)
@@ -88,9 +110,14 @@ class AppDrawer extends ConsumerWidget {
       messenger.showSnackBar(
         SnackBar(
           content: Text(
-            'Restored ${_count(counts.events, 'event')}, '
-            '${_count(counts.transactions, 'transaction')} and '
-            '${_count(counts.notes, 'note')}',
+            formatRestoreSummary(
+              events: counts.events,
+              transactions: counts.transactions,
+              notes: counts.notes,
+              bills: counts.bills,
+              shifts: counts.shifts,
+              alarms: counts.alarms,
+            ),
           ),
         ),
       );

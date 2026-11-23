@@ -551,3 +551,15 @@ Entries are appended, never edited. Corrections are new entries that reference t
 - Added serialized `BillsController.refreshAutoLog()` on `AppLifecycleListener.onResume` and Finance pull-to-refresh, floating snackbar confirmation inside `_BillsSheet`, restore invalidation for `paydayProvider` and `scheduleViewProvider`, and immediate `readinessProvider` refresh on Strict Focus save.
 - `AGENTS.md` reviewed after QA passed: no updates required (followed existing Riverpod, Drift, and `DESIGN_SYSTEM.md` conventions).
 **Open items:** `autoLog` across midnight and real-phone visual/hardware checks remain for phone testing (`app-arm64-v8a-release.apk`).
+
+## Phase 44: Insights, Notes, Shift/Alarm Delete & Backup Status Parity
+**Date:** 2026-11-24
+**Verified by:** qa-verifier (`a99ce8bb`) on `emulator-5554` (Light Mode, Dark Mode, and `1.3x` font scale)
+**Evidence:** see the Phase 44 row in `PROGRESS.md`; `flutter analyze` clean (0 issues); `flutter test` **265/265 passed** (`phase44_polish_test.dart`, `insights_test.dart`, `notes_pin_checklist_test.dart`, `backup_test.dart`, full suite); release split APKs built (`x86_64` 24.0MB, `arm64-v8a` 22.5MB, `armeabi-v7a` 20.2MB); device screenshots kept in QA scratchpad.
+**Decisions:**
+- Filtered `event.done` out of `calendarInsights` and `notesInsights`, and kept `isAllDay` events out of clock-time `"In X min"` / `"starts at"` tips while preserving same-day exam/assignment nudges.
+- Fixed the Notes tag-filter empty trap by clearing `selectedTag` when absent from `tags`, added a smug-Ponpon filtered empty state with `"Clear filters"`, and unified `_NoteCard` checklists onto `ChecklistRow(..., maxLines: 1)` for TalkBack checkbox semantics (`>= 48dp`).
+- Added `"Delete shift"` inside `editShift` (`_AddShiftSheet`) matching Finance `_ShiftsSheet` paid and series confirmation rules, and added `onLongPress` `confirmDestructive` delete to `_AlarmCard` in `AlarmsPanel`.
+- Completed `BackupService.hasData()` (`shiftRows` + `alarmRows`), converted `backupStatusProvider` to a reactive stream via `db.tableUpdates`, and extended `AppDrawer._restore` toast counts cleanly via `restoreJsonWithCounts`.
+- `AGENTS.md` reviewed after QA passed: no updates required (zero schema, Kotlin, or architectural changes).
+**Open items:** tag-removal recovery, reactive backup badge update, and hardware Clock/phone checks remain for real-phone verification (`app-arm64-v8a-release.apk`).

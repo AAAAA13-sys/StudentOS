@@ -4,10 +4,17 @@ import 'package:intl/intl.dart';
 
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/confirm_dialog.dart';
 import '../calendar/calendar_controller.dart';
 import '../calendar/event.dart';
 import 'shift.dart';
 import 'work_controller.dart';
+
+typedef _ShiftSheetResult = ({
+  List<Shift>? shifts,
+  bool delete,
+  bool andLater,
+});
 
 /// Asks for a shift, saves it and says so. [day] is the date offered first.
 Future<void> addShift(
@@ -22,17 +29,19 @@ Future<void> addShift(
   final List<CalendarEvent> events =
       ref.read(calendarControllerProvider).value ?? const <CalendarEvent>[];
 
-  final List<Shift>? shifts = await showModalBottomSheet<List<Shift>>(
-    context: context,
-    useRootNavigator: true,
-    isScrollControlled: true,
-    showDragHandle: true,
-    builder: (BuildContext ctx) => _AddShiftSheet(
-      day: day ?? DateTime.now(),
-      last: known.isEmpty ? null : known.last,
-      events: events,
-    ),
-  );
+  final _ShiftSheetResult? result =
+      await showModalBottomSheet<_ShiftSheetResult>(
+        context: context,
+        useRootNavigator: true,
+        isScrollControlled: true,
+        showDragHandle: true,
+        builder: (BuildContext ctx) => _AddShiftSheet(
+          day: day ?? DateTime.now(),
+          last: known.isEmpty ? null : known.last,
+          events: events,
+        ),
+      );
+  final List<Shift>? shifts = result?.shifts;
   if (shifts == null || shifts.isEmpty) return;
   await controller.addShifts(shifts);
   messenger
@@ -48,25 +57,49 @@ Future<void> addShift(
     );
 }
 
-/// Asks for new details of [shift] and saves them.
+/// Asks for new details of [shift] and saves them, or deletes the shift.
 Future<void> editShift(BuildContext context, WidgetRef ref, Shift shift) async {
+  final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
   final WorkController controller = ref.read(workControllerProvider.notifier);
   final List<CalendarEvent> events =
       ref.read(calendarControllerProvider).value ?? const <CalendarEvent>[];
-  final List<Shift>? shifts = await showModalBottomSheet<List<Shift>>(
-    context: context,
-    useRootNavigator: true,
-    isScrollControlled: true,
-    showDragHandle: true,
-    builder: (BuildContext ctx) => _AddShiftSheet(
-      day: shift.startsAt,
-      last: shift,
-      events: events,
-      editing: shift,
-    ),
-  );
+  final _ShiftSheetResult? result =
+      await showModalBottomSheet<_ShiftSheetResult>(
+        context: context,
+        useRootNavigator: true,
+        isScrollControlled: true,
+        showDragHandle: true,
+        builder: (BuildContext ctx) => _AddShiftSheet(
+          day: shift.startsAt,
+          last: shift,
+          events: events,
+          editing: shift,
+        ),
+      );
+  if (result == null) return;
+  if (result.delete) {
+    await controller.deleteShift(shift, andLater: result.andLater);
+    messenger
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(
+            result.andLater
+                ? 'Removed shifts at ${shift.job}'
+                : 'Removed shift at ${shift.job}',
+          ),
+        ),
+      );
+    return;
+  }
+  final List<Shift>? shifts = result.shifts;
   if (shifts == null || shifts.isEmpty) return;
   await controller.updateShift(shifts.first);
+  messenger
+    ..hideCurrentSnackBar()
+    ..showSnackBar(
+      SnackBar(content: Text('Updated shift at ${shifts.first.job}')),
+    );
 }
 
 class _AddShiftSheet extends StatefulWidget {
@@ -214,7 +247,56 @@ class _AddShiftSheetState extends State<_AddShiftSheet> {
     final bool daysOk = !_repeats || _weekdays.isNotEmpty;
     setState(() => _showDayError = !daysOk);
     if (!formOk || !daysOk) return;
-    Navigator.pop(context, _draft());
+    Navigator.pop(context, (shifts: _draft(), delete: false, andLater: false));
+  }
+
+  Future<void> _delete() async {
+    final Shift? shift = widget.editing;
+    if (shift == null) return;
+    final String when =
+        '${shift.job}, ${DateFormat('EEE, MMM d').format(shift.startsAt)}';
+    if (shift.paid) {
+      final bool ok = await confirmDestructive(
+        context,
+        title: 'Remove a paid shift?',
+        message:
+            '$when was already paid. Your income stays as it is; '
+            'only the shift is removed.',
+        confirmLabel: 'Remove',
+      );
+      if (!ok || !mounted) return;
+      Navigator.pop(context, (shifts: null, delete: true, andLater: false));
+      return;
+    }
+    final bool inSeries = shift.seriesId != null;
+    final bool? andLater = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext ctx) => AlertDialog(
+        title: const Text('Remove this shift?'),
+        content: Text(when),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          if (inSeries)
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('This and later'),
+            ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: ctx.colors.error,
+              foregroundColor: ctx.colors.onError,
+            ),
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(inSeries ? 'Only this' : 'Remove'),
+          ),
+        ],
+      ),
+    );
+    if (andLater == null || !mounted) return;
+    Navigator.pop(context, (shifts: null, delete: true, andLater: andLater));
   }
 
   Future<void> _pickTime({required bool start}) async {
@@ -415,6 +497,18 @@ class _AddShiftSheetState extends State<_AddShiftSheet> {
                   ),
                 ),
               ),
+              if (widget.editing != null) ...<Widget>[
+                AppSpacing.gapSm,
+                TextButton.icon(
+                  style: TextButton.styleFrom(
+                    foregroundColor: colors.error,
+                    minimumSize: const Size.fromHeight(AppSizes.minTouchTarget),
+                  ),
+                  icon: const Icon(Icons.delete_outline_rounded),
+                  label: const Text('Delete shift'),
+                  onPressed: _delete,
+                ),
+              ],
               AppSpacing.gapLg,
             ],
           ),

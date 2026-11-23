@@ -18,6 +18,7 @@ List<PonponInsight> notesInsights({
   final Set<int> noteIds = <int>{for (final Note n in notes) n.id};
   ({CalendarEvent event, DateTime at})? review;
   for (final CalendarEvent e in events) {
+    if (e.done) continue;
     final int? id = e.noteId;
     if (id == null || !noteIds.contains(id)) continue;
     final DateTime? at = e.nextOccurrence(now);

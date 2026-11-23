@@ -44,14 +44,21 @@ class NotesController extends AsyncNotifier<NotesState> {
 
   Future<NotesState> _fetchState({String? query, String? tag}) async {
     final List<String> tags = await _repo.getTags();
-    final List<Note> notes = await _repo.getNotes(q: query, tag: tag);
+    final String? effectiveTag = (tag != null && tags.contains(tag))
+        ? tag
+        : null;
+    final List<Note> notes = await _repo.getNotes(q: query, tag: effectiveTag);
 
     return NotesState(
       notes: notes,
       tags: tags,
       searchQuery: query ?? '',
-      selectedTag: tag,
+      selectedTag: effectiveTag,
     );
+  }
+
+  Future<void> clearFilters() async {
+    state = await AsyncValue.guard(() => _fetchState());
   }
 
   Future<void> search(String q) async {

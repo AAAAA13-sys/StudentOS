@@ -16,7 +16,7 @@ DateTime _addDays(DateTime d, int n) => DateTime(d.year, d.month, d.day + n);
 List<_Occurrence> _occurrencesOn(List<CalendarEvent> events, DateTime day) {
   final List<_Occurrence> out = <_Occurrence>[
     for (final CalendarEvent e in events)
-      if (e.occursOn(day))
+      if (!e.done && e.occursOn(day))
         (
           event: e,
           at: DateTime(
@@ -52,7 +52,13 @@ List<PonponInsight> calendarInsights({
   final List<_Occurrence> soon = <_Occurrence>[
     ...todayLeft,
     ...tomorrowAll,
-  ].where((o) => o.at.difference(now) <= const Duration(hours: 2)).toList();
+  ]
+      .where(
+        (o) =>
+            !o.event.isAllDay &&
+            o.at.difference(now) <= const Duration(hours: 2),
+      )
+      .toList();
   if (soon.isNotEmpty) {
     final _Occurrence next = soon.first;
     final String where = (next.event.location ?? '').trim();
@@ -76,7 +82,7 @@ List<PonponInsight> calendarInsights({
   for (int i = 0; i <= 7 && due == null; i++) {
     for (final _Occurrence o in _occurrencesOn(events, _addDays(today, i))) {
       if (!(o.event.isExam || o.event.isAssignment)) continue;
-      if (i == 0 && o.at.isBefore(now)) continue;
+      if (i == 0 && !o.event.isAllDay && o.at.isBefore(now)) continue;
       due = (event: o.event, days: i);
       break;
     }
@@ -98,9 +104,13 @@ List<PonponInsight> calendarInsights({
     );
   }
 
-  // Late night with an early start tomorrow, else tomorrow's first event.
-  if (tomorrowAll.isNotEmpty) {
-    final _Occurrence first = tomorrowAll.first;
+  // Late night with an early start tomorrow, else tomorrow's first timed event.
+  final List<_Occurrence> tomorrowTimed = <_Occurrence>[
+    for (final _Occurrence o in tomorrowAll)
+      if (!o.event.isAllDay) o,
+  ];
+  if (tomorrowTimed.isNotEmpty) {
+    final _Occurrence first = tomorrowTimed.first;
     if (now.hour >= 22 && first.at.hour < 10) {
       out.add(
         PonponInsight(

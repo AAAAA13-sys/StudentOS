@@ -51,12 +51,16 @@ void main() {
       DateTime at, {
       String? location,
       String recurrence = 'none',
+      int durationMinutes = 60,
+      bool done = false,
     }) => CalendarEvent(
       id: title.hashCode,
       title: title,
       startsAt: at,
+      durationMinutes: durationMinutes,
       location: location,
       recurrence: recurrence,
+      done: done,
     );
 
     List<String> texts(List<PonponInsight> l) =>
@@ -306,6 +310,88 @@ void main() {
       expect(p, orderedEquals(<int>[...p]..sort()));
       expect(r.first.text, startsWith('In 30 min: Soon'));
     });
+
+    test('done events stop firing Ponpon nudges', () {
+      final List<PonponInsight> r = calendarInsights(
+        events: <CalendarEvent>[
+          event('Soon Exam', DateTime(2026, 11, 17, 14, 20), done: true),
+          event('Morning Exam', DateTime(2026, 11, 18, 8), done: true),
+          event('E1', DateTime(2026, 11, 18, 9), done: true),
+          event('E2', DateTime(2026, 11, 18, 10), done: true),
+        ],
+        now: now,
+      );
+      expect(r, isEmpty);
+    });
+
+    test(
+      'isAllDay events stay out of clock-time tips and defer to timed events',
+      () {
+        final DateTime lateNight = DateTime(2026, 11, 17, 22, 30);
+        // Only an all-day event tomorrow -> no "In X min" or "12:00 AM" tip.
+        final List<PonponInsight> onlyAllDay = calendarInsights(
+          events: <CalendarEvent>[
+            event(
+              'Foundation Day',
+              DateTime(2026, 11, 18, 0, 0),
+              durationMinutes: 1440,
+            ),
+          ],
+          now: lateNight,
+        );
+        expect(onlyAllDay, isEmpty);
+
+        // An all-day event plus an 8:00 AM class tomorrow -> picks 8:00 AM.
+        final List<PonponInsight> withClass = calendarInsights(
+          events: <CalendarEvent>[
+            event(
+              'Foundation Day',
+              DateTime(2026, 11, 18, 0, 0),
+              durationMinutes: 1440,
+            ),
+            event('Physics 101', DateTime(2026, 11, 18, 8)),
+          ],
+          now: lateNight,
+        );
+        expect(
+          withClass.single.text,
+          'Still awake? 8:00 AM tomorrow: Physics 101.',
+        );
+
+        // Midday check still skips "Tomorrow starts at 12:00 AM".
+        final List<PonponInsight> middayAllDay = calendarInsights(
+          events: <CalendarEvent>[
+            event(
+              'Foundation Day',
+              DateTime(2026, 11, 18, 0, 0),
+              durationMinutes: 1440,
+            ),
+          ],
+          now: now,
+        );
+        expect(middayAllDay, isEmpty);
+
+        // All-day exam today still nudges without clock-time claims.
+        final List<PonponInsight> allDayExamToday = calendarInsights(
+          events: <CalendarEvent>[
+            event(
+              'Lab Exam',
+              DateTime(2026, 11, 17, 0, 0),
+              durationMinutes: 1440,
+            ),
+          ],
+          now: now,
+        );
+        expect(
+          texts(allDayExamToday),
+          contains('Exam today: Lab Exam. A focus session would help.'),
+        );
+        expect(
+          texts(allDayExamToday).any((String t) => t.contains('12:00 AM')),
+          isFalse,
+        );
+      },
+    );
   });
 
   group('financeInsights', () {
@@ -698,7 +784,7 @@ void main() {
       expect(r.first.text, 'Review your note before 8:00 AM: Physics 101.');
     });
 
-    test('ignores events past 24 hours or whose note is gone', () {
+    test('ignores events past 24 hours, done events, or orphan notes', () {
       final List<PonponInsight> r = notesInsights(
         notes: <Note>[note(7)],
         events: <CalendarEvent>[
@@ -713,6 +799,13 @@ void main() {
             title: 'Orphan',
             startsAt: DateTime(2026, 11, 18, 8),
             noteId: 99,
+          ),
+          CalendarEvent(
+            id: 3,
+            title: 'Finished Exam',
+            startsAt: DateTime(2026, 11, 18, 8),
+            noteId: 7,
+            done: true,
           ),
         ],
         now: now,
