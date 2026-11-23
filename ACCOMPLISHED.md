@@ -539,3 +539,15 @@ Entries are appended, never edited. Corrections are new entries that reference t
 - Explicit 1-tap `Log` / `Log all` (with optional per-bill `autoLog` on load) writes real `Transaction(type: 'expense', ...)` rows via `FinanceController.addTransaction` so Money widget sync and monthly totals share one source of truth without reviving Safe-to-Spend UI.
 - `AGENTS.md` reviewed after QA passed: no updates required (no new architectural patterns, agent roles, or changed conventions beyond existing local-only Drift + `FinanceController` patterns).
 **Open items:** `Log all` and `autoLog` verified in unit/widget tests only; nothing from this phase seen on the real phones.
+
+## Phase 43: Final iteration polish and view parity
+**Date:** 2026-11-24
+**Verified by:** qa-verifier (`a99ce8bb`) on `emulator-5554` (Light Mode, Dark Mode, and 1.3x font scale)
+**Evidence:** see the Phase 43 row in `PROGRESS.md`; `flutter analyze` clean (0 issues); `flutter test` **248/248 passed** (`phase43_polish_test.dart`, `bills_test.dart`, `backup_test.dart`, full suite); release split APKs built (`x86_64` 24.0MB, `arm64-v8a` 22.5MB, `armeabi-v7a` 20.2MB); device screenshots kept in QA scratchpad.
+**Decisions:**
+- Closed `DESIGN_SYSTEM.md` and Phase 33/39/40/42 parity gaps without schema or Kotlin changes (still `schemaVersion` 9, `BackupService.formatVersion` 5).
+- Suppressed the 88dp empty-state `Ponpon` on Finance whenever `PonponTalkSlot` is visible on an empty month, restoring it immediately upon dismissing the bubble.
+- Unified Calendar Day view with Week view by ordering `isAllDay` events first, styling `event.done` cards at `0.55` opacity with strikethrough titles, and making `DayShifts` outlined `Card` + `InkWell` (>=48dp) rows that open `editShift` and show `' · paid'`.
+- Added serialized `BillsController.refreshAutoLog()` on `AppLifecycleListener.onResume` and Finance pull-to-refresh, floating snackbar confirmation inside `_BillsSheet`, restore invalidation for `paydayProvider` and `scheduleViewProvider`, and immediate `readinessProvider` refresh on Strict Focus save.
+- `AGENTS.md` reviewed after QA passed: no updates required (followed existing Riverpod, Drift, and `DESIGN_SYSTEM.md` conventions).
+**Open items:** `autoLog` across midnight and real-phone visual/hardware checks remain for phone testing (`app-arm64-v8a-release.apk`).

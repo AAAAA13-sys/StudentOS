@@ -81,10 +81,25 @@ class FinanceScreen extends ConsumerWidget {
                 state.month == DateFormat('yyyy-MM').format(DateTime.now());
             final List<MapEntry<DateTime, List<Transaction>>> days =
                 _groupByDay(state.transactions);
+            final bool talkSlotAllowed =
+                thisMonth &&
+                (state.transactions.isNotEmpty ||
+                    _paydayWithPayWaiting(ref) ||
+                    _hasDueBills(ref));
+            final bool talkVisible =
+                talkSlotAllowed &&
+                !ref
+                    .watch(ponponDismissalsProvider)
+                    .contains(PonponSurface.finance) &&
+                (ref.watch(financeInsightsProvider).value?.isNotEmpty ?? false);
 
             return RefreshIndicator(
-              onRefresh: () =>
-                  ref.read(financeControllerProvider.notifier).refresh(),
+              onRefresh: () async {
+                await ref
+                    .read(billsControllerProvider.notifier)
+                    .refreshAutoLog();
+                await ref.read(financeControllerProvider.notifier).refresh();
+              },
               child: CustomScrollView(
                 slivers: <Widget>[
                   SliverToBoxAdapter(
@@ -108,10 +123,7 @@ class FinanceScreen extends ConsumerWidget {
                           // the bubble waits for a transaction, except on a
                           // payday with pay still waiting or when a bill is
                           // due.
-                          if (thisMonth &&
-                              (state.transactions.isNotEmpty ||
-                                  _paydayWithPayWaiting(ref) ||
-                                  _hasDueBills(ref)))
+                          if (talkSlotAllowed)
                             const PonponTalkSlot(
                               surface: PonponSurface.finance,
                               horizontalPadding: 0,
@@ -130,8 +142,10 @@ class FinanceScreen extends ConsumerWidget {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: <Widget>[
-                            const Ponpon(size: 88),
-                            AppSpacing.gapMd,
+                            if (!talkVisible) ...<Widget>[
+                              const Ponpon(size: 88),
+                              AppSpacing.gapMd,
+                            ],
                             Text(
                               'No transactions this month',
                               textAlign: TextAlign.center,

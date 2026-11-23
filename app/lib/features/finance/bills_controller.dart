@@ -11,15 +11,54 @@ import 'transaction.dart';
 /// for bills marked `autoLog` when due.
 class BillsController extends AsyncNotifier<List<Bill>> {
   BillsRepository get _repo => ref.read(billsRepositoryProvider);
+  Future<void>? _inFlightAutoLog;
 
   @override
   FutureOr<List<Bill>> build() async {
-    final List<Bill> bills = await _repo.getBills();
-    return _autoLogDueBills(bills, DateTime.now());
+    final Future<List<Bill>> run = () async {
+      final List<Bill> bills = await _repo.getBills();
+      if (!ref.mounted) return const <Bill>[];
+      return _autoLogDueBills(bills, DateTime.now());
+    }();
+    _inFlightAutoLog = run;
+    try {
+      return await run;
+    } finally {
+      if (identical(_inFlightAutoLog, run)) {
+        _inFlightAutoLog = null;
+      }
+    }
   }
 
   Future<void> _reload() async {
     state = await AsyncValue.guard(_repo.getBills);
+  }
+
+  /// Idempotently checks for active `autoLog` bills now due (e.g. on app
+  /// resume across midnight or pull-to-refresh) without double-logging.
+  Future<void> refreshAutoLog({DateTime? now}) async {
+    if (_inFlightAutoLog != null) {
+      await _inFlightAutoLog;
+      if (!ref.mounted) return;
+    }
+    final Future<void> run = () async {
+      final List<Bill> bills = await _repo.getBills();
+      if (!ref.mounted) return;
+      final List<Bill> updated = await _autoLogDueBills(
+        bills,
+        now ?? DateTime.now(),
+      );
+      if (!ref.mounted) return;
+      state = AsyncData<List<Bill>>(updated);
+    }();
+    _inFlightAutoLog = run;
+    try {
+      await run;
+    } finally {
+      if (identical(_inFlightAutoLog, run)) {
+        _inFlightAutoLog = null;
+      }
+    }
   }
 
   Future<List<Bill>> _autoLogDueBills(List<Bill> bills, DateTime now) async {

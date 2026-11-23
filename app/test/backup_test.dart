@@ -6,12 +6,15 @@ import 'package:studentos/core/db/app_database.dart';
 import 'package:studentos/core/db/backup.dart';
 import 'package:studentos/features/calendar/calendar_repository.dart';
 import 'package:studentos/features/calendar/event.dart';
+import 'package:studentos/features/calendar/schedule_view.dart';
 import 'package:studentos/features/finance/bill.dart';
 import 'package:studentos/features/finance/bills_repository.dart';
 import 'package:studentos/features/finance/finance_repository.dart';
 import 'package:studentos/features/finance/transaction.dart';
 import 'package:studentos/features/notes/note.dart';
 import 'package:studentos/features/notes/notes_repository.dart';
+import 'package:studentos/features/work/payday.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 void main() {
   test('A backup restores every record into an empty database', () async {
@@ -148,5 +151,44 @@ void main() {
     });
     await BackupService(db).restoreJson(v4Json);
     expect(await BillsRepository(db).getBills(), isEmpty);
+  });
+
+  test('Restoring settings updates paydayProvider and scheduleViewProvider on invalidation', () async {
+    final AppDatabase source = AppDatabase(NativeDatabase.memory());
+    final AppDatabase target = AppDatabase(NativeDatabase.memory());
+    addTearDown(source.close);
+    addTearDown(target.close);
+
+    await source
+        .into(source.settingRows)
+        .insertOnConflictUpdate(
+          SettingRowsCompanion.insert(key: 'payday', value: 'weekly:5'),
+        );
+    await source
+        .into(source.settingRows)
+        .insertOnConflictUpdate(
+          SettingRowsCompanion.insert(key: 'schedule_view', value: 'week'),
+        );
+
+    final ProviderContainer container = ProviderContainer(
+      overrides: [appDatabaseProvider.overrideWithValue(target)],
+    );
+    addTearDown(container.dispose);
+
+    expect(container.read(paydayProvider), PaydaySchedule.none);
+    expect(container.read(scheduleViewProvider), ScheduleView.month);
+
+    final String json = await BackupService(source).exportJson();
+    await BackupService(target).restoreJson(json);
+
+    container
+      ..invalidate(paydayProvider)
+      ..invalidate(scheduleViewProvider);
+    container.read(paydayProvider);
+    container.read(scheduleViewProvider);
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+
+    expect(container.read(paydayProvider), PaydaySchedule.weekly(5));
+    expect(container.read(scheduleViewProvider), ScheduleView.week);
   });
 }

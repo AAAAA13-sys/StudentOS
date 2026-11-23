@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../features/calendar/calendar_controller.dart';
 import '../../features/calendar/calendar_screen.dart';
+import '../../features/finance/bills_controller.dart';
 import '../../features/focus/focus_controller.dart';
 import '../../features/focus/focus_plan.dart';
 import '../../features/focus/focus_platform.dart';
@@ -33,6 +34,7 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar> {
         _followAndroid();
         ref.read(focusControllerProvider.notifier).resumed();
         ref.read(calendarControllerProvider.notifier).syncReminders();
+        ref.read(billsControllerProvider.notifier).refreshAutoLog();
         ref.invalidate(alarmSnoozesProvider);
       },
     );

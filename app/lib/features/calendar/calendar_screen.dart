@@ -132,6 +132,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
   ) {
     final List<CalendarEvent> events = _eventsForDate(allEvents, day)
       ..sort((CalendarEvent a, CalendarEvent b) {
+        if (a.isAllDay != b.isAllDay) return a.isAllDay ? -1 : 1;
         final int byTime = _minuteOfDay(a).compareTo(_minuteOfDay(b));
         return byTime != 0 ? byTime : a.title.compareTo(b.title);
       });
@@ -682,73 +683,78 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
       if (hasLocation) event.location!,
     ];
 
-    return Card(
-      margin: EdgeInsets.zero,
-      elevation: 0,
-      color: colors.surfaceContainerLowest,
-      shape: RoundedRectangleBorder(
-        borderRadius: AppRadius.large,
-        side: BorderSide(color: colors.outlineVariant, width: 1.0),
-      ),
-      child: InkWell(
-        borderRadius: AppRadius.large,
-        onTap: () => _showAddEventDialog(context, existingEvent: event),
-        onLongPress: () => _confirmDelete(event),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(minHeight: 72),
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.md,
-              AppSpacing.sm,
-              AppSpacing.xs,
-              AppSpacing.sm,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: <Widget>[
-                    lead,
-                    AppSpacing.gapMd,
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          if (trackable && event.done)
-                            StatusPill(
-                              icon: Icons.check_circle_rounded,
-                              label: 'Done',
-                              background: colors.primaryContainer,
-                              foreground: colors.onPrimaryContainer,
-                              border: colors.primary,
-                            )
-                          else if (countdown != null)
-                            StatusPill(
-                              icon: event.isExam
-                                  ? Icons.error_outline_rounded
-                                  : Icons.assignment_late_outlined,
-                              label: event.isExam
-                                  ? 'Exam · $countdown'
-                                  : 'Due · $countdown',
-                              background: event.isExam
-                                  ? colors.errorContainer
-                                  : colors.primaryContainer,
-                              foreground: event.isExam
-                                  ? colors.onErrorContainer
-                                  : colors.onPrimaryContainer,
-                              border: event.isExam
-                                  ? colors.error
-                                  : colors.primary,
+    return Opacity(
+      opacity: event.done ? 0.55 : 1,
+      child: Card(
+        margin: EdgeInsets.zero,
+        elevation: 0,
+        color: colors.surfaceContainerLowest,
+        shape: RoundedRectangleBorder(
+          borderRadius: AppRadius.large,
+          side: BorderSide(color: colors.outlineVariant, width: 1.0),
+        ),
+        child: InkWell(
+          borderRadius: AppRadius.large,
+          onTap: () => _showAddEventDialog(context, existingEvent: event),
+          onLongPress: () => _confirmDelete(event),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 72),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.md,
+                AppSpacing.sm,
+                AppSpacing.xs,
+                AppSpacing.sm,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      lead,
+                      AppSpacing.gapMd,
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            if (trackable && event.done)
+                              StatusPill(
+                                icon: Icons.check_circle_rounded,
+                                label: 'Done',
+                                background: colors.primaryContainer,
+                                foreground: colors.onPrimaryContainer,
+                                border: colors.primary,
+                              )
+                            else if (countdown != null)
+                              StatusPill(
+                                icon: event.isExam
+                                    ? Icons.error_outline_rounded
+                                    : Icons.assignment_late_outlined,
+                                label: event.isExam
+                                    ? 'Exam · $countdown'
+                                    : 'Due · $countdown',
+                                background: event.isExam
+                                    ? colors.errorContainer
+                                    : colors.primaryContainer,
+                                foreground: event.isExam
+                                    ? colors.onErrorContainer
+                                    : colors.onPrimaryContainer,
+                                border: event.isExam
+                                    ? colors.error
+                                    : colors.primary,
+                              ),
+                            Text(
+                              event.title,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: textStyles.titleSmall?.copyWith(
+                                fontWeight: FontWeight.w700,
+                                decoration: event.done
+                                    ? TextDecoration.lineThrough
+                                    : null,
+                              ),
                             ),
-                          Text(
-                            event.title,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: textStyles.titleSmall?.copyWith(
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
                           if (details.isNotEmpty)
                             Text(
                               details.join(' · '),
@@ -857,6 +863,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
             ),
           ),
         ),
+      ),
       ),
     );
   }

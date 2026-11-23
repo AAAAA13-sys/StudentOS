@@ -233,6 +233,52 @@ void main() {
       await container.read(billsControllerProvider.future);
       expect(await FinanceRepository(db).getTransactions(), hasLength(1));
     });
+
+    test('refreshAutoLog logs bills across midnight idempotently', () async {
+      final AppDatabase db = AppDatabase(NativeDatabase.memory());
+      addTearDown(db.close);
+      final ProviderContainer container = ProviderContainer(
+        overrides: [appDatabaseProvider.overrideWithValue(db)],
+      );
+      addTearDown(container.dispose);
+
+      final DateTime today = dateOnly(DateTime.now());
+      final DateTime tomorrow = DateTime(
+        today.year,
+        today.month,
+        today.day + 1,
+      );
+      await BillsRepository(db).createBill(
+        Bill(
+          id: 0,
+          title: 'Cloud',
+          amountCents: 29900,
+          category: 'Other',
+          cadence: 'monthly:${tomorrow.day}',
+          nextDueOn: formatDateKey(tomorrow),
+          autoLog: true,
+        ),
+      );
+
+      // Today: not due yet.
+      await container.read(billsControllerProvider.future);
+      expect(await FinanceRepository(db).getTransactions(), isEmpty);
+
+      // Simulate resuming after midnight on tomorrow.
+      await container
+          .read(billsControllerProvider.notifier)
+          .refreshAutoLog(now: tomorrow);
+      await container
+          .read(billsControllerProvider.notifier)
+          .refreshAutoLog(now: tomorrow);
+
+      final List<Transaction> txs = await FinanceRepository(
+        db,
+      ).getTransactions();
+      expect(txs, hasLength(1));
+      expect(txs.single.note, 'Cloud');
+      expect(txs.single.amount, 299);
+    });
   });
 
   group('FinanceScreen Bills UI', () {
@@ -406,6 +452,44 @@ void main() {
         () => BillsRepository(db).getBills(),
       );
       expect(remaining, isEmpty);
+    });
+
+    testWidgets('tapping Log inside _BillsSheet shows floating snackbar', (
+      WidgetTester tester,
+    ) async {
+      final AppDatabase db = AppDatabase(NativeDatabase.memory());
+      addTearDown(db.close);
+      final DateTime today = dateOnly(DateTime.now());
+
+      await tester.runAsync(() {
+        return BillsRepository(db).createBill(
+          Bill(
+            id: 0,
+            title: 'Rent',
+            amountCents: 350000,
+            category: 'Other',
+            cadence: 'monthly:${today.day}',
+            nextDueOn: formatDateKey(today),
+          ),
+        );
+      });
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [appDatabaseProvider.overrideWithValue(db)],
+          child: MaterialApp(theme: AppTheme.light, home: const FinanceScreen()),
+        ),
+      );
+      await settle(tester);
+
+      await tester.tap(find.text('Recurring bills'));
+      await settle(tester);
+
+      // Tap the Log button inside the sheet (not the background row's Log).
+      await tester.tap(find.widgetWithText(TextButton, 'Log').last);
+      await settle(tester);
+
+      expect(find.text('Logged Rent · ₱3,500.00'), findsOneWidget);
     });
   });
 }

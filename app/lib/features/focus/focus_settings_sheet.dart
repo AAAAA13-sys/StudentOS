@@ -47,6 +47,9 @@ class _FocusSettingsSheetState extends ConsumerState<_FocusSettingsSheet> {
     );
     final NavigatorState nav = Navigator.of(context);
     await ref.read(focusControllerProvider.notifier).saveSettings(s);
+    if (s.lockdown == Lockdown.strict) {
+      ref.invalidate(readinessProvider);
+    }
     nav.pop();
   }
 

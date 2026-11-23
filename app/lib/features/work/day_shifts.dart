@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_theme.dart';
+import 'add_shift_sheet.dart';
 import 'shift.dart';
 import 'work_controller.dart';
 
@@ -40,50 +41,66 @@ class DayShifts extends ConsumerWidget {
       child: Column(
         children: <Widget>[
           for (final Shift shift in shifts)
-            Container(
-              width: double.infinity,
-              margin: const EdgeInsets.only(bottom: AppSpacing.sm),
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.lg,
-                vertical: AppSpacing.md,
-              ),
-              decoration: BoxDecoration(
-                borderRadius: AppRadius.large,
-                border: Border.all(color: colors.outlineVariant),
-              ),
-              child: Row(
-                children: <Widget>[
-                  Icon(
-                    Icons.work_outline_rounded,
-                    size: AppSizes.iconSm,
-                    color: colors.onSurfaceVariant,
-                  ),
-                  AppSpacing.gapMd,
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Text(
-                          'Shift at ${shift.job}',
-                          style: textStyles.titleSmall?.copyWith(
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        Text(
-                          '${time.format(shift.startsAt)} – '
-                          '${time.format(shift.endsAt)} · '
-                          '${formatHours(shift.paidMinutes)} hrs',
-                          style: textStyles.bodySmall?.copyWith(
+            Padding(
+              padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+              child: Card(
+                margin: EdgeInsets.zero,
+                elevation: 0,
+                color: colors.surfaceContainerLowest,
+                shape: RoundedRectangleBorder(
+                  borderRadius: AppRadius.large,
+                  side: BorderSide(color: colors.outlineVariant, width: 1.0),
+                ),
+                child: InkWell(
+                  borderRadius: AppRadius.large,
+                  onTap: () => editShift(context, ref, shift),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(
+                      minHeight: AppSizes.minTouchTarget,
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.lg,
+                        vertical: AppSpacing.md,
+                      ),
+                      child: Row(
+                        children: <Widget>[
+                          Icon(
+                            Icons.work_outline_rounded,
+                            size: AppSizes.iconSm,
                             color: colors.onSurfaceVariant,
-                            fontFeatures: const <FontFeature>[
-                              FontFeature.tabularFigures(),
-                            ],
                           ),
-                        ),
-                      ],
+                          AppSpacing.gapMd,
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: <Widget>[
+                                Text(
+                                  'Shift at ${shift.job}',
+                                  style: textStyles.titleSmall?.copyWith(
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                Text(
+                                  '${time.format(shift.startsAt)} – '
+                                  '${time.format(shift.endsAt)} · '
+                                  '${formatHours(shift.paidMinutes)} hrs'
+                                  '${shift.paid ? ' · paid' : ''}',
+                                  style: textStyles.bodySmall?.copyWith(
+                                    color: colors.onSurfaceVariant,
+                                    fontFeatures: const <FontFeature>[
+                                      FontFeature.tabularFigures(),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ],
+                ),
               ),
             ),
         ],

@@ -6,11 +6,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../features/calendar/calendar_controller.dart';
+import '../../features/calendar/schedule_view.dart';
 import '../../features/finance/bills_controller.dart';
 import '../../features/finance/finance_controller.dart';
 import '../../features/focus/focus_controller.dart';
 import '../../features/focus/focus_platform.dart';
 import '../../features/phone/phone_controller.dart';
+import '../../features/work/payday.dart';
 import '../../features/work/work_controller.dart';
 import '../../features/notes/notes_controller.dart';
 import '../db/backup.dart';
@@ -73,10 +75,12 @@ class AppDrawer extends ConsumerWidget {
       final counts = await backup.restoreJson(json);
       container
         ..invalidate(calendarControllerProvider)
+        ..invalidate(scheduleViewProvider)
         ..invalidate(financeControllerProvider)
         ..invalidate(billsControllerProvider)
         ..invalidate(notesControllerProvider)
         ..invalidate(workControllerProvider)
+        ..invalidate(paydayProvider)
         ..invalidate(phoneControllerProvider)
         ..invalidate(alarmControllerProvider)
         ..invalidate(focusControllerProvider)

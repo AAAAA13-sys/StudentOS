@@ -61,7 +61,7 @@ class BillsRow extends ConsumerWidget {
         ),
       );
       trailing = TextButton(
-        onPressed: () => _logOne(context, ref, bill),
+        onPressed: () => _logBillWithFeedback(context, ref, bill),
         child: const Text('Log'),
       );
     } else if (due.length > 1) {
@@ -127,21 +127,6 @@ class BillsRow extends ConsumerWidget {
     );
   }
 
-  Future<void> _logOne(BuildContext context, WidgetRef ref, Bill bill) async {
-    final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
-    await ref.read(billsControllerProvider.notifier).logBill(bill);
-    messenger
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          behavior: SnackBarBehavior.floating,
-          margin: const EdgeInsets.fromLTRB(16, 0, 16, 56 + 16 + 16),
-          duration: const Duration(seconds: 2),
-          content: Text('Logged ${bill.title} · ${_money.format(bill.amount)}'),
-        ),
-      );
-  }
-
   Future<void> _logAll(BuildContext context, WidgetRef ref, int count) async {
     final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
     await ref.read(billsControllerProvider.notifier).logAllDue();
@@ -156,6 +141,25 @@ class BillsRow extends ConsumerWidget {
         ),
       );
   }
+}
+
+Future<void> _logBillWithFeedback(
+  BuildContext context,
+  WidgetRef ref,
+  Bill bill,
+) async {
+  final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
+  await ref.read(billsControllerProvider.notifier).logBill(bill);
+  messenger
+    ..hideCurrentSnackBar()
+    ..showSnackBar(
+      SnackBar(
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.fromLTRB(16, 0, 16, 56 + 16 + 16),
+        duration: const Duration(seconds: 2),
+        content: Text('Logged ${bill.title} · ${_money.format(bill.amount)}'),
+      ),
+    );
 }
 
 /// Lists all recurring bills sorted by `nextDueOn`, with 1-tap logging and
@@ -304,9 +308,8 @@ class _BillsSheet extends ConsumerWidget {
                         ),
                         trailing: due
                             ? TextButton(
-                                onPressed: () => ref
-                                    .read(billsControllerProvider.notifier)
-                                    .logBill(bill),
+                                onPressed: () =>
+                                    _logBillWithFeedback(context, ref, bill),
                                 child: const Text('Log'),
                               )
                             : IconButton(
