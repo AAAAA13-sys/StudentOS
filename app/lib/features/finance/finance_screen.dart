@@ -12,8 +12,11 @@ import '../../core/widgets/month_switcher.dart';
 import 'finance_controller.dart';
 import 'finance_repository.dart';
 import 'amount_validation.dart';
+import 'bill.dart';
+import 'bills_controller.dart';
 import 'quick_again.dart';
 import 'transaction.dart';
+import 'widgets/bills_row.dart';
 import 'widgets/quick_expense_sheet.dart';
 import '../work/work_controller.dart';
 import '../work/payday.dart';
@@ -103,16 +106,19 @@ class FinanceScreen extends ConsumerWidget {
                           ),
                           // An empty month already shows Ponpon below, so
                           // the bubble waits for a transaction, except on a
-                          // payday with pay still waiting.
+                          // payday with pay still waiting or when a bill is
+                          // due.
                           if (thisMonth &&
                               (state.transactions.isNotEmpty ||
-                                  _paydayWithPayWaiting(ref)))
+                                  _paydayWithPayWaiting(ref) ||
+                                  _hasDueBills(ref)))
                             const PonponTalkSlot(
                               surface: PonponSurface.finance,
                               horizontalPadding: 0,
                             ),
                           _MonthCard(summary: state.summary),
                           if (thisMonth) const WorkPayRow(),
+                          if (thisMonth) const BillsRow(),
                         ],
                       ),
                     ),
@@ -718,4 +724,11 @@ bool _paydayWithPayWaiting(WidgetRef ref) {
   final List<Shift> shifts =
       ref.watch(workControllerProvider).value ?? const <Shift>[];
   return WorkSummary.of(shifts, now).workedPayCents > 0;
+}
+
+bool _hasDueBills(WidgetRef ref) {
+  final DateTime now = DateTime.now();
+  final List<Bill> bills =
+      ref.watch(billsControllerProvider).value ?? const <Bill>[];
+  return bills.any((Bill b) => b.isDueOnOrBefore(now));
 }

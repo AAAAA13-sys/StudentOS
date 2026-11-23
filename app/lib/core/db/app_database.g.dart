@@ -4572,6 +4572,516 @@ class FocusLogRowsCompanion extends UpdateCompanion<FocusLogRow> {
   }
 }
 
+class $BillRowsTable extends BillRows with TableInfo<$BillRowsTable, BillRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $BillRowsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _titleMeta = const VerificationMeta('title');
+  @override
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
+    'title',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _amountCentsMeta = const VerificationMeta(
+    'amountCents',
+  );
+  @override
+  late final GeneratedColumn<int> amountCents = GeneratedColumn<int>(
+    'amount_cents',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _categoryMeta = const VerificationMeta(
+    'category',
+  );
+  @override
+  late final GeneratedColumn<String> category = GeneratedColumn<String>(
+    'category',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _cadenceMeta = const VerificationMeta(
+    'cadence',
+  );
+  @override
+  late final GeneratedColumn<String> cadence = GeneratedColumn<String>(
+    'cadence',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nextDueOnMeta = const VerificationMeta(
+    'nextDueOn',
+  );
+  @override
+  late final GeneratedColumn<String> nextDueOn = GeneratedColumn<String>(
+    'next_due_on',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _activeMeta = const VerificationMeta('active');
+  @override
+  late final GeneratedColumn<bool> active = GeneratedColumn<bool>(
+    'active',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("active" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  static const VerificationMeta _autoLogMeta = const VerificationMeta(
+    'autoLog',
+  );
+  @override
+  late final GeneratedColumn<bool> autoLog = GeneratedColumn<bool>(
+    'auto_log',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("auto_log" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    title,
+    amountCents,
+    category,
+    cadence,
+    nextDueOn,
+    active,
+    autoLog,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'bills';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<BillRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('title')) {
+      context.handle(
+        _titleMeta,
+        title.isAcceptableOrUnknown(data['title']!, _titleMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_titleMeta);
+    }
+    if (data.containsKey('amount_cents')) {
+      context.handle(
+        _amountCentsMeta,
+        amountCents.isAcceptableOrUnknown(
+          data['amount_cents']!,
+          _amountCentsMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_amountCentsMeta);
+    }
+    if (data.containsKey('category')) {
+      context.handle(
+        _categoryMeta,
+        category.isAcceptableOrUnknown(data['category']!, _categoryMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_categoryMeta);
+    }
+    if (data.containsKey('cadence')) {
+      context.handle(
+        _cadenceMeta,
+        cadence.isAcceptableOrUnknown(data['cadence']!, _cadenceMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_cadenceMeta);
+    }
+    if (data.containsKey('next_due_on')) {
+      context.handle(
+        _nextDueOnMeta,
+        nextDueOn.isAcceptableOrUnknown(data['next_due_on']!, _nextDueOnMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nextDueOnMeta);
+    }
+    if (data.containsKey('active')) {
+      context.handle(
+        _activeMeta,
+        active.isAcceptableOrUnknown(data['active']!, _activeMeta),
+      );
+    }
+    if (data.containsKey('auto_log')) {
+      context.handle(
+        _autoLogMeta,
+        autoLog.isAcceptableOrUnknown(data['auto_log']!, _autoLogMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  BillRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return BillRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      title: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}title'],
+      )!,
+      amountCents: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}amount_cents'],
+      )!,
+      category: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}category'],
+      )!,
+      cadence: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}cadence'],
+      )!,
+      nextDueOn: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}next_due_on'],
+      )!,
+      active: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}active'],
+      )!,
+      autoLog: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}auto_log'],
+      )!,
+    );
+  }
+
+  @override
+  $BillRowsTable createAlias(String alias) {
+    return $BillRowsTable(attachedDatabase, alias);
+  }
+}
+
+class BillRow extends DataClass implements Insertable<BillRow> {
+  final int id;
+  final String title;
+
+  /// Centavos, so amounts never accumulate floating-point error.
+  final int amountCents;
+  final String category;
+
+  /// `weekly:N`, `semimonthly`, or `monthly:N` (PaydaySchedule semantics).
+  final String cadence;
+
+  /// Next due date as `YYYY-MM-DD`.
+  final String nextDueOn;
+  final bool active;
+  final bool autoLog;
+  const BillRow({
+    required this.id,
+    required this.title,
+    required this.amountCents,
+    required this.category,
+    required this.cadence,
+    required this.nextDueOn,
+    required this.active,
+    required this.autoLog,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['title'] = Variable<String>(title);
+    map['amount_cents'] = Variable<int>(amountCents);
+    map['category'] = Variable<String>(category);
+    map['cadence'] = Variable<String>(cadence);
+    map['next_due_on'] = Variable<String>(nextDueOn);
+    map['active'] = Variable<bool>(active);
+    map['auto_log'] = Variable<bool>(autoLog);
+    return map;
+  }
+
+  BillRowsCompanion toCompanion(bool nullToAbsent) {
+    return BillRowsCompanion(
+      id: Value(id),
+      title: Value(title),
+      amountCents: Value(amountCents),
+      category: Value(category),
+      cadence: Value(cadence),
+      nextDueOn: Value(nextDueOn),
+      active: Value(active),
+      autoLog: Value(autoLog),
+    );
+  }
+
+  factory BillRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return BillRow(
+      id: serializer.fromJson<int>(json['id']),
+      title: serializer.fromJson<String>(json['title']),
+      amountCents: serializer.fromJson<int>(json['amountCents']),
+      category: serializer.fromJson<String>(json['category']),
+      cadence: serializer.fromJson<String>(json['cadence']),
+      nextDueOn: serializer.fromJson<String>(json['nextDueOn']),
+      active: serializer.fromJson<bool>(json['active']),
+      autoLog: serializer.fromJson<bool>(json['autoLog']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'title': serializer.toJson<String>(title),
+      'amountCents': serializer.toJson<int>(amountCents),
+      'category': serializer.toJson<String>(category),
+      'cadence': serializer.toJson<String>(cadence),
+      'nextDueOn': serializer.toJson<String>(nextDueOn),
+      'active': serializer.toJson<bool>(active),
+      'autoLog': serializer.toJson<bool>(autoLog),
+    };
+  }
+
+  BillRow copyWith({
+    int? id,
+    String? title,
+    int? amountCents,
+    String? category,
+    String? cadence,
+    String? nextDueOn,
+    bool? active,
+    bool? autoLog,
+  }) => BillRow(
+    id: id ?? this.id,
+    title: title ?? this.title,
+    amountCents: amountCents ?? this.amountCents,
+    category: category ?? this.category,
+    cadence: cadence ?? this.cadence,
+    nextDueOn: nextDueOn ?? this.nextDueOn,
+    active: active ?? this.active,
+    autoLog: autoLog ?? this.autoLog,
+  );
+  BillRow copyWithCompanion(BillRowsCompanion data) {
+    return BillRow(
+      id: data.id.present ? data.id.value : this.id,
+      title: data.title.present ? data.title.value : this.title,
+      amountCents: data.amountCents.present
+          ? data.amountCents.value
+          : this.amountCents,
+      category: data.category.present ? data.category.value : this.category,
+      cadence: data.cadence.present ? data.cadence.value : this.cadence,
+      nextDueOn: data.nextDueOn.present ? data.nextDueOn.value : this.nextDueOn,
+      active: data.active.present ? data.active.value : this.active,
+      autoLog: data.autoLog.present ? data.autoLog.value : this.autoLog,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('BillRow(')
+          ..write('id: $id, ')
+          ..write('title: $title, ')
+          ..write('amountCents: $amountCents, ')
+          ..write('category: $category, ')
+          ..write('cadence: $cadence, ')
+          ..write('nextDueOn: $nextDueOn, ')
+          ..write('active: $active, ')
+          ..write('autoLog: $autoLog')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    title,
+    amountCents,
+    category,
+    cadence,
+    nextDueOn,
+    active,
+    autoLog,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is BillRow &&
+          other.id == this.id &&
+          other.title == this.title &&
+          other.amountCents == this.amountCents &&
+          other.category == this.category &&
+          other.cadence == this.cadence &&
+          other.nextDueOn == this.nextDueOn &&
+          other.active == this.active &&
+          other.autoLog == this.autoLog);
+}
+
+class BillRowsCompanion extends UpdateCompanion<BillRow> {
+  final Value<int> id;
+  final Value<String> title;
+  final Value<int> amountCents;
+  final Value<String> category;
+  final Value<String> cadence;
+  final Value<String> nextDueOn;
+  final Value<bool> active;
+  final Value<bool> autoLog;
+  const BillRowsCompanion({
+    this.id = const Value.absent(),
+    this.title = const Value.absent(),
+    this.amountCents = const Value.absent(),
+    this.category = const Value.absent(),
+    this.cadence = const Value.absent(),
+    this.nextDueOn = const Value.absent(),
+    this.active = const Value.absent(),
+    this.autoLog = const Value.absent(),
+  });
+  BillRowsCompanion.insert({
+    this.id = const Value.absent(),
+    required String title,
+    required int amountCents,
+    required String category,
+    required String cadence,
+    required String nextDueOn,
+    this.active = const Value.absent(),
+    this.autoLog = const Value.absent(),
+  }) : title = Value(title),
+       amountCents = Value(amountCents),
+       category = Value(category),
+       cadence = Value(cadence),
+       nextDueOn = Value(nextDueOn);
+  static Insertable<BillRow> custom({
+    Expression<int>? id,
+    Expression<String>? title,
+    Expression<int>? amountCents,
+    Expression<String>? category,
+    Expression<String>? cadence,
+    Expression<String>? nextDueOn,
+    Expression<bool>? active,
+    Expression<bool>? autoLog,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (title != null) 'title': title,
+      if (amountCents != null) 'amount_cents': amountCents,
+      if (category != null) 'category': category,
+      if (cadence != null) 'cadence': cadence,
+      if (nextDueOn != null) 'next_due_on': nextDueOn,
+      if (active != null) 'active': active,
+      if (autoLog != null) 'auto_log': autoLog,
+    });
+  }
+
+  BillRowsCompanion copyWith({
+    Value<int>? id,
+    Value<String>? title,
+    Value<int>? amountCents,
+    Value<String>? category,
+    Value<String>? cadence,
+    Value<String>? nextDueOn,
+    Value<bool>? active,
+    Value<bool>? autoLog,
+  }) {
+    return BillRowsCompanion(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      amountCents: amountCents ?? this.amountCents,
+      category: category ?? this.category,
+      cadence: cadence ?? this.cadence,
+      nextDueOn: nextDueOn ?? this.nextDueOn,
+      active: active ?? this.active,
+      autoLog: autoLog ?? this.autoLog,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (title.present) {
+      map['title'] = Variable<String>(title.value);
+    }
+    if (amountCents.present) {
+      map['amount_cents'] = Variable<int>(amountCents.value);
+    }
+    if (category.present) {
+      map['category'] = Variable<String>(category.value);
+    }
+    if (cadence.present) {
+      map['cadence'] = Variable<String>(cadence.value);
+    }
+    if (nextDueOn.present) {
+      map['next_due_on'] = Variable<String>(nextDueOn.value);
+    }
+    if (active.present) {
+      map['active'] = Variable<bool>(active.value);
+    }
+    if (autoLog.present) {
+      map['auto_log'] = Variable<bool>(autoLog.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('BillRowsCompanion(')
+          ..write('id: $id, ')
+          ..write('title: $title, ')
+          ..write('amountCents: $amountCents, ')
+          ..write('category: $category, ')
+          ..write('cadence: $cadence, ')
+          ..write('nextDueOn: $nextDueOn, ')
+          ..write('active: $active, ')
+          ..write('autoLog: $autoLog')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -4588,6 +5098,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   );
   late final $AlarmRowsTable alarmRows = $AlarmRowsTable(this);
   late final $FocusLogRowsTable focusLogRows = $FocusLogRowsTable(this);
+  late final $BillRowsTable billRows = $BillRowsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -4602,6 +5113,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     phoneAppDayRows,
     alarmRows,
     focusLogRows,
+    billRows,
   ];
 }
 
@@ -6959,6 +7471,260 @@ typedef $$FocusLogRowsTableProcessedTableManager =
       FocusLogRow,
       PrefetchHooks Function()
     >;
+typedef $$BillRowsTableCreateCompanionBuilder = BillRowsCompanion Function({
+  Value<int> id,
+  required String title,
+  required int amountCents,
+  required String category,
+  required String cadence,
+  required String nextDueOn,
+  Value<bool> active,
+  Value<bool> autoLog,
+});
+typedef $$BillRowsTableUpdateCompanionBuilder = BillRowsCompanion Function({
+  Value<int> id,
+  Value<String> title,
+  Value<int> amountCents,
+  Value<String> category,
+  Value<String> cadence,
+  Value<String> nextDueOn,
+  Value<bool> active,
+  Value<bool> autoLog,
+});
+
+class $$BillRowsTableFilterComposer
+    extends Composer<_$AppDatabase, $BillRowsTable> {
+  $$BillRowsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get amountCents => $composableBuilder(
+    column: $table.amountCents,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get category => $composableBuilder(
+    column: $table.category,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get cadence => $composableBuilder(
+    column: $table.cadence,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get nextDueOn => $composableBuilder(
+    column: $table.nextDueOn,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get active => $composableBuilder(
+    column: $table.active,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get autoLog => $composableBuilder(
+    column: $table.autoLog,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$BillRowsTableOrderingComposer
+    extends Composer<_$AppDatabase, $BillRowsTable> {
+  $$BillRowsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get amountCents => $composableBuilder(
+    column: $table.amountCents,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get category => $composableBuilder(
+    column: $table.category,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get cadence => $composableBuilder(
+    column: $table.cadence,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get nextDueOn => $composableBuilder(
+    column: $table.nextDueOn,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get active => $composableBuilder(
+    column: $table.active,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get autoLog => $composableBuilder(
+    column: $table.autoLog,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$BillRowsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $BillRowsTable> {
+  $$BillRowsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => column);
+
+  GeneratedColumn<int> get amountCents => $composableBuilder(
+    column: $table.amountCents,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get category =>
+      $composableBuilder(column: $table.category, builder: (column) => column);
+
+  GeneratedColumn<String> get cadence =>
+      $composableBuilder(column: $table.cadence, builder: (column) => column);
+
+  GeneratedColumn<String> get nextDueOn =>
+      $composableBuilder(column: $table.nextDueOn, builder: (column) => column);
+
+  GeneratedColumn<bool> get active =>
+      $composableBuilder(column: $table.active, builder: (column) => column);
+
+  GeneratedColumn<bool> get autoLog =>
+      $composableBuilder(column: $table.autoLog, builder: (column) => column);
+}
+
+class $$BillRowsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $BillRowsTable,
+          BillRow,
+          $$BillRowsTableFilterComposer,
+          $$BillRowsTableOrderingComposer,
+          $$BillRowsTableAnnotationComposer,
+          $$BillRowsTableCreateCompanionBuilder,
+          $$BillRowsTableUpdateCompanionBuilder,
+          (BillRow, BaseReferences<_$AppDatabase, $BillRowsTable, BillRow>),
+          BillRow,
+          PrefetchHooks Function()
+        > {
+  $$BillRowsTableTableManager(_$AppDatabase db, $BillRowsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$BillRowsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$BillRowsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$BillRowsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> title = const Value.absent(),
+                Value<int> amountCents = const Value.absent(),
+                Value<String> category = const Value.absent(),
+                Value<String> cadence = const Value.absent(),
+                Value<String> nextDueOn = const Value.absent(),
+                Value<bool> active = const Value.absent(),
+                Value<bool> autoLog = const Value.absent(),
+              }) => BillRowsCompanion(
+                id: id,
+                title: title,
+                amountCents: amountCents,
+                category: category,
+                cadence: cadence,
+                nextDueOn: nextDueOn,
+                active: active,
+                autoLog: autoLog,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String title,
+                required int amountCents,
+                required String category,
+                required String cadence,
+                required String nextDueOn,
+                Value<bool> active = const Value.absent(),
+                Value<bool> autoLog = const Value.absent(),
+              }) => BillRowsCompanion.insert(
+                id: id,
+                title: title,
+                amountCents: amountCents,
+                category: category,
+                cadence: cadence,
+                nextDueOn: nextDueOn,
+                active: active,
+                autoLog: autoLog,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$BillRowsTable, BillRow>(table),
+                  BaseReferences<_$AppDatabase, $BillRowsTable, BillRow>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$BillRowsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $BillRowsTable,
+      BillRow,
+      $$BillRowsTableFilterComposer,
+      $$BillRowsTableOrderingComposer,
+      $$BillRowsTableAnnotationComposer,
+      $$BillRowsTableCreateCompanionBuilder,
+      $$BillRowsTableUpdateCompanionBuilder,
+      (BillRow, BaseReferences<_$AppDatabase, $BillRowsTable, BillRow>),
+      BillRow,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -6981,4 +7747,6 @@ class $AppDatabaseManager {
       $$AlarmRowsTableTableManager(_db, _db.alarmRows);
   $$FocusLogRowsTableTableManager get focusLogRows =>
       $$FocusLogRowsTableTableManager(_db, _db.focusLogRows);
+  $$BillRowsTableTableManager get billRows =>
+      $$BillRowsTableTableManager(_db, _db.billRows);
 }

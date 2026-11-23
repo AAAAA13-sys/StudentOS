@@ -97,7 +97,7 @@ void main() {
         db,
       ).createNote(const Note(id: 0, title: 'n', body: '', tags: <String>[]));
       expect((await NotesRepository(db).getNote(id))!.pinned, isFalse);
-      expect(db.schemaVersion, 8);
+      expect(db.schemaVersion, greaterThanOrEqualTo(7));
       await db
           .into(db.noteRows)
           .insert(

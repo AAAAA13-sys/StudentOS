@@ -1,4 +1,5 @@
 import '../../core/widgets/ponpon.dart';
+import '../finance/bill.dart';
 import '../finance/transaction.dart';
 import '../work/payday.dart';
 import 'ponpon_insight.dart';
@@ -14,6 +15,7 @@ List<PonponInsight> financeInsights({
   required DateTime now,
   PaydaySchedule payday = PaydaySchedule.none,
   int waitingPayCents = 0,
+  List<Bill> bills = const <Bill>[],
 }) {
   final PonponInsight? paydayTip =
       waitingPayCents > 0 && isPaydayToday(payday, now)
@@ -23,8 +25,34 @@ List<PonponInsight> financeInsights({
           priority: 1,
         )
       : null;
+
+  final List<Bill> dueBills = <Bill>[
+    for (final Bill bill in bills)
+      if (bill.isDueOnOrBefore(now)) bill,
+  ];
+  final PonponInsight? billTip;
+  if (dueBills.isEmpty) {
+    billTip = null;
+  } else if (dueBills.length == 1) {
+    final Bill bill = dueBills.single;
+    final String verb = bill.isOverdue(now) ? 'overdue' : 'due today';
+    billTip = PonponInsight(
+      text: 'Bill $verb: ${bill.title} (${pesoText(bill.amount)}).',
+      priority: 1,
+    );
+  } else {
+    final int totalCents = dueBills.fold<int>(
+      0,
+      (int s, Bill b) => s + b.amountCents,
+    );
+    billTip = PonponInsight(
+      text: '${dueBills.length} bills due (${pesoText(totalCents / 100)}).',
+      priority: 1,
+    );
+  }
+
   if (thisMonth.isEmpty) {
-    return paydayTip == null ? const <PonponInsight>[] : [paydayTip];
+    return rankInsights(<PonponInsight>[?paydayTip, ?billTip]);
   }
   final List<Transaction> spent = <Transaction>[
     for (final Transaction t in thisMonth)
@@ -135,6 +163,7 @@ List<PonponInsight> financeInsights({
   }
 
   if (paydayTip != null) out.add(paydayTip);
+  if (billTip != null) out.add(billTip);
 
   // Nothing spent yet today.
   if (today == 0) {

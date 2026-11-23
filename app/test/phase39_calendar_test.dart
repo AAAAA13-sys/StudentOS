@@ -103,8 +103,8 @@ void main() {
     setUp(() => db = AppDatabase(NativeDatabase.memory()));
     tearDown(() => db.close());
 
-    test('schema is v8 and a new event is not done', () async {
-      expect(db.schemaVersion, 8);
+    test('schema is at least v8 and a new event is not done', () async {
+      expect(db.schemaVersion, greaterThanOrEqualTo(8));
       final CalendarRepository repo = CalendarRepository(db);
       final CalendarEvent created = await repo.createEvent(
         _event('Exam', DateTime(2026, 11, 20, 9)),

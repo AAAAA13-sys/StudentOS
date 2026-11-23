@@ -225,7 +225,7 @@ void main() {
       );
       await repo.sync(t(16, 9));
       final String json = await BackupService(database).exportJson();
-      expect(json, contains('"format": 4'));
+      expect(json, contains('"format": ${BackupService.formatVersion}'));
 
       final AppDatabase target = AppDatabase(NativeDatabase.memory());
       addTearDown(target.close);

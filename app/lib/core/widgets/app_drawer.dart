@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../features/calendar/calendar_controller.dart';
+import '../../features/finance/bills_controller.dart';
 import '../../features/finance/finance_controller.dart';
 import '../../features/focus/focus_controller.dart';
 import '../../features/focus/focus_platform.dart';
@@ -73,6 +74,7 @@ class AppDrawer extends ConsumerWidget {
       container
         ..invalidate(calendarControllerProvider)
         ..invalidate(financeControllerProvider)
+        ..invalidate(billsControllerProvider)
         ..invalidate(notesControllerProvider)
         ..invalidate(workControllerProvider)
         ..invalidate(phoneControllerProvider)

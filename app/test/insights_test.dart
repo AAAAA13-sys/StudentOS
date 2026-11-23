@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:studentos/core/widgets/ponpon.dart';
 import 'package:studentos/features/calendar/event.dart';
+import 'package:studentos/features/finance/bill.dart';
 import 'package:studentos/features/finance/transaction.dart';
 import 'package:studentos/features/insights/calendar_insights.dart';
 import 'package:studentos/features/insights/finance_insights.dart';
@@ -536,8 +537,97 @@ void main() {
         ],
         lastMonth: <Transaction>[tx(5, 1000, month: 10)],
         now: now,
+        bills: const <Bill>[
+          Bill(
+            id: 1,
+            title: 'Rent',
+            amountCents: 350000,
+            category: 'Other',
+            cadence: 'monthly:20',
+            nextDueOn: '2026-11-20',
+          ),
+        ],
       );
       expect(r.length, lessThanOrEqualTo(4));
+    });
+
+    test('due bill speaks even on an empty month, plain without !', () {
+      final List<PonponInsight> oneDue = financeInsights(
+        thisMonth: const <Transaction>[],
+        lastMonth: const <Transaction>[],
+        now: now,
+        bills: const <Bill>[
+          Bill(
+            id: 1,
+            title: 'Rent',
+            amountCents: 350000,
+            category: 'Other',
+            cadence: 'monthly:20',
+            nextDueOn: '2026-11-20',
+          ),
+        ],
+      );
+      expect(oneDue.single.text, 'Bill due today: Rent (₱3,500).');
+      expect(oneDue.single.text.contains('!'), isFalse);
+
+      final List<PonponInsight> oneOverdue = financeInsights(
+        thisMonth: const <Transaction>[],
+        lastMonth: const <Transaction>[],
+        now: now,
+        bills: const <Bill>[
+          Bill(
+            id: 2,
+            title: 'Wifi',
+            amountCents: 129950,
+            category: 'Other',
+            cadence: 'monthly:18',
+            nextDueOn: '2026-11-18',
+          ),
+        ],
+      );
+      expect(oneOverdue.single.text, 'Bill overdue: Wifi (₱1,299.50).');
+
+      final List<PonponInsight> multiDue = financeInsights(
+        thisMonth: const <Transaction>[],
+        lastMonth: const <Transaction>[],
+        now: now,
+        bills: const <Bill>[
+          Bill(
+            id: 1,
+            title: 'Rent',
+            amountCents: 350000,
+            category: 'Other',
+            cadence: 'monthly:20',
+            nextDueOn: '2026-11-20',
+          ),
+          Bill(
+            id: 2,
+            title: 'Load',
+            amountCents: 70000,
+            category: 'Other',
+            cadence: 'weekly:5',
+            nextDueOn: '2026-11-19',
+          ),
+          Bill(
+            id: 3,
+            title: 'Paused',
+            amountCents: 10000,
+            category: 'Other',
+            cadence: 'monthly:1',
+            nextDueOn: '2026-11-01',
+            active: false,
+          ),
+          Bill(
+            id: 4,
+            title: 'Future',
+            amountCents: 10000,
+            category: 'Other',
+            cadence: 'monthly:25',
+            nextDueOn: '2026-11-25',
+          ),
+        ],
+      );
+      expect(multiDue.single.text, '2 bills due (₱4,200).');
     });
   });
 

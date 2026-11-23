@@ -257,6 +257,32 @@ class FocusLogRows extends Table {
   BoolColumn get endedEarly => boolean().withDefault(const Constant(false))();
 }
 
+/// A recurring expense bill (rent, wifi, load, tuition, subscriptions).
+@DataClassName('BillRow')
+class BillRows extends Table {
+  @override
+  String get tableName => 'bills';
+
+  IntColumn get id => integer().autoIncrement()();
+
+  TextColumn get title => text()();
+
+  /// Centavos, so amounts never accumulate floating-point error.
+  IntColumn get amountCents => integer()();
+
+  TextColumn get category => text()();
+
+  /// `weekly:N`, `semimonthly`, or `monthly:N` (PaydaySchedule semantics).
+  TextColumn get cadence => text()();
+
+  /// Next due date as `YYYY-MM-DD`.
+  TextColumn get nextDueOn => text()();
+
+  BoolColumn get active => boolean().withDefault(const Constant(true))();
+
+  BoolColumn get autoLog => boolean().withDefault(const Constant(false))();
+}
+
 /// The app's only data store. Everything lives on this device.
 @DriftDatabase(
   tables: <Type>[
@@ -269,6 +295,7 @@ class FocusLogRows extends Table {
     PhoneAppDayRows,
     AlarmRows,
     FocusLogRows,
+    BillRows,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -276,7 +303,7 @@ class AppDatabase extends _$AppDatabase {
     : super(executor ?? driftDatabase(name: 'studentos'));
 
   @override
-  int get schemaVersion => 8;
+  int get schemaVersion => 9;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -303,6 +330,9 @@ class AppDatabase extends _$AppDatabase {
       }
       if (from < 8) {
         await m.addColumn(eventRows, eventRows.done);
+      }
+      if (from < 9) {
+        await m.createTable(billRows);
       }
     },
   );

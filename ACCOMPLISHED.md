@@ -528,3 +528,14 @@ Entries are appended, never edited. Corrections are new entries that reference t
 - Payday only labels and reminds. It never adds money: income still enters only through "I got paid".
 - The Finance bubble now also shows on an empty month when it is payday and pay is waiting.
 **Open items:** semimonthly and monthly labels seen in unit tests only; not seen on the real phones.
+
+## Phase 42: Recurring bills that add expenses
+**Date:** 2026-11-24
+**Verified by:** qa-verifier (`a99ce8bb`) on `emulator-5554` (Round 1 FAIL on 4 stale test assertions -> Implementation fixed -> Round 2 PASS)
+**Evidence:** see the Phase 42 row in `PROGRESS.md`; `flutter analyze` clean; `flutter test` 241/241 passed; device screenshots kept in QA scratchpad.
+**Decisions:**
+- Built the product lead's third pick from Phase 40 (`bills` table in Drift schema v9, `BackupService.formatVersion` 5 with v1–v4 `[]` fallback).
+- Cadence reuses `PaydaySchedule` / `nextPayday` semantics (`weekly:N`, `semimonthly`, `monthly:N` clamped to month-end).
+- Explicit 1-tap `Log` / `Log all` (with optional per-bill `autoLog` on load) writes real `Transaction(type: 'expense', ...)` rows via `FinanceController.addTransaction` so Money widget sync and monthly totals share one source of truth without reviving Safe-to-Spend UI.
+- `AGENTS.md` reviewed after QA passed: no updates required (no new architectural patterns, agent roles, or changed conventions beyond existing local-only Drift + `FinanceController` patterns).
+**Open items:** `Log all` and `autoLog` verified in unit/widget tests only; nothing from this phase seen on the real phones.

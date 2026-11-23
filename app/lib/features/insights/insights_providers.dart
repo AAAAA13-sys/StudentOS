@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../calendar/calendar_controller.dart';
+import '../finance/bill.dart';
+import '../finance/bills_controller.dart';
 import '../finance/finance_controller.dart';
 import '../finance/finance_repository.dart';
 import '../finance/transaction.dart';
@@ -75,12 +77,15 @@ final FutureProvider<List<PonponInsight>> financeInsightsProvider =
           );
       final List<Shift> shifts =
           ref.watch(workControllerProvider).value ?? const <Shift>[];
+      final List<Bill> bills =
+          ref.watch(billsControllerProvider).value ?? const <Bill>[];
       return financeInsights(
         thisMonth: state.transactions,
         lastMonth: last,
         now: now,
         payday: ref.watch(paydayProvider),
         waitingPayCents: WorkSummary.of(shifts, now).workedPayCents,
+        bills: bills,
       );
     });
 
