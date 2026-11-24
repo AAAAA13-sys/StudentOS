@@ -193,6 +193,23 @@ class FocusRepository {
     return row == null ? null : _logFromRow(row);
   }
 
+  /// Focus sessions whose `endedAt` falls in `[start, end)`, newest first.
+  Future<List<FocusLog>> getLogsInRange(DateTime start, DateTime end) async {
+    final List<FocusLogRow> rows =
+        await (_db.select(_db.focusLogRows)
+              ..where(
+                (t) =>
+                    t.endedAt.isBiggerOrEqualValue(start) &
+                    t.endedAt.isSmallerThanValue(end),
+              )
+              ..orderBy([
+                (t) => OrderingTerm.desc(t.endedAt),
+                (t) => OrderingTerm.desc(t.id),
+              ]))
+            .get();
+    return rows.map(_logFromRow).toList();
+  }
+
   /// Focus time grouped by intention label for sessions ending on or after
   /// [since], longest duration first.
   Future<List<({String label, int focusMs})>> todayByTarget(

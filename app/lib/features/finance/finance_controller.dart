@@ -93,3 +93,98 @@ financeControllerProvider =
     AsyncNotifierProvider<FinanceController, FinanceState>(
       FinanceController.new,
     );
+
+/// In-memory filter state for the Finance > Cashflow transaction list.
+class FinanceCashflowFilter {
+  const FinanceCashflowFilter({
+    this.query = '',
+    this.type,
+    this.category,
+  });
+
+  final String query;
+  final String? type; // 'expense' | 'income' | null
+  final String? category;
+
+  bool get isActive =>
+      query.trim().isNotEmpty || type != null || category != null;
+
+  FinanceCashflowFilter copyWith({
+    String? query,
+    String? type,
+    bool clearType = false,
+    String? category,
+    bool clearCategory = false,
+  }) {
+    return FinanceCashflowFilter(
+      query: query ?? this.query,
+      type: clearType ? null : (type ?? this.type),
+      category: clearCategory ? null : (category ?? this.category),
+    );
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      other is FinanceCashflowFilter &&
+      other.query == query &&
+      other.type == type &&
+      other.category == category;
+
+  @override
+  int get hashCode => Object.hash(query, type, category);
+}
+
+class FinanceFilterNotifier extends Notifier<FinanceCashflowFilter> {
+  @override
+  FinanceCashflowFilter build() => const FinanceCashflowFilter();
+
+  void setQuery(String query) {
+    state = state.copyWith(query: query);
+  }
+
+  void setType(String? type) {
+    state = type == null
+        ? state.copyWith(clearType: true)
+        : state.copyWith(type: type);
+  }
+
+  void setCategory(String? category, {String? type}) {
+    state = FinanceCashflowFilter(
+      query: state.query,
+      type: type ?? state.type,
+      category: category,
+    );
+  }
+
+  void clearCategory() {
+    state = state.copyWith(clearCategory: true);
+  }
+
+  void clearAll() {
+    state = const FinanceCashflowFilter();
+  }
+}
+
+final NotifierProvider<FinanceFilterNotifier, FinanceCashflowFilter>
+financeFilterProvider =
+    NotifierProvider<FinanceFilterNotifier, FinanceCashflowFilter>(
+      FinanceFilterNotifier.new,
+    );
+
+/// Pure filter applying [filter] to [transactions].
+List<Transaction> filterCashflowTransactions(
+  List<Transaction> transactions,
+  FinanceCashflowFilter filter,
+) {
+  if (!filter.isActive) return transactions;
+  final String q = filter.query.trim().toLowerCase();
+  return <Transaction>[
+    for (final Transaction tx in transactions)
+      if ((filter.type == null || tx.type == filter.type) &&
+          (filter.category == null || tx.category == filter.category) &&
+          (q.isEmpty ||
+              tx.category.toLowerCase().contains(q) ||
+              (tx.note?.toLowerCase().contains(q) ?? false)))
+        tx,
+  ];
+}

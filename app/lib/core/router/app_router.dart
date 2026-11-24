@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../features/calendar/calendar_screen.dart';
 import '../../features/finance/finance_screen.dart';
 import '../../features/finance/goals_controller.dart';
+import '../../features/insights/month_review_screen.dart';
 import '../../features/notes/notes_screen.dart';
 import '../../features/focus/clock_panels.dart';
 import '../../features/tasks/tasks_controller.dart';
@@ -27,6 +28,11 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/recall', redirect: (_, _) => '/notes?view=recall'),
       GoRoute(path: '/goals', redirect: (_, _) => '/finance?view=goals'),
       GoRoute(path: '/ious', redirect: (_, _) => '/finance?view=ious'),
+      GoRoute(
+        path: '/review',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (_, _) => const MonthReviewScreen(),
+      ),
       StatefulShellRoute.indexedStack(
         builder:
             (

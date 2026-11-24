@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../features/calendar/calendar_controller.dart';
@@ -13,6 +14,7 @@ import '../../features/finance/goals_controller.dart';
 import '../../features/finance/ious_controller.dart';
 import '../../features/focus/focus_controller.dart';
 import '../../features/focus/focus_platform.dart';
+import '../../features/insights/month_review_screen.dart';
 import '../../features/phone/phone_controller.dart';
 import '../../features/work/payday.dart';
 import '../../features/work/work_controller.dart';
@@ -20,6 +22,7 @@ import '../../features/notes/notes_controller.dart';
 import '../../features/notes/recall_controller.dart';
 import '../../features/tasks/tasks_controller.dart';
 import '../db/backup.dart';
+import '../db/export_sheet.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_theme.dart';
 import 'confirm_dialog.dart';
@@ -222,6 +225,47 @@ class AppDrawer extends ConsumerWidget {
             ),
           ),
           sectionLabel('YOUR DATA'),
+          ListTile(
+            leading: const Icon(Icons.summarize_outlined),
+            title: const Text('Month in review'),
+            subtitle: const Text('Money, work, study and phone rest'),
+            onTap: () {
+              final GoRouter? router = GoRouter.maybeOf(context);
+              final NavigatorState rootNav = Navigator.of(
+                context,
+                rootNavigator: true,
+              );
+              Navigator.pop(context);
+              if (router != null) {
+                router.push('/review');
+              } else {
+                rootNav.push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const MonthReviewScreen(),
+                  ),
+                );
+              }
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.file_download_outlined),
+            title: const Text('Export CSV / summary'),
+            subtitle: const Text('Transactions, shifts, IOUs and review'),
+            onTap: () {
+              final BuildContext rootContext = Navigator.of(
+                context,
+                rootNavigator: true,
+              ).context;
+              final ProviderContainer container = ProviderScope.containerOf(
+                context,
+              );
+              final ScaffoldMessengerState messenger = ScaffoldMessenger.of(
+                context,
+              );
+              Navigator.pop(context);
+              showExportSheet(rootContext, container, messenger);
+            },
+          ),
           ListTile(
             leading: const Icon(Icons.save_alt_rounded),
             title: const Text('Back up to a file'),

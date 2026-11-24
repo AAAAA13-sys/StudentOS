@@ -87,6 +87,16 @@ class PhoneRepository {
     });
   }
 
+  static PhoneDay _dayFromRow(PhoneDayRow row) => PhoneDay(
+    date: DateTime.parse(row.date),
+    screenOnMs: row.screenOnMs,
+    unlocks: row.unlocks,
+    firstPickup: row.firstPickup,
+    restStart: row.restStart,
+    restEnd: row.restEnd,
+    complete: row.complete,
+  );
+
   /// Stored days from [from] onward, earliest first.
   Future<List<PhoneDay>> getDays(DateTime from) async {
     final List<PhoneDayRow> rows =
@@ -94,18 +104,17 @@ class PhoneRepository {
               ..where((t) => t.date.isBiggerOrEqualValue(dateKey(from)))
               ..orderBy([(t) => OrderingTerm.asc(t.date)]))
             .get();
-    return <PhoneDay>[
-      for (final PhoneDayRow row in rows)
-        PhoneDay(
-          date: DateTime.parse(row.date),
-          screenOnMs: row.screenOnMs,
-          unlocks: row.unlocks,
-          firstPickup: row.firstPickup,
-          restStart: row.restStart,
-          restEnd: row.restEnd,
-          complete: row.complete,
-        ),
-    ];
+    return rows.map(_dayFromRow).toList();
+  }
+
+  /// Stored days in [month] (`YYYY-MM`), earliest first.
+  Future<List<PhoneDay>> getDaysInMonth(String month) async {
+    final List<PhoneDayRow> rows =
+        await (_db.select(_db.phoneDayRows)
+              ..where((t) => t.date.like('$month-%'))
+              ..orderBy([(t) => OrderingTerm.asc(t.date)]))
+            .get();
+    return rows.map(_dayFromRow).toList();
   }
 
   /// The apps used on [day], most time first.

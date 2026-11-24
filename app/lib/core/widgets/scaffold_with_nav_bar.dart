@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -10,6 +13,8 @@ import '../../features/focus/focus_controller.dart';
 import '../../features/focus/focus_plan.dart';
 import '../../features/focus/focus_platform.dart';
 import '../../features/focus/clock_panels.dart';
+import '../../features/phone/phone_repository.dart';
+import '../../features/phone/phone_usage.dart';
 import '../../features/tasks/tasks_controller.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_theme.dart';
@@ -27,6 +32,8 @@ class ScaffoldWithNavBar extends ConsumerStatefulWidget {
 
 class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar> {
   late final AppLifecycleListener _lifecycle;
+  bool _phoneSyncInFlight = false;
+  DateTime? _lastPhoneSyncAt;
 
   @override
   void initState() {
@@ -38,10 +45,38 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar> {
         ref.read(calendarControllerProvider.notifier).syncReminders();
         ref.read(billsControllerProvider.notifier).refreshAutoLog();
         ref.invalidate(alarmSnoozesProvider);
+        unawaited(_syncPhoneIfDue());
       },
     );
     ref.read(focusPlatformProvider).onRouteWaiting(_followAndroid);
     WidgetsBinding.instance.addPostFrameCallback((_) => _followAndroid());
+  }
+
+  Future<void> _syncPhoneIfDue() async {
+    if (_phoneSyncInFlight) return;
+    final DateTime now = DateTime.now();
+    if (_lastPhoneSyncAt != null &&
+        now.difference(_lastPhoneSyncAt!) < const Duration(hours: 1)) {
+      return;
+    }
+    _phoneSyncInFlight = true;
+    try {
+      // Check Usage access BEFORE touching phone_days or settings.
+      final bool access = await ref.read(phoneUsageSourceProvider).hasAccess();
+      if (!access || !mounted) return;
+      final bool synced = await ref.read(phoneRepositoryProvider).sync(now);
+      if (synced) {
+        _lastPhoneSyncAt = now;
+      }
+    } on PlatformException {
+      // Best-effort silent background sync.
+    } on MissingPluginException {
+      // Best-effort silent background sync.
+    } catch (_) {
+      // Best-effort silent background sync.
+    } finally {
+      _phoneSyncInFlight = false;
+    }
   }
 
   @override

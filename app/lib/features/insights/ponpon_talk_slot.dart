@@ -15,6 +15,7 @@ import '../notes/notes_controller.dart';
 import '../notes/quiz_sheet.dart';
 import '../tasks/tasks_controller.dart';
 import 'insights_providers.dart';
+import 'month_review_screen.dart';
 import 'ponpon_insight.dart';
 
 /// Ponpon's talk bubble for one screen: reads that screen's insights, hides
@@ -117,5 +118,14 @@ void runPonponAction(BuildContext context, WidgetRef ref, PonponAction action) {
     case PonponAction.seeIous:
       ref.read(financeViewProvider.notifier).show(FinanceView.ious);
       GoRouter.maybeOf(context)?.go('/finance?view=ious');
+    case PonponAction.seeMonthReview:
+      final GoRouter? router = GoRouter.maybeOf(context);
+      if (router != null) {
+        router.push('/review');
+      } else {
+        Navigator.of(context, rootNavigator: true).push(
+          MaterialPageRoute<void>(builder: (_) => const MonthReviewScreen()),
+        );
+      }
   }
 }

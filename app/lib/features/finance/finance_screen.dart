@@ -21,6 +21,7 @@ import 'quick_again.dart';
 import 'savings_goal.dart';
 import 'transaction.dart';
 import 'widgets/bills_row.dart';
+import 'widgets/category_breakdown_sheet.dart';
 import 'widgets/goals_panel.dart';
 import 'widgets/ious_panel.dart';
 import 'widgets/quick_expense_sheet.dart';
@@ -132,10 +133,18 @@ class FinanceScreen extends ConsumerWidget {
                     final bool thisMonth =
                         state.month ==
                         DateFormat('yyyy-MM').format(DateTime.now());
+                    final FinanceCashflowFilter filter = ref.watch(
+                      financeFilterProvider,
+                    );
+                    final List<Transaction> filtered =
+                        filterCashflowTransactions(state.transactions, filter);
+                    final bool filterEmpty =
+                        state.transactions.isNotEmpty && filtered.isEmpty;
                     final List<MapEntry<DateTime, List<Transaction>>> days =
-                        _groupByDay(state.transactions);
+                        _groupByDay(filtered);
                     final bool talkSlotAllowed =
                         thisMonth &&
+                        !filterEmpty &&
                         (state.transactions.isNotEmpty ||
                             _paydayWithPayWaiting(ref) ||
                             _hasDueBills(ref) ||
@@ -169,7 +178,7 @@ class FinanceScreen extends ConsumerWidget {
                                 AppSpacing.lg,
                                 0,
                                 AppSpacing.lg,
-                                AppSpacing.sm,
+                                0,
                               ),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -194,9 +203,22 @@ class FinanceScreen extends ConsumerWidget {
                                       surface: PonponSurface.finance,
                                       horizontalPadding: 0,
                                     ),
-                                  _MonthCard(summary: state.summary),
+                                  _MonthCard(
+                                    summary: state.summary,
+                                    onCategoriesTap:
+                                        state.transactions.isNotEmpty
+                                        ? () => showCategoryBreakdownSheet(
+                                            context,
+                                            ref,
+                                            summary: state.summary,
+                                            transactions: state.transactions,
+                                          )
+                                        : null,
+                                  ),
                                   if (thisMonth) const WorkPayRow(),
                                   if (thisMonth) const BillsRow(),
+                                  if (state.transactions.isNotEmpty)
+                                    const _CashflowFilterBar(),
                                 ],
                               ),
                             ),
@@ -218,6 +240,36 @@ class FinanceScreen extends ConsumerWidget {
                                       style: textStyles.titleMedium?.copyWith(
                                         color: colors.onSurfaceVariant,
                                       ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            )
+                          else if (filtered.isEmpty)
+                            SliverFillRemaining(
+                              hasScrollBody: false,
+                              child: Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: <Widget>[
+                                    const Ponpon(
+                                      mood: PonponMood.smug,
+                                      size: 88,
+                                    ),
+                                    AppSpacing.gapMd,
+                                    Text(
+                                      'No matching transactions',
+                                      textAlign: TextAlign.center,
+                                      style: textStyles.titleMedium?.copyWith(
+                                        color: colors.onSurfaceVariant,
+                                      ),
+                                    ),
+                                    AppSpacing.gapMd,
+                                    OutlinedButton(
+                                      onPressed: () => ref
+                                          .read(financeFilterProvider.notifier)
+                                          .clearAll(),
+                                      child: const Text('Clear filters'),
                                     ),
                                   ],
                                 ),
@@ -583,9 +635,10 @@ class FinanceScreen extends ConsumerWidget {
 /// The month's one hero: what is left, how much of the income is spent, and
 /// where the spending went.
 class _MonthCard extends StatelessWidget {
-  const _MonthCard({required this.summary});
+  const _MonthCard({required this.summary, this.onCategoriesTap});
 
   final FinanceSummary summary;
+  final VoidCallback? onCategoriesTap;
 
   @override
   Widget build(BuildContext context) {
@@ -679,26 +732,162 @@ class _MonthCard extends StatelessWidget {
                 ),
               ],
             ),
-            if (top.isNotEmpty) ...<Widget>[
+            if (summary.byCategory.isNotEmpty) ...<Widget>[
               AppSpacing.gapXs,
-              Text(
-                top
-                    .take(3)
-                    .map(
-                      (CategoryBreakdown c) =>
-                          '${c.category} ${_short(c.total)}',
-                    )
-                    .join(' · '),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: textStyles.bodySmall?.copyWith(
-                  color: colors.onSurfaceVariant,
-                  fontFeatures: _tabular,
+              InkWell(
+                borderRadius: AppRadius.small,
+                onTap: onCategoriesTap,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    minHeight: AppSizes.minTouchTarget,
+                  ),
+                  child: Row(
+                    children: <Widget>[
+                      Expanded(
+                        child: Text(
+                          top.isNotEmpty
+                              ? top
+                                    .take(3)
+                                    .map(
+                                      (CategoryBreakdown c) =>
+                                          '${c.category} ${_short(c.total)}',
+                                    )
+                                    .join(' · ')
+                              : 'Category breakdown',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: textStyles.bodySmall?.copyWith(
+                            color: colors.onSurfaceVariant,
+                            fontFeatures: _tabular,
+                          ),
+                        ),
+                      ),
+                      AppSpacing.gapSm,
+                      Text(
+                        'All',
+                        style: textStyles.labelMedium?.copyWith(
+                          color: colors.primary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Icon(
+                        Icons.chevron_right_rounded,
+                        size: 18,
+                        color: colors.primary,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _CashflowFilterBar extends ConsumerStatefulWidget {
+  const _CashflowFilterBar();
+
+  @override
+  ConsumerState<_CashflowFilterBar> createState() => _CashflowFilterBarState();
+}
+
+class _CashflowFilterBarState extends ConsumerState<_CashflowFilterBar> {
+  late final TextEditingController _searchController = TextEditingController(
+    text: ref.read(financeFilterProvider).query,
+  );
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final FinanceCashflowFilter filter = ref.watch(financeFilterProvider);
+    ref.listen<FinanceCashflowFilter>(financeFilterProvider, (
+      FinanceCashflowFilter? prev,
+      FinanceCashflowFilter next,
+    ) {
+      if (next.query.isEmpty && _searchController.text.isNotEmpty) {
+        _searchController.clear();
+      }
+    });
+
+    return Padding(
+      padding: const EdgeInsets.only(top: AppSpacing.sm),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          TextField(
+            controller: _searchController,
+            decoration: InputDecoration(
+              isDense: true,
+              hintText: 'Search note or category',
+              prefixIcon: const Icon(Icons.search_rounded),
+              prefixIconConstraints: const BoxConstraints(
+                minWidth: 44,
+                minHeight: 44,
+              ),
+              suffixIcon: filter.query.isNotEmpty
+                  ? IconButton(
+                      icon: const Icon(Icons.clear_rounded),
+                      tooltip: 'Clear search',
+                      onPressed: () {
+                        _searchController.clear();
+                        ref.read(financeFilterProvider.notifier).setQuery('');
+                      },
+                    )
+                  : null,
+              border: const OutlineInputBorder(borderRadius: AppRadius.medium),
+              contentPadding: const EdgeInsets.symmetric(
+                vertical: AppSpacing.sm,
+                horizontal: AppSpacing.md,
+              ),
+            ),
+            onChanged: (String value) {
+              ref.read(financeFilterProvider.notifier).setQuery(value);
+            },
+          ),
+          AppSpacing.gapXs,
+          Wrap(
+            spacing: AppSpacing.sm,
+            runSpacing: AppSpacing.xs,
+            children: <Widget>[
+              ChoiceChip(
+                showCheckmark: false,
+                label: const Text('All'),
+                selected: filter.type == null,
+                onSelected: (_) =>
+                    ref.read(financeFilterProvider.notifier).setType(null),
+              ),
+              ChoiceChip(
+                showCheckmark: false,
+                label: const Text('Expense'),
+                selected: filter.type == 'expense',
+                onSelected: (_) =>
+                    ref.read(financeFilterProvider.notifier).setType('expense'),
+              ),
+              ChoiceChip(
+                showCheckmark: false,
+                label: const Text('Income'),
+                selected: filter.type == 'income',
+                onSelected: (_) =>
+                    ref.read(financeFilterProvider.notifier).setType('income'),
+              ),
+              if (filter.category != null)
+                InputChip(
+                  label: Text(filter.category!),
+                  onDeleted: () => ref
+                      .read(financeFilterProvider.notifier)
+                      .clearCategory(),
+                ),
+            ],
+          ),
+        ],
       ),
     );
   }

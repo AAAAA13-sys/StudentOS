@@ -262,5 +262,17 @@ List<PonponInsight> financeInsights({
     out.add(const PonponInsight(text: 'Nothing spent yet today.', priority: 6));
   }
 
+  // End-of-month review tip during the last 3 calendar days of the month.
+  final int lastDayOfMonth = DateTime(now.year, now.month + 1, 0).day;
+  if (now.day >= lastDayOfMonth - 2) {
+    out.add(
+      const PonponInsight(
+        text: 'Month is wrapping up. Your summary is ready.',
+        priority: 4,
+        action: PonponAction.seeMonthReview,
+      ),
+    );
+  }
+
   return rankInsights(out);
 }

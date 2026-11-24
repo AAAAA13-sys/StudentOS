@@ -24,7 +24,10 @@ enum PonponAction {
   seeGoals('See goals'),
 
   /// Open Finance > IOUs.
-  seeIous('See IOUs');
+  seeIous('See IOUs'),
+
+  /// Open Month in Review.
+  seeMonthReview('Month in review');
 
   const PonponAction(this.label);
 
