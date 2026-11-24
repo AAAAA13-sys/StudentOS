@@ -19,6 +19,8 @@ import '../notes/recall_controller.dart';
 import '../tasks/task_item.dart';
 import '../tasks/tasks_controller.dart';
 import '../tasks/tasks_repository.dart';
+import '../work/shift.dart';
+import '../work/work_controller.dart';
 import 'alarm.dart';
 import 'alarm_editor_sheet.dart';
 import 'focus_controller.dart';
@@ -81,7 +83,7 @@ class AlarmsPanel extends ConsumerWidget {
       data: (List<Alarm> list) => ListView(
         padding: const EdgeInsets.fromLTRB(AppSpacing.lg, 0, AppSpacing.lg, 96),
         children: <Widget>[
-          if (_gapFor(ref, list) case final AlarmGap gap) ...<Widget>[
+          if (_gapFor(ref, list) case final CommitmentAlarmGap gap) ...<Widget>[
             _NoAlarmCard(gap: gap),
             AppSpacing.gapMd,
           ],
@@ -105,19 +107,22 @@ class AlarmsPanel extends ConsumerWidget {
   }
 }
 
-/// The first event a missing alarm leaves the owner oversleeping, if any.
-AlarmGap? _gapFor(WidgetRef ref, List<Alarm> alarms) => alarmGapFor(
-  events:
-      ref.watch(calendarControllerProvider).value ?? const <CalendarEvent>[],
-  alarms: alarms,
-  now: DateTime.now(),
-);
+/// The first event or shift a missing alarm leaves the owner oversleeping, if any.
+CommitmentAlarmGap? _gapFor(WidgetRef ref, List<Alarm> alarms) =>
+    alarmGapForCommitments(
+      events:
+          ref.watch(calendarControllerProvider).value ??
+          const <CalendarEvent>[],
+      shifts: ref.watch(workControllerProvider).value ?? const <Shift>[],
+      alarms: alarms,
+      now: DateTime.now(),
+    );
 
 /// "No alarm before Physics 101 at 8:00 AM", with a way to add one.
 class _NoAlarmCard extends StatelessWidget {
   const _NoAlarmCard({required this.gap});
 
-  final AlarmGap gap;
+  final CommitmentAlarmGap gap;
 
   @override
   Widget build(BuildContext context) {
@@ -138,7 +143,7 @@ class _NoAlarmCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   Text(
-                    'No alarm before ${gap.event.title} at $at',
+                    'No alarm before ${gap.title} at $at',
                     style: text.titleSmall?.copyWith(
                       fontWeight: FontWeight.w700,
                       color: colors.onErrorContainer,
@@ -155,8 +160,10 @@ class _NoAlarmCard extends StatelessWidget {
             ),
             AppSpacing.gapSm,
             FilledButton.tonal(
-              onPressed: () =>
-                  showAlarmEditor(context, alarm: suggestedAlarm(gap)),
+              onPressed: () => showAlarmEditor(
+                context,
+                alarm: suggestedAlarmForCommitment(gap),
+              ),
               child: const Text('Add alarm'),
             ),
           ],

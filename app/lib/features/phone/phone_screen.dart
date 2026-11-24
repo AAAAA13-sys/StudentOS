@@ -5,6 +5,11 @@ import 'package:intl/intl.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/app_top_bar.dart';
+import '../calendar/calendar_controller.dart';
+import '../calendar/event.dart';
+import '../focus/wake_plan.dart';
+import '../work/shift.dart';
+import '../work/work_controller.dart';
 import 'phone_controller.dart';
 import 'phone_day.dart';
 import 'phone_usage.dart';
@@ -100,7 +105,9 @@ List<Widget> phoneCards(
   bool compact = false,
 }) {
   if (!state.hasAccess) {
-    return usage ? <Widget>[const _AccessCard()] : <Widget>[];
+    if (usage) return <Widget>[const _AccessCard()];
+    if (rest) return <Widget>[_RestCard(state: state)];
+    return <Widget>[];
   }
   if (compact) {
     // The detail cards only: the caller shows today's figure itself.
@@ -327,13 +334,13 @@ class _TodayCard extends StatelessWidget {
   }
 }
 
-class _RestCard extends StatelessWidget {
+class _RestCard extends ConsumerWidget {
   const _RestCard({required this.state});
 
   final PhoneState state;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final DateTime now = DateTime.now();
     final DateTime today = DateTime(now.year, now.month, now.day);
     final PhoneDay? day = state.dayFor(today);
@@ -342,6 +349,18 @@ class _RestCard extends StatelessWidget {
     final DateFormat time = DateFormat('h:mm a');
     final Commitment? next = state.commitment;
     final String when = state.nextMorning == today ? 'Today' : 'Tomorrow';
+    final int goalHours = ref.watch(restGoalHoursProvider);
+    final Duration goalRest = Duration(hours: goalHours);
+    final List<CalendarEvent> events =
+        ref.watch(calendarControllerProvider).value ?? const <CalendarEvent>[];
+    final List<Shift> shifts =
+        ref.watch(workControllerProvider).value ?? const <Shift>[];
+    final RestSqueeze? squeeze = restSqueezeFor(
+      events: events,
+      shifts: shifts,
+      now: now,
+      thresholdHours: goalHours.toDouble(),
+    );
 
     return Card(
       margin: EdgeInsets.zero,
@@ -357,44 +376,108 @@ class _RestCard extends StatelessWidget {
                 color: colors.onSurfaceVariant,
               ),
             ),
-            AppSpacing.gapXs,
-            if (day?.rest != null) ...<Widget>[
-              Text(
-                formatDuration(day!.rest!),
-                style: textStyles.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  fontFeatures: _tabular,
+            if (state.hasAccess) ...<Widget>[
+              AppSpacing.gapXs,
+              if (day?.rest != null) ...<Widget>[
+                Text(
+                  formatDuration(day!.rest!),
+                  style: textStyles.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    fontFeatures: _tabular,
+                  ),
                 ),
-              ),
-              Text(
-                'Last night, screen off ${time.format(day.restStart!)} – '
-                '${time.format(day.restEnd!)}',
-                style: textStyles.bodySmall?.copyWith(
-                  color: colors.onSurfaceVariant,
-                  fontFeatures: _tabular,
+                Text(
+                  'Last night, screen off ${time.format(day.restStart!)} – '
+                  '${time.format(day.restEnd!)}',
+                  style: textStyles.bodySmall?.copyWith(
+                    color: colors.onSurfaceVariant,
+                    fontFeatures: _tabular,
+                  ),
                 ),
-              ),
+              ] else
+                Text(
+                  'No long screen-off stretch found last night.',
+                  style: textStyles.bodyMedium,
+                ),
+              AppSpacing.gapMd,
+              Divider(height: 1, color: colors.outlineVariant),
+              AppSpacing.gapMd,
             ] else
-              Text(
-                'No long screen-off stretch found last night.',
-                style: textStyles.bodyMedium,
-              ),
-            AppSpacing.gapMd,
-            Divider(height: 1, color: colors.outlineVariant),
-            AppSpacing.gapMd,
+              AppSpacing.gapSm,
             Text(
               next == null
                   ? '$when has nothing on the calendar.'
                   : '$when starts with ${next.title} at '
                         '${time.format(next.at)}. For '
-                        '${plannedRest.inHours} hours of phone rest before it, '
-                        'phone down by ${time.format(next.at.subtract(plannedRest))}.',
+                        '${goalHours}h of phone rest before it, '
+                        'phone down by ${time.format(next.at.subtract(goalRest))}.',
               style: textStyles.bodyMedium?.copyWith(fontFeatures: _tabular),
             ),
+            AppSpacing.gapMd,
+            Wrap(
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: AppSpacing.sm,
+              runSpacing: AppSpacing.xs,
+              children: <Widget>[
+                Text(
+                  'Wind-down target',
+                  style: textStyles.labelMedium?.copyWith(
+                    color: colors.onSurfaceVariant,
+                  ),
+                ),
+                for (final int hours in const <int>[7, 8, 9])
+                  ChoiceChip(
+                    label: Text('${hours}h'),
+                    selected: goalHours == hours,
+                    onSelected: (_) =>
+                        ref.read(restGoalHoursProvider.notifier).setHours(hours),
+                  ),
+              ],
+            ),
+            if (squeeze != null) ...<Widget>[
+              AppSpacing.gapMd,
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(AppSpacing.md),
+                decoration: BoxDecoration(
+                  color: colors.surfaceContainerLow,
+                  borderRadius: AppRadius.medium,
+                  border: Border.all(color: colors.outlineVariant),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Icon(
+                      Icons.nights_stay_outlined,
+                      size: AppSizes.iconSm,
+                      color: colors.primary,
+                    ),
+                    AppSpacing.gapSm,
+                    Expanded(
+                      child: Text(
+                        _squeezeMessage(squeeze, time),
+                        style: textStyles.bodySmall?.copyWith(
+                          color: colors.onSurface,
+                          fontFeatures: _tabular,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ],
         ),
       ),
     );
+  }
+
+  String _squeezeMessage(RestSqueeze squeeze, DateFormat time) {
+    final Duration gap = Duration(minutes: (squeeze.gapHours * 60).round());
+    return 'Shift at ${squeeze.shift.job} ends '
+        '${time.format(squeeze.shift.endsAt.toLocal())}, leaving '
+        '${formatDuration(gap)} before ${squeeze.nextTitle} at '
+        '${time.format(squeeze.nextAt)}.';
   }
 }
 

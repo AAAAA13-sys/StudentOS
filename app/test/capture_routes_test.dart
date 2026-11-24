@@ -6,6 +6,7 @@ import 'package:studentos/core/db/app_database.dart';
 import 'package:studentos/core/widgets/capture_request.dart';
 import 'package:studentos/features/focus/clock_panels.dart';
 import 'package:studentos/features/focus/focus_platform.dart';
+import 'package:studentos/features/tasks/tasks_controller.dart';
 import 'package:studentos/main.dart';
 
 import 'focus_test.dart' show FakeFocusPlatform;
@@ -121,6 +122,42 @@ void main() {
     );
   });
 
+  testWidgets('add_task on a cold start opens the new task sheet', (
+    WidgetTester tester,
+  ) async {
+    final ProviderContainer c = await open(tester, _Android('add_task'));
+    expect(find.text('Save task'), findsOneWidget);
+    expect(c.read(notesViewProvider), NotesView.tasks);
+    expect(
+      tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex,
+      2,
+    );
+  });
+
+  testWidgets('open_recall on a cold start opens Recall without a sheet', (
+    WidgetTester tester,
+  ) async {
+    final ProviderContainer c = await open(tester, _Android('open_recall'));
+    expect(find.byType(BottomSheet), findsNothing);
+    expect(c.read(notesViewProvider), NotesView.recall);
+    expect(
+      tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex,
+      2,
+    );
+  });
+
+  testWidgets('open_tasks on a cold start opens Tasks without a sheet', (
+    WidgetTester tester,
+  ) async {
+    final ProviderContainer c = await open(tester, _Android('open_tasks'));
+    expect(find.byType(BottomSheet), findsNothing);
+    expect(c.read(notesViewProvider), NotesView.tasks);
+    expect(
+      tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex,
+      2,
+    );
+  });
+
   testWidgets(
     'warm starts open each sheet once, and a resume does not reopen',
     (WidgetTester tester) async {
@@ -173,10 +210,13 @@ void main() {
     expect(find.byType(BottomSheet), findsNothing);
   });
 
-  test('CaptureAction.fromRoute maps only the three capture routes', () {
+  test('CaptureAction.fromRoute maps all capture routes', () {
     expect(CaptureAction.fromRoute('add_expense'), CaptureAction.addExpense);
     expect(CaptureAction.fromRoute('add_note'), CaptureAction.addNote);
     expect(CaptureAction.fromRoute('add_event'), CaptureAction.addEvent);
+    expect(CaptureAction.fromRoute('add_task'), CaptureAction.addTask);
+    expect(CaptureAction.fromRoute('open_recall'), CaptureAction.openRecall);
+    expect(CaptureAction.fromRoute('open_tasks'), isNull);
     expect(CaptureAction.fromRoute('finance'), isNull);
     expect(CaptureAction.fromRoute('day:2026-01-01'), isNull);
   });

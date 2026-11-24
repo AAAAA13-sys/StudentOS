@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/db/app_database.dart';
 import '../calendar/calendar_repository.dart';
 import '../calendar/event.dart';
 import '../work/shift.dart';
@@ -162,3 +163,56 @@ final AsyncNotifierProvider<PhoneController, PhoneState>
 phoneControllerProvider = AsyncNotifierProvider<PhoneController, PhoneState>(
   PhoneController.new,
 );
+
+const String restGoalHoursKey = 'rest_goal_hours';
+const Set<int> allowedRestGoalHours = <int>{7, 8, 9};
+
+/// User's chosen overnight phone-rest goal in hours (`7`, `8`, or `9`),
+/// persisted in `SettingRows` under [restGoalHoursKey].
+class RestGoalController extends Notifier<int> {
+  bool _chosen = false;
+
+  @override
+  int build() {
+    unawaited(_load());
+    return 8;
+  }
+
+  AppDatabase get _db => ref.read(appDatabaseProvider);
+
+  Future<void> _load() async {
+    try {
+      final SettingRow? row = await (_db.select(
+        _db.settingRows,
+      )..where((t) => t.key.equals(restGoalHoursKey))).getSingleOrNull();
+      if (!ref.mounted || _chosen) return;
+      final int? parsed = int.tryParse(row?.value ?? '');
+      if (parsed != null && allowedRestGoalHours.contains(parsed)) {
+        state = parsed;
+      }
+    } catch (_) {
+      // Keep the default when the setting cannot be read.
+    }
+  }
+
+  Future<void> setHours(int hours) async {
+    if (!allowedRestGoalHours.contains(hours)) return;
+    _chosen = true;
+    state = hours;
+    try {
+      await _db
+          .into(_db.settingRows)
+          .insertOnConflictUpdate(
+            SettingRowsCompanion.insert(
+              key: restGoalHoursKey,
+              value: hours.toString(),
+            ),
+          );
+    } catch (_) {
+      // Choice still applies for this session.
+    }
+  }
+}
+
+final NotifierProvider<RestGoalController, int> restGoalHoursProvider =
+    NotifierProvider<RestGoalController, int>(RestGoalController.new);

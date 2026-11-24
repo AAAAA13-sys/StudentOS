@@ -19,6 +19,11 @@
     <string name="shortcut_new_note_long">Write a new note</string>
     <string name="shortcut_new_event">New event</string>
     <string name="shortcut_new_event_long">Add an event today</string>
+    <string name="shortcut_new_task">New task</string>
+    <string name="shortcut_new_task_long">Add a new task</string>
+    <string name="widget_complete_task">Complete task</string>
+    <string name="widget_recall_chip">Recall %1$d</string>
+    <string name="widget_tasks_more">+%1$d</string>
     <string name="widget_spent_today">Spent today</string>
     <string name="widget_month_left">This month: %1$s left</string>
     <string name="widget_month_over">This month: %1$s over</string>

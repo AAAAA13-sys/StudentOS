@@ -4,6 +4,7 @@ import '../../core/widgets/ponpon.dart';
 import '../calendar/event.dart';
 import '../calendar/week_agenda.dart';
 import '../focus/focus_plan.dart';
+import '../focus/wake_plan.dart';
 import '../tasks/task_item.dart';
 import '../work/shift.dart';
 import 'ponpon_insight.dart';
@@ -191,6 +192,28 @@ List<PonponInsight> calendarInsights({
         mood: PonponMood.focused,
         priority: 4,
         action: PonponAction.seeWeek,
+      ),
+    );
+  }
+
+  // Tight rest window between an ending shift and the next commitment.
+  final RestSqueeze? squeeze = restSqueezeFor(
+    events: events,
+    shifts: shifts,
+    now: now,
+  );
+  if (squeeze != null) {
+    final int gapMins = (squeeze.gapHours * 60).round();
+    final int h = gapMins ~/ 60;
+    final int m = gapMins % 60;
+    final String gapText = m == 0 ? '$h h' : '$h h $m min';
+    out.add(
+      PonponInsight(
+        text:
+            'Only $gapText between ${squeeze.shift.job} (${clockText(squeeze.shift.endsAt.toLocal())}) and ${squeeze.nextTitle} (${clockText(squeeze.nextAt)}).',
+        mood: PonponMood.sleepy,
+        priority: 2,
+        action: PonponAction.seeAlarms,
       ),
     );
   }

@@ -20,6 +20,9 @@ enum PonponAction {
   /// Open Notes > Tasks.
   seeTasks('See tasks'),
 
+  /// Open Calendar > Alarms.
+  seeAlarms('Check alarms'),
+
   /// Open Finance > Goals.
   seeGoals('See goals'),
 

@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/db/app_database.dart';
+import '../calendar/widget_sync.dart';
 import 'note.dart';
 import 'notes_repository.dart';
 
@@ -84,6 +86,7 @@ class NotesController extends AsyncNotifier<NotesState> {
     final String q = state.value?.searchQuery ?? '';
     final String? tag = state.value?.selectedTag;
     state = await AsyncValue.guard(() => _fetchState(query: q, tag: tag));
+    if (ref.mounted) await syncTodayWidget(ref.read(appDatabaseProvider));
   }
 
   Future<void> updateNote(
@@ -96,6 +99,7 @@ class NotesController extends AsyncNotifier<NotesState> {
     final String q = state.value?.searchQuery ?? '';
     final String? tag = state.value?.selectedTag;
     state = await AsyncValue.guard(() => _fetchState(query: q, tag: tag));
+    if (ref.mounted) await syncTodayWidget(ref.read(appDatabaseProvider));
   }
 
   Future<void> setPinned(int id, {required bool pinned}) async {
@@ -110,6 +114,7 @@ class NotesController extends AsyncNotifier<NotesState> {
     final String q = state.value?.searchQuery ?? '';
     final String? tag = state.value?.selectedTag;
     state = await AsyncValue.guard(() => _fetchState(query: q, tag: tag));
+    if (ref.mounted) await syncTodayWidget(ref.read(appDatabaseProvider));
   }
 
   Future<void> refresh() async {

@@ -52,7 +52,18 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
         ref.read(notesViewProvider.notifier).show(NotesView.notes);
         _showAddNoteDialog(context);
       },
-      child: Scaffold(
+      child: CaptureListener(
+        action: CaptureAction.addTask,
+        onCapture: () {
+          ref.read(notesViewProvider.notifier).show(NotesView.tasks);
+          showTaskEditor(context, ref);
+        },
+        child: CaptureListener(
+          action: CaptureAction.openRecall,
+          onCapture: () {
+            ref.read(notesViewProvider.notifier).show(NotesView.recall);
+          },
+          child: Scaffold(
         appBar: AppTopBar(
           title: 'Notes',
           actions: <Widget>[
@@ -298,6 +309,8 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
           ),
           NotesView.recall => null,
         },
+          ),
+        ),
       ),
     );
   }

@@ -1,17 +1,22 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-/// A capture sheet a home-screen widget or launcher shortcut asked for.
+/// A capture sheet or view a home-screen widget or launcher shortcut asked for.
 enum CaptureAction {
   addExpense,
   addNote,
-  addEvent;
+  addEvent,
+  addTask,
+  openRecall;
 
-  /// The Android route name (`add_expense`, `add_note`, `add_event`), or null.
+  /// The Android route name (`add_expense`, `add_note`, `add_event`,
+  /// `add_task`, `open_recall`), or null.
   static CaptureAction? fromRoute(String route) => switch (route) {
     'add_expense' => CaptureAction.addExpense,
     'add_note' => CaptureAction.addNote,
     'add_event' => CaptureAction.addEvent,
+    'add_task' => CaptureAction.addTask,
+    'open_recall' => CaptureAction.openRecall,
     _ => null,
   };
 }

@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/db/app_database.dart';
+import '../calendar/widget_sync.dart';
 import 'task_item.dart';
 import 'tasks_repository.dart';
 
@@ -24,12 +26,51 @@ enum TaskFilter { open, today, done }
 
 class TasksController extends AsyncNotifier<List<TaskItem>> {
   TaskRepository get _repo => ref.read(tasksRepositoryProvider);
+  AppDatabase get _db => ref.read(appDatabaseProvider);
+
+  Future<bool>? _reconcileInFlight;
 
   @override
-  FutureOr<List<TaskItem>> build() => _repo.getTasks();
+  FutureOr<List<TaskItem>> build() async {
+    final AppDatabase db = _db;
+    final TaskRepository repo = _repo;
+    await reconcileWidgetCheckoffs();
+    if (!ref.mounted) return const <TaskItem>[];
+    final List<TaskItem> tasks = await repo.getTasks();
+    if (ref.mounted) unawaited(syncTodayWidget(db));
+    return tasks;
+  }
+
+  /// Applies task check-offs queued from the Today home-screen widget. Guarded
+  /// so concurrent `build()` and `onResume` calls share a single run.
+  Future<bool> reconcileWidgetCheckoffs({bool reloadIfChanged = false}) {
+    final Future<bool>? active = _reconcileInFlight;
+    if (active != null) return active;
+    final AppDatabase db = _db;
+    final Future<bool> run = _runReconcile(db, reloadIfChanged: reloadIfChanged);
+    _reconcileInFlight = run;
+    return run.whenComplete(() {
+      if (identical(_reconcileInFlight, run)) {
+        _reconcileInFlight = null;
+      }
+    });
+  }
+
+  Future<bool> _runReconcile(
+    AppDatabase db, {
+    required bool reloadIfChanged,
+  }) async {
+    final bool changed = await reconcileWidgetCompletedTasks(db);
+    if (changed && ref.mounted && reloadIfChanged) {
+      await _reload();
+    }
+    return changed;
+  }
 
   Future<void> _reload() async {
+    final AppDatabase db = _db;
     state = await AsyncValue.guard(_repo.getTasks);
+    if (ref.mounted) unawaited(syncTodayWidget(db));
   }
 
   Future<void> addTask(TaskItem task) async {
@@ -57,8 +98,12 @@ class TasksController extends AsyncNotifier<List<TaskItem>> {
   }
 
   Future<void> refresh() async {
+    final AppDatabase db = _db;
     state = const AsyncLoading();
+    await reconcileWidgetCheckoffs();
+    if (!ref.mounted) return;
     state = await AsyncValue.guard(_repo.getTasks);
+    if (ref.mounted) unawaited(syncTodayWidget(db));
   }
 }
 

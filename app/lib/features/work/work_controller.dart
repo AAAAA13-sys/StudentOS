@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/db/app_database.dart';
+import '../calendar/widget_sync.dart';
 import '../finance/finance_controller.dart';
 import '../finance/finance_repository.dart';
 import '../finance/transaction.dart';
@@ -18,6 +20,8 @@ class WorkController extends AsyncNotifier<List<Shift>> {
 
   Future<void> _reload() async {
     state = await AsyncValue.guard(_repo.getShifts);
+    if (!ref.mounted) return;
+    unawaited(syncTodayWidget(ref.read(appDatabaseProvider)));
   }
 
   Future<void> addShifts(List<Shift> shifts) async {

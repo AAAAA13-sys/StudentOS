@@ -112,6 +112,8 @@ void runPonponAction(BuildContext context, WidgetRef ref, PonponAction action) {
     case PonponAction.seeTasks:
       ref.read(notesViewProvider.notifier).show(NotesView.tasks);
       GoRouter.maybeOf(context)?.go('/notes?view=tasks');
+    case PonponAction.seeAlarms:
+      ref.read(calendarViewProvider.notifier).show(CalendarView.alarm);
     case PonponAction.seeGoals:
       ref.read(financeViewProvider.notifier).show(FinanceView.goals);
       GoRouter.maybeOf(context)?.go('/finance?view=goals');

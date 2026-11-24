@@ -1,13 +1,13 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:home_widget/home_widget.dart';
 
+import '../../core/db/app_database.dart';
 import 'calendar_repository.dart';
 import 'event.dart';
 import 'reminder_platform.dart';
 import 'reminder_schedule.dart';
+import 'widget_sync.dart';
 
 class CalendarController extends AsyncNotifier<List<CalendarEvent>> {
   CalendarRepository get _repo => ref.read(calendarRepositoryProvider);
@@ -89,49 +89,9 @@ class CalendarController extends AsyncNotifier<List<CalendarEvent>> {
     }
   }
 
-  /// Writes the next few occurrences across all events as epoch millis, so
-  /// the native widget can drop passed events and say "Today"/"Tomorrow"
-  /// itself without the app running.
-  Future<void> syncWidget() async {
-    try {
-      final DateTime now = DateTime.now();
-      final List<({String t, int s, String l})> upcoming =
-          <({String t, int s, String l})>[];
-      for (final CalendarEvent event in await _repo.getEvents()) {
-        if (event.done) continue;
-        final String prefix = event.isExam
-            ? 'Exam: '
-            : (event.isAssignment ? 'Due: ' : '');
-        DateTime from = now;
-        for (int i = 0; i < 6; i++) {
-          final DateTime? next = event.nextOccurrence(from);
-          if (next == null) break;
-          upcoming.add((
-            t: '$prefix${event.title}',
-            s: next.millisecondsSinceEpoch,
-            l: event.location?.trim() ?? '',
-          ));
-          from = next.add(const Duration(minutes: 1));
-        }
-      }
-      upcoming.sort((a, b) => a.s.compareTo(b.s));
-      await HomeWidget.saveWidgetData<String>(
-        'upcoming_events',
-        jsonEncode(<Map<String, Object>>[
-          for (final ({String t, int s, String l}) e in upcoming.take(20))
-            <String, Object>{'t': e.t, 's': e.s, 'location': e.l},
-        ]),
-      );
-      await HomeWidget.saveWidgetData<String>('event_title', null);
-      await HomeWidget.saveWidgetData<String>('event_time', null);
-      await HomeWidget.updateWidget(
-        name: 'CalendarWidgetProvider',
-        androidName: 'CalendarWidgetProvider',
-      );
-    } catch (_) {
-      // Best-effort for widget sync
-    }
-  }
+  /// Writes the next few occurrences across events and shifts, due tasks, and
+  /// recall count for the Today home-screen widget.
+  Future<void> syncWidget() => syncTodayWidget(ref.read(appDatabaseProvider));
 }
 
 final AsyncNotifierProvider<CalendarController, List<CalendarEvent>>

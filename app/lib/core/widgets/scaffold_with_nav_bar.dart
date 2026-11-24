@@ -45,6 +45,11 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar> {
         ref.read(calendarControllerProvider.notifier).syncReminders();
         ref.read(billsControllerProvider.notifier).refreshAutoLog();
         ref.invalidate(alarmSnoozesProvider);
+        unawaited(
+          ref
+              .read(tasksControllerProvider.notifier)
+              .reconcileWidgetCheckoffs(reloadIfChanged: true),
+        );
         unawaited(_syncPhoneIfDue());
       },
     );
@@ -106,7 +111,14 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar> {
         ref.read(calendarViewProvider.notifier).show(CalendarView.focus);
         shell.goBranch(0);
         await _startFocusFromWidget();
-      case 'add_expense' || 'add_note' || 'add_event':
+      case 'open_tasks':
+        ref.read(notesViewProvider.notifier).show(NotesView.tasks);
+        shell.goBranch(2);
+      case 'add_expense' ||
+          'add_note' ||
+          'add_event' ||
+          'add_task' ||
+          'open_recall':
         final CaptureAction action = CaptureAction.fromRoute(route)!;
         switch (action) {
           case CaptureAction.addExpense:
@@ -117,6 +129,12 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar> {
           case CaptureAction.addEvent:
             ref.read(calendarViewProvider.notifier).show(CalendarView.schedule);
             shell.goBranch(0);
+          case CaptureAction.addTask:
+            ref.read(notesViewProvider.notifier).show(NotesView.tasks);
+            shell.goBranch(2);
+          case CaptureAction.openRecall:
+            ref.read(notesViewProvider.notifier).show(NotesView.recall);
+            shell.goBranch(2);
         }
         ref.read(captureRequestProvider.notifier).request(action);
       default:

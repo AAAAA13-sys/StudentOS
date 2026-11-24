@@ -45,4 +45,19 @@
                 android:value="add_event" />
         </intent>
     </shortcut>
+    <shortcut
+        android:shortcutId="new_task"
+        android:enabled="true"
+        android:icon="@drawable/ic_shortcut_task"
+        android:shortcutShortLabel="@string/shortcut_new_task"
+        android:shortcutLongLabel="@string/shortcut_new_task_long">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.studentos.studentos"
+            android:targetClass="com.studentos.studentos.MainActivity">
+            <extra
+                android:name="studentos_route"
+                android:value="add_task" />
+        </intent>
+    </shortcut>
 </shortcuts>

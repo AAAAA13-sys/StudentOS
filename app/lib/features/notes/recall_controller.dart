@@ -2,8 +2,10 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/db/app_database.dart';
 import '../calendar/calendar_controller.dart';
 import '../calendar/event.dart';
+import '../calendar/widget_sync.dart';
 import '../insights/insights_providers.dart';
 import 'note.dart';
 import 'notes_controller.dart';
@@ -112,6 +114,7 @@ class RecallController extends AsyncNotifier<RecallDeckState> {
     final RecallDeckState refreshed = await _buildDeck(now: at);
     if (!ref.mounted) return;
     state = AsyncData<RecallDeckState>(refreshed);
+    unawaited(syncTodayWidget(ref.read(appDatabaseProvider)));
   }
 
   Future<void> refresh() async {
@@ -119,6 +122,7 @@ class RecallController extends AsyncNotifier<RecallDeckState> {
     final AsyncValue<RecallDeckState> next = await AsyncValue.guard(_buildDeck);
     if (!ref.mounted) return;
     state = next;
+    unawaited(syncTodayWidget(ref.read(appDatabaseProvider)));
   }
 }
 
