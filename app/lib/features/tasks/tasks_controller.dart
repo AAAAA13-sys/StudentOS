@@ -5,8 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'task_item.dart';
 import 'tasks_repository.dart';
 
-/// The two views of the Notes tab: Notes and Tasks.
-enum NotesView { notes, tasks }
+/// The three views of the Notes tab: Notes, Tasks, and Recall.
+enum NotesView { notes, tasks, recall }
 
 /// Which view of the Notes tab is showing (`Notes` by default).
 final NotifierProvider<NotesViewController, NotesView> notesViewProvider =

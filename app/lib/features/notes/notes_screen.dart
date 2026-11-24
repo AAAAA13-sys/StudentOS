@@ -12,6 +12,8 @@ import 'note.dart';
 import 'note_editor_sheet.dart';
 import 'notes_controller.dart';
 import 'quiz_sheet.dart';
+import 'recall_controller.dart';
+import 'recall_panel.dart';
 import '../../core/widgets/ponpon.dart';
 import '../insights/insights_providers.dart';
 import '../insights/ponpon_talk_slot.dart';
@@ -67,11 +69,15 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
                   segments: const <ButtonSegment<NotesView>>[
                     ButtonSegment<NotesView>(
                       value: NotesView.notes,
-                      label: Text('Notes'),
+                      label: Text('Notes', maxLines: 1, softWrap: false),
                     ),
                     ButtonSegment<NotesView>(
                       value: NotesView.tasks,
-                      label: Text('Tasks'),
+                      label: Text('Tasks', maxLines: 1, softWrap: false),
+                    ),
+                    ButtonSegment<NotesView>(
+                      value: NotesView.recall,
+                      label: Text('Recall', maxLines: 1, softWrap: false),
                     ),
                   ],
                   selected: <NotesView>{view},
@@ -82,6 +88,8 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
             ),
             if (view == NotesView.tasks)
               const Expanded(child: TasksPanel())
+            else if (view == NotesView.recall)
+              const Expanded(child: RecallPanel())
             else
               Expanded(
                 child: Column(
@@ -276,6 +284,7 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
             onPressed: () => showTaskEditor(context, ref),
             child: const Icon(Icons.add_rounded),
           ),
+          NotesView.recall => null,
         },
       ),
     );
@@ -511,41 +520,55 @@ class _NoteCard extends ConsumerWidget {
                       ),
                     ),
                   if (note.recallCards.isNotEmpty)
-                    InkWell(
-                      borderRadius: AppRadius.pill,
-                      onTap: () => showQuizSheet(context, note),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: colors.primaryContainer,
+                    Builder(
+                      builder: (BuildContext context) {
+                        final int total = note.recallCards.length;
+                        final int? due = ref
+                            .watch(recallControllerProvider)
+                            .value
+                            ?.dueCountForNote(note.id);
+                        final String cardWord = total == 1 ? 'card' : 'cards';
+                        final String pillText =
+                            due != null && due > 0 && due < total
+                            ? '$total $cardWord · $due due · Quiz'
+                            : '$total $cardWord · Quiz';
+                        return InkWell(
                           borderRadius: AppRadius.pill,
-                          border: Border.all(
-                            color: colors.primary.withValues(alpha: 0.3),
-                            width: 0.75,
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: <Widget>[
-                            Icon(
-                              Icons.bolt_rounded,
-                              size: 14,
-                              color: colors.primary,
+                          onTap: () => showQuizSheet(context, note),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 2,
                             ),
-                            const SizedBox(width: 4),
-                            Text(
-                              '${note.recallCards.length} ${note.recallCards.length == 1 ? 'card' : 'cards'} · Quiz',
-                              style: textStyles.labelSmall?.copyWith(
-                                color: colors.onPrimaryContainer,
-                                fontWeight: FontWeight.bold,
+                            decoration: BoxDecoration(
+                              color: colors.primaryContainer,
+                              borderRadius: AppRadius.pill,
+                              border: Border.all(
+                                color: colors.primary.withValues(alpha: 0.3),
+                                width: 0.75,
                               ),
                             ),
-                          ],
-                        ),
-                      ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: <Widget>[
+                                Icon(
+                                  Icons.bolt_rounded,
+                                  size: 14,
+                                  color: colors.primary,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  pillText,
+                                  style: textStyles.labelSmall?.copyWith(
+                                    color: colors.onPrimaryContainer,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
                     ),
                   for (final String t in note.tags)
                     Container(

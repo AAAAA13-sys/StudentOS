@@ -2,15 +2,19 @@ import '../../core/checklist.dart';
 import '../../core/widgets/ponpon.dart';
 import '../calendar/event.dart';
 import '../notes/note.dart';
+import '../notes/recall_controller.dart';
+import '../notes/recall_item.dart';
 import '../tasks/task_item.dart';
 import 'ponpon_insight.dart';
 
-/// What Ponpon says about notes and tasks. With neither, it says nothing,
-/// because the empty state already has Ponpon. Pure.
+/// What Ponpon says about notes, recall cards, and tasks. With neither, it
+/// says nothing, because the empty state already has Ponpon. Pure.
 List<PonponInsight> notesInsights({
   required List<Note> notes,
   List<CalendarEvent> events = const <CalendarEvent>[],
   List<TaskItem> tasks = const <TaskItem>[],
+  List<DeckCard>? dueRecallCards,
+  RecallDeckState? recallDeck,
   required DateTime now,
 }) {
   if (notes.isEmpty && tasks.isEmpty) return const <PonponInsight>[];
@@ -83,21 +87,71 @@ List<PonponInsight> notesInsights({
     );
   }
 
-  // Notes holding Q:/A: or "term :: answer" quiz cards.
-  final int quizzable = notes
-      .where((Note n) => n.recallCards.isNotEmpty)
-      .length;
-  if (quizzable > 0) {
+  // Spaced recall & exam-linked quiz cards.
+  final List<DeckCard> effectiveDue =
+      dueRecallCards ?? recallDeck?.dueCards ?? const <DeckCard>[];
+  final List<DeckCard> soonExamCards = <DeckCard>[
+    for (final DeckCard card in effectiveDue)
+      if (card.examAt != null &&
+          !card.examAt!.isBefore(now) &&
+          card.examAt!.difference(now) <= const Duration(hours: 72))
+        card,
+  ];
+  if (soonExamCards.isNotEmpty) {
+    soonExamCards.sort((DeckCard a, DeckCard b) => a.examAt!.compareTo(b.examAt!));
+    final DeckCard soonest = soonExamCards.first;
+    final String examTitle = (soonest.examTitle ?? '').trim().isEmpty
+        ? 'upcoming exam'
+        : soonest.examTitle!.trim();
+    final int count = soonExamCards
+        .where(
+          (DeckCard c) =>
+              c.examAt == soonest.examAt && c.examTitle == soonest.examTitle,
+        )
+        .length;
     out.add(
       PonponInsight(
-        text: quizzable == 1
-            ? '1 note has quiz cards. Quiz yourself?'
-            : '$quizzable notes have quiz cards. Quiz yourself?',
+        text:
+            'Exam soon ($examTitle): $count recall ${count == 1 ? 'card' : 'cards'} due.',
         mood: PonponMood.focused,
-        priority: 2,
-        action: PonponAction.quizNotes,
+        priority: 1,
+        action: PonponAction.reviewRecall,
       ),
     );
+  } else {
+    final bool hasDeckContext = recallDeck != null || dueRecallCards != null;
+    final bool hasStartedReviews = (recallDeck?.cards ?? effectiveDue).any(
+      (DeckCard c) => c.timesReviewed > 0,
+    );
+    if (!hasDeckContext || !hasStartedReviews) {
+      // Notes holding Q:/A: or "term :: answer" quiz cards.
+      final int quizzable = notes
+          .where((Note n) => n.recallCards.isNotEmpty)
+          .length;
+      if (quizzable > 0) {
+        out.add(
+          PonponInsight(
+            text: quizzable == 1
+                ? '1 note has quiz cards. Quiz yourself?'
+                : '$quizzable notes have quiz cards. Quiz yourself?',
+            mood: PonponMood.focused,
+            priority: 2,
+            action: PonponAction.quizNotes,
+          ),
+        );
+      }
+    } else if (effectiveDue.isNotEmpty) {
+      final int dueCount = effectiveDue.length;
+      out.add(
+        PonponInsight(
+          text:
+              'Review $dueCount due recall ${dueCount == 1 ? 'card' : 'cards'}.',
+          mood: PonponMood.focused,
+          priority: 2,
+          action: PonponAction.reviewRecall,
+        ),
+      );
+    }
   }
 
   // The first note (in list order) with unticked checklist items.

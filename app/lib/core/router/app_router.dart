@@ -22,8 +22,9 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((ref) {
       // The old Clock and Focus pages now live inside the Calendar tab.
       GoRoute(path: '/clock', redirect: (_, _) => '/calendar?view=alarm'),
       GoRoute(path: '/focus', redirect: (_, _) => '/calendar?view=focus'),
-      // Tasks live inside the Notes tab; Goals and IOUs live inside Finance.
+      // Tasks and Recall live inside the Notes tab; Goals and IOUs live inside Finance.
       GoRoute(path: '/tasks', redirect: (_, _) => '/notes?view=tasks'),
+      GoRoute(path: '/recall', redirect: (_, _) => '/notes?view=recall'),
       GoRoute(path: '/goals', redirect: (_, _) => '/finance?view=goals'),
       GoRoute(path: '/ious', redirect: (_, _) => '/finance?view=ious'),
       StatefulShellRoute.indexedStack(
@@ -119,7 +120,8 @@ class _ViewFromQueryState extends ConsumerState<_ViewFromQuery> {
   Widget build(BuildContext context) => widget.child;
 }
 
-/// Opens the Notes tab on the view named by `?view=` (`notes`, `tasks`).
+/// Opens the Notes tab on the view named by `?view=` (`notes`, `tasks`,
+/// `recall`).
 class _NotesViewFromQuery extends ConsumerStatefulWidget {
   const _NotesViewFromQuery({required this.view, required this.child});
 
@@ -147,6 +149,7 @@ class _NotesViewFromQueryState extends ConsumerState<_NotesViewFromQuery> {
   void _apply() {
     final NotesView? view = switch (widget.view) {
       'tasks' => NotesView.tasks,
+      'recall' => NotesView.recall,
       'notes' => NotesView.notes,
       _ => null,
     };

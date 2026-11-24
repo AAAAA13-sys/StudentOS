@@ -7,6 +7,9 @@ enum PonponAction {
   /// Open the quiz of a note that has recall cards.
   quizNotes('Quiz me'),
 
+  /// Open Notes > Recall to review due spaced-recall cards.
+  reviewRecall('Review deck'),
+
   /// Open Calendar > Focus.
   startFocus('Focus'),
 

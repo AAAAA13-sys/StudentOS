@@ -19,6 +19,8 @@ import 'package:studentos/features/focus/alarm.dart';
 import 'package:studentos/features/focus/focus_repository.dart';
 import 'package:studentos/features/notes/note.dart';
 import 'package:studentos/features/notes/notes_repository.dart';
+import 'package:studentos/features/notes/recall_item.dart';
+import 'package:studentos/features/notes/recall_repository.dart';
 import 'package:studentos/features/tasks/task_item.dart';
 import 'package:studentos/features/tasks/tasks_repository.dart';
 import 'package:studentos/features/work/payday.dart';
@@ -276,6 +278,7 @@ void main() {
       tasks: 1,
       goals: 0,
       ious: 0,
+      recallReviews: 0,
     ));
 
     final TaskItem restoredTask = (await TaskRepository(target).getTasks()).single;
@@ -566,6 +569,119 @@ void main() {
         amountCents: 20000,
         occurredOn: '2026-11-24',
         createdAt: DateTime(2026, 11, 24),
+      ),
+    );
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+    expect(await BackupService(db).hasData(), isTrue);
+    expect(seen.last.hasData, isTrue);
+  });
+
+  test('v9 backup round-trips recall_reviews and counts them', () async {
+    final AppDatabase source = AppDatabase(NativeDatabase.memory());
+    final AppDatabase target = AppDatabase(NativeDatabase.memory());
+    addTearDown(source.close);
+    addTearDown(target.close);
+
+    final int noteId = await NotesRepository(source).createNote(
+      const Note(
+        id: 0,
+        title: 'Bio',
+        body: 'Q: Cell powerhouse?\nA: Mitochondria',
+        tags: <String>[],
+      ),
+    );
+    final String key = recallCardKey('Cell powerhouse?');
+    await RecallRepository(source).upsertReview(
+      RecallReview(
+        noteId: noteId,
+        cardKey: key,
+        box: 3,
+        nextReviewOn: '2026-11-28',
+        lastReviewedAt: DateTime(2026, 11, 24, 9),
+        timesReviewed: 2,
+      ),
+    );
+
+    final String json = await BackupService(source).exportJson();
+    final counts = await BackupService(target).restoreJsonWithCounts(json);
+    expect(counts.recallReviews, 1);
+
+    final List<RecallReview> restored = await RecallRepository(
+      target,
+    ).getReviews();
+    expect(restored, hasLength(1));
+    expect(restored.single.noteId, noteId);
+    expect(restored.single.cardKey, key);
+    expect(restored.single.box, 3);
+    expect(restored.single.nextReviewOn, '2026-11-28');
+    expect(restored.single.timesReviewed, 2);
+  });
+
+  test(
+    'Restoring a v8 backup without recall_reviews defaults them to empty',
+    () async {
+      final AppDatabase db = AppDatabase(NativeDatabase.memory());
+      addTearDown(db.close);
+      await RecallRepository(db).upsertReview(
+        RecallReview(
+          noteId: 1,
+          cardKey: recallCardKey('Old question'),
+          box: 2,
+          nextReviewOn: '2026-11-25',
+          timesReviewed: 1,
+        ),
+      );
+      expect(await BackupService(db).hasData(), isTrue);
+
+      final String v8Json = jsonEncode(<String, Object?>{
+        'app': 'studentos',
+        'format': 8,
+        'exported_at': '2026-11-20T00:00:00.000Z',
+        'events': <Object?>[],
+        'transactions': <Object?>[],
+        'notes': <Object?>[],
+        'bills': <Object?>[],
+        'tasks': <Object?>[],
+        'goals': <Object?>[],
+        'ious': <Object?>[],
+      });
+      final counts = await BackupService(db).restoreJsonWithCounts(v8Json);
+      expect(counts.recallReviews, 0);
+      expect(await RecallRepository(db).getReviews(), isEmpty);
+    },
+  );
+
+  test('hasData and backupStatusProvider react to recall_reviews writes', () async {
+    final AppDatabase db = AppDatabase(NativeDatabase.memory());
+    final ProviderContainer container = ProviderContainer(
+      overrides: [appDatabaseProvider.overrideWithValue(db)],
+    );
+    addTearDown(() async {
+      container.dispose();
+      await db.close();
+    });
+
+    final List<BackupStatus> seen = <BackupStatus>[];
+    final sub = container.listen<AsyncValue<BackupStatus>>(
+      backupStatusProvider,
+      (_, AsyncValue<BackupStatus> next) {
+        if (next.hasValue) seen.add(next.requireValue);
+      },
+      fireImmediately: true,
+    );
+    addTearDown(sub.close);
+
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+    expect(seen.last, (last: null, hasData: false));
+    expect(await BackupService(db).hasData(), isFalse);
+
+    await RecallRepository(db).upsertReview(
+      RecallReview(
+        noteId: 1,
+        cardKey: recallCardKey('What is ATP?'),
+        box: 2,
+        nextReviewOn: '2026-11-26',
+        timesReviewed: 1,
       ),
     );
     await Future<void>.delayed(const Duration(milliseconds: 50));

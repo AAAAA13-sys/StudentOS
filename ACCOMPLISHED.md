@@ -598,3 +598,15 @@ Entries are appended, never edited. Corrections are new entries that reference t
 - Added `"Split a total"` (`Total bill` / `Split ways`) calculator inside `showIouEditor`, filter chips (`Open`, `Owed to me`, `I owe`, `Settled`), and `PonponAction.seeIous` (`Payday today: settle...` + open owing/owed tips).
 - Updated `AGENTS.md` Part 6.7 (`Dual-Tier Navigation` item 1) to reflect `Finance [Cashflow | Goals | IOUs]`.
 **Open items:** settling with `"Record in Cashflow"` ON live on device, `Owes me` / `Owed to me` / `I owe` filter taps on emulator (automated-tested), `Notes > Tasks` re-check on v12, on-device backup/restore, and real-phone verification (`app-arm64-v8a-release.apk`).
+
+## Phase 48: Spaced Recall Deck (`Notes [Notes | Tasks | Recall]`)
+**Date:** 2026-11-24
+**Verified by:** qa-verifier (`24d1293d`) on `emulator-5554` (Light Mode, Dark Mode, and `1.3x` font scale)
+**Evidence:** see the Phase 48 row in `PROGRESS.md`; `flutter analyze` clean (0 issues); `flutter test` **316/316 passed** (`recall_test.dart`, `backup_test.dart`, `insights_test.dart`, full suite); release split APKs built (`x86_64` 24.3MB, `arm64-v8a` 22.8MB, `armeabi-v7a` 20.5MB); device screenshots (`qa48_01`–`qa48_22`) & UI dumps kept in QA scratchpad.
+**Decisions:**
+- Built Rank #4 (`RICE 6.8`) from `docs/AGENCY_RESEARCH_ROADMAP_P45_P48.md` as a third `NotesView` segment (`Notes | Tasks | Recall`, `/recall` -> `/notes?view=recall`, Back pop `Recall -> Notes`, `floatingActionButton: null` on Recall) while preserving the 3-destination `NavigationBar` (`Calendar`, `Finance`, `Notes`).
+- Drift `schemaVersion` bumped 12 -> 13 (`RecallReviewRows` / `recall_reviews` composite PK `{noteId, cardKey}` with deterministic 64-bit FNV-1a `recallCardKey` preserving progress across answer edits), and `NotesRepository.deleteNote` cascades deletion of matching `recall_reviews`.
+- `BackupService.formatVersion` bumped 8 -> 9 (`recall_reviews` export/restore with `[]` fallback for v1–v8 backups, `hasData()` & reactive `backupStatusProvider` over `recallReviewRows`, and `AppDrawer` restore invalidation/summary).
+- Leitner box spacing (`1, 2, 4, 7, 14` days) with exam-linked priority sorting (`CalendarEvent.isExam` via `noteId`, weakest box, earliest due date), persistent `Got it`/`Missed` directly from single-note `QuizSheet` or multi-note `showRecallDeckSheet`, and Ponpon `reviewRecall` (`Exam soon` priority 1 / `Review N due recall cards` priority 2) preserving initial legacy `'Quiz yourself?'` behavior until review begins.
+- Updated `AGENTS.md` Part 6.7 (`Dual-Tier Navigation` item 1) to reflect `Notes [Notes | Tasks | Recall]`.
+**Open items:** live `"Missed"` demotion & `"Reveal all"` toggle tap on device (automated-tested), exam-linked note countdown pill on device, on-device backup/restore, and real-phone verification (`app-arm64-v8a-release.apk`).

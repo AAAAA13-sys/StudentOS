@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import '../../core/checklist.dart';
 
 class Note {
@@ -22,8 +24,49 @@ class Note {
   /// Active recall question-answer cards extracted from [body].
   List<RecallCard> get recallCards => extractRecallCards(body);
 
+  /// Extracted recall cards paired with their deterministic, edit-stable key.
+  List<({RecallCard card, String key})> get keyedRecallCards {
+    final List<RecallCard> cards = recallCards;
+    if (cards.isEmpty) return const <({RecallCard card, String key})>[];
+    final Map<String, int> seen = <String, int>{};
+    return <({RecallCard card, String key})>[
+      for (final RecallCard card in cards)
+        () {
+          final String norm = normalizeRecallQuestion(card.question);
+          final int occurrence = seen[norm] ?? 0;
+          seen[norm] = occurrence + 1;
+          return (
+            card: card,
+            key: recallCardKey(card.question, occurrence: occurrence),
+          );
+        }(),
+    ];
+  }
+
   /// Tickable `- [ ] text` lines in [body].
   List<ChecklistItem> get checklistItems => parseChecklist(body);
+}
+
+/// Normalizes a recall question for stable card key hashing.
+String normalizeRecallQuestion(String question) =>
+    question.trim().toLowerCase().replaceAll(RegExp(r'\s+'), ' ');
+
+/// Deterministic 64-bit FNV-1a hex key for a recall question (ignoring answer
+/// edits and whitespace/case tweaks). Duplicate questions inside one note are
+/// disambiguated with [occurrence] (`0, 1, ...`).
+String recallCardKey(String question, {int occurrence = 0}) {
+  final String normalized = normalizeRecallQuestion(question);
+  final String input = occurrence > 0 ? '$normalized#$occurrence' : normalized;
+  final BigInt offsetBasis = BigInt.parse('cbf29ce484222325', radix: 16);
+  final BigInt prime = BigInt.parse('100000001b3', radix: 16);
+  final BigInt mask = BigInt.parse('ffffffffffffffff', radix: 16);
+
+  BigInt hash = offsetBasis;
+  for (final int byte in utf8.encode(input)) {
+    hash ^= BigInt.from(byte);
+    hash = (hash * prime) & mask;
+  }
+  return hash.toRadixString(16).padLeft(16, '0');
 }
 
 class RecallCard {

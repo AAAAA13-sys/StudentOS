@@ -360,6 +360,33 @@ class IouRows extends Table {
   DateTimeColumn get createdAt => dateTime()();
 }
 
+/// Spaced-repetition (Leitner box) review state for one active-recall card
+/// inside a note. Keyed by `(noteId, cardKey)` where `cardKey` is a stable
+/// FNV-1a hash of the normalized question so editing the answer preserves
+/// scheduling history.
+@DataClassName('RecallReviewRow')
+class RecallReviewRows extends Table {
+  @override
+  String get tableName => 'recall_reviews';
+
+  IntColumn get noteId => integer()();
+
+  TextColumn get cardKey => text()();
+
+  /// Leitner box `1..5` (intervals 1, 2, 4, 7, 14 days).
+  IntColumn get box => integer().withDefault(const Constant(1))();
+
+  /// Next scheduled review date as `YYYY-MM-DD`.
+  TextColumn get nextReviewOn => text()();
+
+  DateTimeColumn get lastReviewedAt => dateTime().nullable()();
+
+  IntColumn get timesReviewed => integer().withDefault(const Constant(0))();
+
+  @override
+  Set<Column<Object>> get primaryKey => <Column<Object>>{noteId, cardKey};
+}
+
 /// The app's only data store. Everything lives on this device.
 @DriftDatabase(
   tables: <Type>[
@@ -376,6 +403,7 @@ class IouRows extends Table {
     TaskRows,
     GoalRows,
     IouRows,
+    RecallReviewRows,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -383,7 +411,7 @@ class AppDatabase extends _$AppDatabase {
     : super(executor ?? driftDatabase(name: 'studentos'));
 
   @override
-  int get schemaVersion => 12;
+  int get schemaVersion => 13;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -422,6 +450,9 @@ class AppDatabase extends _$AppDatabase {
       }
       if (from < 12) {
         await m.createTable(iouRows);
+      }
+      if (from < 13) {
+        await m.createTable(recallReviewRows);
       }
     },
   );

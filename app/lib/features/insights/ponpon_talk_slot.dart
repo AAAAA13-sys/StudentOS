@@ -84,6 +84,9 @@ void runPonponAction(BuildContext context, WidgetRef ref, PonponAction action) {
         ref.read(notesControllerProvider).value?.notes ?? const <Note>[],
       );
       if (note != null) showQuizSheet(context, note);
+    case PonponAction.reviewRecall:
+      ref.read(notesViewProvider.notifier).show(NotesView.recall);
+      GoRouter.maybeOf(context)?.go('/notes?view=recall');
     case PonponAction.seeTasks:
       ref.read(notesViewProvider.notifier).show(NotesView.tasks);
       GoRouter.maybeOf(context)?.go('/notes?view=tasks');

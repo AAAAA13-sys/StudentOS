@@ -6539,6 +6539,442 @@ class IouRowsCompanion extends UpdateCompanion<IouRow> {
   }
 }
 
+class $RecallReviewRowsTable extends RecallReviewRows
+    with TableInfo<$RecallReviewRowsTable, RecallReviewRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $RecallReviewRowsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _noteIdMeta = const VerificationMeta('noteId');
+  @override
+  late final GeneratedColumn<int> noteId = GeneratedColumn<int>(
+    'note_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _cardKeyMeta = const VerificationMeta(
+    'cardKey',
+  );
+  @override
+  late final GeneratedColumn<String> cardKey = GeneratedColumn<String>(
+    'card_key',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _boxMeta = const VerificationMeta('box');
+  @override
+  late final GeneratedColumn<int> box = GeneratedColumn<int>(
+    'box',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1),
+  );
+  static const VerificationMeta _nextReviewOnMeta = const VerificationMeta(
+    'nextReviewOn',
+  );
+  @override
+  late final GeneratedColumn<String> nextReviewOn = GeneratedColumn<String>(
+    'next_review_on',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _lastReviewedAtMeta = const VerificationMeta(
+    'lastReviewedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> lastReviewedAt =
+      GeneratedColumn<DateTime>(
+        'last_reviewed_at',
+        aliasedName,
+        true,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _timesReviewedMeta = const VerificationMeta(
+    'timesReviewed',
+  );
+  @override
+  late final GeneratedColumn<int> timesReviewed = GeneratedColumn<int>(
+    'times_reviewed',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    noteId,
+    cardKey,
+    box,
+    nextReviewOn,
+    lastReviewedAt,
+    timesReviewed,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'recall_reviews';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<RecallReviewRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('note_id')) {
+      context.handle(
+        _noteIdMeta,
+        noteId.isAcceptableOrUnknown(data['note_id']!, _noteIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_noteIdMeta);
+    }
+    if (data.containsKey('card_key')) {
+      context.handle(
+        _cardKeyMeta,
+        cardKey.isAcceptableOrUnknown(data['card_key']!, _cardKeyMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_cardKeyMeta);
+    }
+    if (data.containsKey('box')) {
+      context.handle(
+        _boxMeta,
+        box.isAcceptableOrUnknown(data['box']!, _boxMeta),
+      );
+    }
+    if (data.containsKey('next_review_on')) {
+      context.handle(
+        _nextReviewOnMeta,
+        nextReviewOn.isAcceptableOrUnknown(
+          data['next_review_on']!,
+          _nextReviewOnMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_nextReviewOnMeta);
+    }
+    if (data.containsKey('last_reviewed_at')) {
+      context.handle(
+        _lastReviewedAtMeta,
+        lastReviewedAt.isAcceptableOrUnknown(
+          data['last_reviewed_at']!,
+          _lastReviewedAtMeta,
+        ),
+      );
+    }
+    if (data.containsKey('times_reviewed')) {
+      context.handle(
+        _timesReviewedMeta,
+        timesReviewed.isAcceptableOrUnknown(
+          data['times_reviewed']!,
+          _timesReviewedMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {noteId, cardKey};
+  @override
+  RecallReviewRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return RecallReviewRow(
+      noteId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}note_id'],
+      )!,
+      cardKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}card_key'],
+      )!,
+      box: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}box'],
+      )!,
+      nextReviewOn: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}next_review_on'],
+      )!,
+      lastReviewedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}last_reviewed_at'],
+      ),
+      timesReviewed: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}times_reviewed'],
+      )!,
+    );
+  }
+
+  @override
+  $RecallReviewRowsTable createAlias(String alias) {
+    return $RecallReviewRowsTable(attachedDatabase, alias);
+  }
+}
+
+class RecallReviewRow extends DataClass implements Insertable<RecallReviewRow> {
+  final int noteId;
+  final String cardKey;
+
+  /// Leitner box `1..5` (intervals 1, 2, 4, 7, 14 days).
+  final int box;
+
+  /// Next scheduled review date as `YYYY-MM-DD`.
+  final String nextReviewOn;
+  final DateTime? lastReviewedAt;
+  final int timesReviewed;
+  const RecallReviewRow({
+    required this.noteId,
+    required this.cardKey,
+    required this.box,
+    required this.nextReviewOn,
+    this.lastReviewedAt,
+    required this.timesReviewed,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['note_id'] = Variable<int>(noteId);
+    map['card_key'] = Variable<String>(cardKey);
+    map['box'] = Variable<int>(box);
+    map['next_review_on'] = Variable<String>(nextReviewOn);
+    if (!nullToAbsent || lastReviewedAt != null) {
+      map['last_reviewed_at'] = Variable<DateTime>(lastReviewedAt);
+    }
+    map['times_reviewed'] = Variable<int>(timesReviewed);
+    return map;
+  }
+
+  RecallReviewRowsCompanion toCompanion(bool nullToAbsent) {
+    return RecallReviewRowsCompanion(
+      noteId: Value(noteId),
+      cardKey: Value(cardKey),
+      box: Value(box),
+      nextReviewOn: Value(nextReviewOn),
+      lastReviewedAt: lastReviewedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastReviewedAt),
+      timesReviewed: Value(timesReviewed),
+    );
+  }
+
+  factory RecallReviewRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return RecallReviewRow(
+      noteId: serializer.fromJson<int>(json['noteId']),
+      cardKey: serializer.fromJson<String>(json['cardKey']),
+      box: serializer.fromJson<int>(json['box']),
+      nextReviewOn: serializer.fromJson<String>(json['nextReviewOn']),
+      lastReviewedAt: serializer.fromJson<DateTime?>(json['lastReviewedAt']),
+      timesReviewed: serializer.fromJson<int>(json['timesReviewed']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'noteId': serializer.toJson<int>(noteId),
+      'cardKey': serializer.toJson<String>(cardKey),
+      'box': serializer.toJson<int>(box),
+      'nextReviewOn': serializer.toJson<String>(nextReviewOn),
+      'lastReviewedAt': serializer.toJson<DateTime?>(lastReviewedAt),
+      'timesReviewed': serializer.toJson<int>(timesReviewed),
+    };
+  }
+
+  RecallReviewRow copyWith({
+    int? noteId,
+    String? cardKey,
+    int? box,
+    String? nextReviewOn,
+    Value<DateTime?> lastReviewedAt = const Value.absent(),
+    int? timesReviewed,
+  }) => RecallReviewRow(
+    noteId: noteId ?? this.noteId,
+    cardKey: cardKey ?? this.cardKey,
+    box: box ?? this.box,
+    nextReviewOn: nextReviewOn ?? this.nextReviewOn,
+    lastReviewedAt: lastReviewedAt.present
+        ? lastReviewedAt.value
+        : this.lastReviewedAt,
+    timesReviewed: timesReviewed ?? this.timesReviewed,
+  );
+  RecallReviewRow copyWithCompanion(RecallReviewRowsCompanion data) {
+    return RecallReviewRow(
+      noteId: data.noteId.present ? data.noteId.value : this.noteId,
+      cardKey: data.cardKey.present ? data.cardKey.value : this.cardKey,
+      box: data.box.present ? data.box.value : this.box,
+      nextReviewOn: data.nextReviewOn.present
+          ? data.nextReviewOn.value
+          : this.nextReviewOn,
+      lastReviewedAt: data.lastReviewedAt.present
+          ? data.lastReviewedAt.value
+          : this.lastReviewedAt,
+      timesReviewed: data.timesReviewed.present
+          ? data.timesReviewed.value
+          : this.timesReviewed,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RecallReviewRow(')
+          ..write('noteId: $noteId, ')
+          ..write('cardKey: $cardKey, ')
+          ..write('box: $box, ')
+          ..write('nextReviewOn: $nextReviewOn, ')
+          ..write('lastReviewedAt: $lastReviewedAt, ')
+          ..write('timesReviewed: $timesReviewed')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    noteId,
+    cardKey,
+    box,
+    nextReviewOn,
+    lastReviewedAt,
+    timesReviewed,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is RecallReviewRow &&
+          other.noteId == this.noteId &&
+          other.cardKey == this.cardKey &&
+          other.box == this.box &&
+          other.nextReviewOn == this.nextReviewOn &&
+          other.lastReviewedAt == this.lastReviewedAt &&
+          other.timesReviewed == this.timesReviewed);
+}
+
+class RecallReviewRowsCompanion extends UpdateCompanion<RecallReviewRow> {
+  final Value<int> noteId;
+  final Value<String> cardKey;
+  final Value<int> box;
+  final Value<String> nextReviewOn;
+  final Value<DateTime?> lastReviewedAt;
+  final Value<int> timesReviewed;
+  final Value<int> rowid;
+  const RecallReviewRowsCompanion({
+    this.noteId = const Value.absent(),
+    this.cardKey = const Value.absent(),
+    this.box = const Value.absent(),
+    this.nextReviewOn = const Value.absent(),
+    this.lastReviewedAt = const Value.absent(),
+    this.timesReviewed = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  RecallReviewRowsCompanion.insert({
+    required int noteId,
+    required String cardKey,
+    this.box = const Value.absent(),
+    required String nextReviewOn,
+    this.lastReviewedAt = const Value.absent(),
+    this.timesReviewed = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : noteId = Value(noteId),
+       cardKey = Value(cardKey),
+       nextReviewOn = Value(nextReviewOn);
+  static Insertable<RecallReviewRow> custom({
+    Expression<int>? noteId,
+    Expression<String>? cardKey,
+    Expression<int>? box,
+    Expression<String>? nextReviewOn,
+    Expression<DateTime>? lastReviewedAt,
+    Expression<int>? timesReviewed,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (noteId != null) 'note_id': noteId,
+      if (cardKey != null) 'card_key': cardKey,
+      if (box != null) 'box': box,
+      if (nextReviewOn != null) 'next_review_on': nextReviewOn,
+      if (lastReviewedAt != null) 'last_reviewed_at': lastReviewedAt,
+      if (timesReviewed != null) 'times_reviewed': timesReviewed,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  RecallReviewRowsCompanion copyWith({
+    Value<int>? noteId,
+    Value<String>? cardKey,
+    Value<int>? box,
+    Value<String>? nextReviewOn,
+    Value<DateTime?>? lastReviewedAt,
+    Value<int>? timesReviewed,
+    Value<int>? rowid,
+  }) {
+    return RecallReviewRowsCompanion(
+      noteId: noteId ?? this.noteId,
+      cardKey: cardKey ?? this.cardKey,
+      box: box ?? this.box,
+      nextReviewOn: nextReviewOn ?? this.nextReviewOn,
+      lastReviewedAt: lastReviewedAt ?? this.lastReviewedAt,
+      timesReviewed: timesReviewed ?? this.timesReviewed,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (noteId.present) {
+      map['note_id'] = Variable<int>(noteId.value);
+    }
+    if (cardKey.present) {
+      map['card_key'] = Variable<String>(cardKey.value);
+    }
+    if (box.present) {
+      map['box'] = Variable<int>(box.value);
+    }
+    if (nextReviewOn.present) {
+      map['next_review_on'] = Variable<String>(nextReviewOn.value);
+    }
+    if (lastReviewedAt.present) {
+      map['last_reviewed_at'] = Variable<DateTime>(lastReviewedAt.value);
+    }
+    if (timesReviewed.present) {
+      map['times_reviewed'] = Variable<int>(timesReviewed.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RecallReviewRowsCompanion(')
+          ..write('noteId: $noteId, ')
+          ..write('cardKey: $cardKey, ')
+          ..write('box: $box, ')
+          ..write('nextReviewOn: $nextReviewOn, ')
+          ..write('lastReviewedAt: $lastReviewedAt, ')
+          ..write('timesReviewed: $timesReviewed, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -6559,6 +6995,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $TaskRowsTable taskRows = $TaskRowsTable(this);
   late final $GoalRowsTable goalRows = $GoalRowsTable(this);
   late final $IouRowsTable iouRows = $IouRowsTable(this);
+  late final $RecallReviewRowsTable recallReviewRows = $RecallReviewRowsTable(
+    this,
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -6577,6 +7016,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     taskRows,
     goalRows,
     iouRows,
+    recallReviewRows,
   ];
 }
 
@@ -9935,6 +10375,246 @@ typedef $$IouRowsTableProcessedTableManager =
       IouRow,
       PrefetchHooks Function()
     >;
+typedef $$RecallReviewRowsTableCreateCompanionBuilder =
+    RecallReviewRowsCompanion Function({
+      required int noteId,
+      required String cardKey,
+      Value<int> box,
+      required String nextReviewOn,
+      Value<DateTime?> lastReviewedAt,
+      Value<int> timesReviewed,
+      Value<int> rowid,
+    });
+typedef $$RecallReviewRowsTableUpdateCompanionBuilder =
+    RecallReviewRowsCompanion Function({
+      Value<int> noteId,
+      Value<String> cardKey,
+      Value<int> box,
+      Value<String> nextReviewOn,
+      Value<DateTime?> lastReviewedAt,
+      Value<int> timesReviewed,
+      Value<int> rowid,
+    });
+
+class $$RecallReviewRowsTableFilterComposer
+    extends Composer<_$AppDatabase, $RecallReviewRowsTable> {
+  $$RecallReviewRowsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get noteId => $composableBuilder(
+    column: $table.noteId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get cardKey => $composableBuilder(
+    column: $table.cardKey,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get box => $composableBuilder(
+    column: $table.box,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get nextReviewOn => $composableBuilder(
+    column: $table.nextReviewOn,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get lastReviewedAt => $composableBuilder(
+    column: $table.lastReviewedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get timesReviewed => $composableBuilder(
+    column: $table.timesReviewed,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$RecallReviewRowsTableOrderingComposer
+    extends Composer<_$AppDatabase, $RecallReviewRowsTable> {
+  $$RecallReviewRowsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get noteId => $composableBuilder(
+    column: $table.noteId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get cardKey => $composableBuilder(
+    column: $table.cardKey,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get box => $composableBuilder(
+    column: $table.box,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get nextReviewOn => $composableBuilder(
+    column: $table.nextReviewOn,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get lastReviewedAt => $composableBuilder(
+    column: $table.lastReviewedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get timesReviewed => $composableBuilder(
+    column: $table.timesReviewed,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$RecallReviewRowsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $RecallReviewRowsTable> {
+  $$RecallReviewRowsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get noteId =>
+      $composableBuilder(column: $table.noteId, builder: (column) => column);
+
+  GeneratedColumn<String> get cardKey =>
+      $composableBuilder(column: $table.cardKey, builder: (column) => column);
+
+  GeneratedColumn<int> get box =>
+      $composableBuilder(column: $table.box, builder: (column) => column);
+
+  GeneratedColumn<String> get nextReviewOn => $composableBuilder(
+    column: $table.nextReviewOn,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get lastReviewedAt => $composableBuilder(
+    column: $table.lastReviewedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get timesReviewed => $composableBuilder(
+    column: $table.timesReviewed,
+    builder: (column) => column,
+  );
+}
+
+class $$RecallReviewRowsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $RecallReviewRowsTable,
+          RecallReviewRow,
+          $$RecallReviewRowsTableFilterComposer,
+          $$RecallReviewRowsTableOrderingComposer,
+          $$RecallReviewRowsTableAnnotationComposer,
+          $$RecallReviewRowsTableCreateCompanionBuilder,
+          $$RecallReviewRowsTableUpdateCompanionBuilder,
+          (
+            RecallReviewRow,
+            BaseReferences<
+              _$AppDatabase,
+              $RecallReviewRowsTable,
+              RecallReviewRow
+            >,
+          ),
+          RecallReviewRow,
+          PrefetchHooks Function()
+        > {
+  $$RecallReviewRowsTableTableManager(
+    _$AppDatabase db,
+    $RecallReviewRowsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$RecallReviewRowsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$RecallReviewRowsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$RecallReviewRowsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> noteId = const Value.absent(),
+                Value<String> cardKey = const Value.absent(),
+                Value<int> box = const Value.absent(),
+                Value<String> nextReviewOn = const Value.absent(),
+                Value<DateTime?> lastReviewedAt = const Value.absent(),
+                Value<int> timesReviewed = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => RecallReviewRowsCompanion(
+                noteId: noteId,
+                cardKey: cardKey,
+                box: box,
+                nextReviewOn: nextReviewOn,
+                lastReviewedAt: lastReviewedAt,
+                timesReviewed: timesReviewed,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required int noteId,
+                required String cardKey,
+                Value<int> box = const Value.absent(),
+                required String nextReviewOn,
+                Value<DateTime?> lastReviewedAt = const Value.absent(),
+                Value<int> timesReviewed = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => RecallReviewRowsCompanion.insert(
+                noteId: noteId,
+                cardKey: cardKey,
+                box: box,
+                nextReviewOn: nextReviewOn,
+                lastReviewedAt: lastReviewedAt,
+                timesReviewed: timesReviewed,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$RecallReviewRowsTable, RecallReviewRow>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $RecallReviewRowsTable,
+                    RecallReviewRow
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$RecallReviewRowsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $RecallReviewRowsTable,
+      RecallReviewRow,
+      $$RecallReviewRowsTableFilterComposer,
+      $$RecallReviewRowsTableOrderingComposer,
+      $$RecallReviewRowsTableAnnotationComposer,
+      $$RecallReviewRowsTableCreateCompanionBuilder,
+      $$RecallReviewRowsTableUpdateCompanionBuilder,
+      (
+        RecallReviewRow,
+        BaseReferences<_$AppDatabase, $RecallReviewRowsTable, RecallReviewRow>,
+      ),
+      RecallReviewRow,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -9965,4 +10645,6 @@ class $AppDatabaseManager {
       $$GoalRowsTableTableManager(_db, _db.goalRows);
   $$IouRowsTableTableManager get iouRows =>
       $$IouRowsTableTableManager(_db, _db.iouRows);
+  $$RecallReviewRowsTableTableManager get recallReviewRows =>
+      $$RecallReviewRowsTableTableManager(_db, _db.recallReviewRows);
 }

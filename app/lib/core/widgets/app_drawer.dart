@@ -17,6 +17,7 @@ import '../../features/phone/phone_controller.dart';
 import '../../features/work/payday.dart';
 import '../../features/work/work_controller.dart';
 import '../../features/notes/notes_controller.dart';
+import '../../features/notes/recall_controller.dart';
 import '../../features/tasks/tasks_controller.dart';
 import '../db/backup.dart';
 import '../theme/app_spacing.dart';
@@ -31,7 +32,8 @@ class AppDrawer extends ConsumerWidget {
   static String _count(int n, String noun) => '$n $noun${n == 1 ? '' : 's'}';
 
   /// Formats the restore snackbar message, omitting zero counts for optional
-  /// modules (`bills`, `shifts`, `alarms`, `tasks`, `goals`, `ious`).
+  /// modules (`bills`, `shifts`, `alarms`, `tasks`, `goals`, `ious`,
+  /// `recallReviews`).
   static String formatRestoreSummary({
     required int events,
     required int transactions,
@@ -42,6 +44,7 @@ class AppDrawer extends ConsumerWidget {
     int tasks = 0,
     int goals = 0,
     int ious = 0,
+    int recallReviews = 0,
   }) {
     final List<String> parts = <String>[
       _count(events, 'event'),
@@ -53,6 +56,7 @@ class AppDrawer extends ConsumerWidget {
       if (tasks > 0) _count(tasks, 'task'),
       if (goals > 0) _count(goals, 'goal'),
       if (ious > 0) _count(ious, 'IOU'),
+      if (recallReviews > 0) _count(recallReviews, 'recall card'),
     ];
     final String head = parts.sublist(0, parts.length - 1).join(', ');
     return 'Restored $head and ${parts.last}';
@@ -113,6 +117,7 @@ class AppDrawer extends ConsumerWidget {
         ..invalidate(iousControllerProvider)
         ..invalidate(billsControllerProvider)
         ..invalidate(notesControllerProvider)
+        ..invalidate(recallControllerProvider)
         ..invalidate(notesViewProvider)
         ..invalidate(tasksControllerProvider)
         ..invalidate(workControllerProvider)
@@ -134,6 +139,7 @@ class AppDrawer extends ConsumerWidget {
               tasks: counts.tasks,
               goals: counts.goals,
               ious: counts.ious,
+              recallReviews: counts.recallReviews,
             ),
           ),
         ),

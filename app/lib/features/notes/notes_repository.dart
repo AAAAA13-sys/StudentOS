@@ -83,8 +83,13 @@ class NotesRepository {
     );
   }
 
-  Future<void> deleteNote(int id) {
-    return (_db.delete(_db.noteRows)..where((t) => t.id.equals(id))).go();
+  Future<void> deleteNote(int id) async {
+    await _db.transaction(() async {
+      await (_db.delete(_db.noteRows)..where((t) => t.id.equals(id))).go();
+      await (_db.delete(
+        _db.recallReviewRows,
+      )..where((t) => t.noteId.equals(id))).go();
+    });
   }
 
   /// Every tag in use, sorted.

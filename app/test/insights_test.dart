@@ -10,6 +10,8 @@ import 'package:studentos/features/insights/finance_insights.dart';
 import 'package:studentos/features/insights/notes_insights.dart';
 import 'package:studentos/features/insights/ponpon_insight.dart';
 import 'package:studentos/features/notes/note.dart';
+import 'package:studentos/features/notes/recall_controller.dart';
+import 'package:studentos/features/notes/recall_item.dart';
 import 'package:studentos/features/tasks/task_item.dart';
 import 'package:studentos/features/work/payday.dart';
 import 'package:studentos/features/work/shift.dart';
@@ -1107,6 +1109,88 @@ void main() {
       expect(todayOnly.single.text, '2 tasks due today.');
       expect(todayOnly.single.mood, PonponMood.focused);
       expect(todayOnly.single.action, PonponAction.seeTasks);
+    });
+
+    test('emits exam-soon and due recall insights with reviewRecall action', () {
+      const Note bio = Note(
+        id: 1,
+        title: 'Biology',
+        body: 'Q: ATP?\nA: Energy\nQ: DNA?\nA: Nucleic acid',
+        tags: <String>[],
+      );
+      final List<DeckCard> examDue = <DeckCard>[
+        DeckCard(
+          note: bio,
+          card: bio.recallCards.first,
+          cardKey: bio.keyedRecallCards.first.key,
+          box: 1,
+          nextReviewOn: '2026-11-17',
+          timesReviewed: 0,
+          isDue: true,
+          examTitle: 'Bio Midterm',
+          examAt: DateTime(2026, 11, 19, 9),
+          examCountdown: 'in 2 days',
+        ),
+        DeckCard(
+          note: bio,
+          card: bio.recallCards.last,
+          cardKey: bio.keyedRecallCards.last.key,
+          box: 2,
+          nextReviewOn: '2026-11-17',
+          timesReviewed: 1,
+          isDue: true,
+          examTitle: 'Bio Midterm',
+          examAt: DateTime(2026, 11, 19, 9),
+          examCountdown: 'in 2 days',
+        ),
+      ];
+      final List<PonponInsight> examInsights = notesInsights(
+        notes: const <Note>[bio],
+        dueRecallCards: examDue,
+        now: now,
+      );
+      expect(
+        examInsights.single.text,
+        'Exam soon (Bio Midterm): 2 recall cards due.',
+      );
+      expect(examInsights.single.priority, 1);
+      expect(examInsights.single.mood, PonponMood.focused);
+      expect(examInsights.single.action, PonponAction.reviewRecall);
+
+      final RecallDeckState startedDeck = RecallDeckState(
+        cards: <DeckCard>[
+          DeckCard(
+            note: bio,
+            card: bio.recallCards.first,
+            cardKey: bio.keyedRecallCards.first.key,
+            box: 2,
+            nextReviewOn: '2026-11-17',
+            timesReviewed: 1,
+            isDue: true,
+          ),
+        ],
+        dueCards: <DeckCard>[
+          DeckCard(
+            note: bio,
+            card: bio.recallCards.first,
+            cardKey: bio.keyedRecallCards.first.key,
+            box: 2,
+            nextReviewOn: '2026-11-17',
+            timesReviewed: 1,
+            isDue: true,
+          ),
+        ],
+        upcomingCards: const <DeckCard>[],
+        examPriorityCount: 0,
+      );
+      final List<PonponInsight> reviewDueInsights = notesInsights(
+        notes: const <Note>[bio],
+        recallDeck: startedDeck,
+        now: now,
+      );
+      expect(reviewDueInsights.single.text, 'Review 1 due recall card.');
+      expect(reviewDueInsights.single.priority, 2);
+      expect(reviewDueInsights.single.action, PonponAction.reviewRecall);
     });
   });
 

@@ -23,9 +23,9 @@ class BackupService {
   final AppDatabase _db;
 
   /// 2 added work shifts, 3 phone use, 4 alarms and focus sessions,
-  /// 5 recurring bills, 6 tasks, 7 savings goals, 8 IOUs and splits. Older
-  /// files restore with none of what they lack.
-  static const int formatVersion = 8;
+  /// 5 recurring bills, 6 tasks, 7 savings goals, 8 IOUs and splits,
+  /// 9 spaced recall reviews. Older files restore with none of what they lack.
+  static const int formatVersion = 9;
 
   /// Settings key holding when a backup was last saved (UTC ISO 8601).
   static const String lastBackupKey = 'last_backup_at';
@@ -60,7 +60,8 @@ class BackupService {
         (await _db.select(_db.alarmRows).get()).isNotEmpty ||
         (await _db.select(_db.taskRows).get()).isNotEmpty ||
         (await _db.select(_db.goalRows).get()).isNotEmpty ||
-        (await _db.select(_db.iouRows).get()).isNotEmpty;
+        (await _db.select(_db.iouRows).get()).isNotEmpty ||
+        (await _db.select(_db.recallReviewRows).get()).isNotEmpty;
   }
 
   Future<String> exportJson() async {
@@ -85,6 +86,9 @@ class BackupService {
     final List<TaskRow> tasks = await _db.select(_db.taskRows).get();
     final List<GoalRow> goals = await _db.select(_db.goalRows).get();
     final List<IouRow> ious = await _db.select(_db.iouRows).get();
+    final List<RecallReviewRow> recallReviews = await _db
+        .select(_db.recallReviewRows)
+        .get();
 
     return const JsonEncoder.withIndent('  ').convert(<String, Object?>{
       'app': 'studentos',
@@ -113,6 +117,9 @@ class BackupService {
       'tasks': <Object?>[for (final TaskRow row in tasks) row.toJson()],
       'goals': <Object?>[for (final GoalRow row in goals) row.toJson()],
       'ious': <Object?>[for (final IouRow row in ious) row.toJson()],
+      'recall_reviews': <Object?>[
+        for (final RecallReviewRow row in recallReviews) row.toJson(),
+      ],
     });
   }
 
@@ -142,6 +149,7 @@ class BackupService {
       int tasks,
       int goals,
       int ious,
+      int recallReviews,
     })
   >
   restoreJsonWithCounts(String json) async {
@@ -158,6 +166,7 @@ class BackupService {
     final List<TaskRow> tasks;
     final List<GoalRow> goals;
     final List<IouRow> ious;
+    final List<RecallReviewRow> recallReviews;
     try {
       final Object? decoded = jsonDecode(json);
       if (decoded is! Map<String, dynamic> || decoded['app'] != 'studentos') {
@@ -247,6 +256,15 @@ class BackupService {
                       IouRow.fromJson(<String, dynamic>{'settled': false, ...m}),
                 )
                 .toList();
+      recallReviews = decoded['recall_reviews'] == null
+          ? <RecallReviewRow>[]
+          : rows('recall_reviews')
+                .map(
+                  (Map<String, dynamic> m) => RecallReviewRow.fromJson(
+                    <String, dynamic>{'box': 1, 'timesReviewed': 0, ...m},
+                  ),
+                )
+                .toList();
     } on BackupFormatException {
       rethrow;
     } catch (_) {
@@ -267,6 +285,7 @@ class BackupService {
       await _db.delete(_db.taskRows).go();
       await _db.delete(_db.goalRows).go();
       await _db.delete(_db.iouRows).go();
+      await _db.delete(_db.recallReviewRows).go();
       await _db.batch((batch) {
         batch.insertAll(_db.eventRows, events);
         batch.insertAll(_db.transactionRows, transactions);
@@ -281,6 +300,7 @@ class BackupService {
         batch.insertAll(_db.taskRows, tasks);
         batch.insertAll(_db.goalRows, goals);
         batch.insertAll(_db.iouRows, ious);
+        batch.insertAll(_db.recallReviewRows, recallReviews);
       });
     });
     return (
@@ -293,6 +313,7 @@ class BackupService {
       tasks: tasks.length,
       goals: goals.length,
       ious: ious.length,
+      recallReviews: recallReviews.length,
     );
   }
 }
@@ -353,6 +374,7 @@ final StreamProvider<BackupStatus> backupStatusProvider =
           db.taskRows,
           db.goalRows,
           db.iouRows,
+          db.recallReviewRows,
           db.settingRows,
         ]),
       )) {

@@ -15,6 +15,7 @@ import '../finance/savings_goal.dart';
 import '../finance/transaction.dart';
 import '../notes/note.dart';
 import '../notes/notes_controller.dart';
+import '../notes/recall_controller.dart';
 import '../tasks/task_item.dart';
 import '../tasks/tasks_controller.dart';
 import '../work/payday.dart';
@@ -103,12 +104,16 @@ final FutureProvider<List<PonponInsight>> financeInsightsProvider =
       );
     });
 
-/// Silent while a search or tag filter narrows the Notes list.
+/// Silent while a search or tag filter narrows the Notes list, or on Recall
+/// when there are no due cards.
 final Provider<List<PonponInsight>> notesInsightsProvider =
     Provider.autoDispose<List<PonponInsight>>((Ref ref) {
       ref.watch(ponponTickProvider);
       final NotesView view = ref.watch(notesViewProvider);
       final NotesState? state = ref.watch(notesControllerProvider).value;
+      final RecallDeckState? recallDeck = ref
+          .watch(recallControllerProvider)
+          .value;
       final List<TaskItem> tasks =
           ref.watch(tasksControllerProvider).value ?? const <TaskItem>[];
       if (view == NotesView.notes &&
@@ -117,10 +122,15 @@ final Provider<List<PonponInsight>> notesInsightsProvider =
               state.selectedTag != null)) {
         return const <PonponInsight>[];
       }
+      if (view == NotesView.recall &&
+          (recallDeck == null || recallDeck.dueCards.isEmpty)) {
+        return const <PonponInsight>[];
+      }
       return notesInsights(
         notes: state?.notes ?? const <Note>[],
         events: ref.watch(calendarControllerProvider).value ?? const [],
         tasks: tasks,
+        recallDeck: recallDeck,
         now: ref.read(ponponClockProvider)(),
       );
     });

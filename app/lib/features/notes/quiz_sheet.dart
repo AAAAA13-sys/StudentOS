@@ -1,15 +1,38 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_theme.dart';
 import 'note.dart';
 import 'quiz_session.dart';
+import 'recall_controller.dart';
+import 'recall_item.dart';
+
+class _QuizItem {
+  const _QuizItem({
+    required this.card,
+    required this.noteId,
+    required this.cardKey,
+    this.noteTitle,
+    this.box,
+    this.examCountdown,
+  });
+
+  final RecallCard card;
+  final int noteId;
+  final String cardKey;
+  final String? noteTitle;
+  final int? box;
+  final String? examCountdown;
+}
 
 /// Opens the interactive Quiz sheet for [note]'s Q&A cards. Does nothing
-/// when the note has none.
+/// when the note has none. Marks persist into the Leitner recall schedule.
 Future<void> showQuizSheet(BuildContext context, Note note) async {
-  final List<RecallCard> cards = note.recallCards;
-  if (cards.isEmpty) return;
+  final List<({RecallCard card, String key})> keyed = note.keyedRecallCards;
+  if (keyed.isEmpty) return;
 
   await showModalBottomSheet<void>(
     context: context,
@@ -17,23 +40,77 @@ Future<void> showQuizSheet(BuildContext context, Note note) async {
     isScrollControlled: true,
     showDragHandle: true,
     builder: (BuildContext ctx) {
-      return _QuizSheetView(note: note, cards: cards);
+      return _QuizSheetView(
+        title: 'Quiz',
+        headerNoteTitle: note.title,
+        items: <_QuizItem>[
+          for (final ({RecallCard card, String key}) entry in keyed)
+            _QuizItem(card: entry.card, noteId: note.id, cardKey: entry.key),
+        ],
+      );
     },
   );
 }
 
-class _QuizSheetView extends StatefulWidget {
-  const _QuizSheetView({required this.note, required this.cards});
+/// Opens the interactive Spaced Recall Deck sheet for cross-note due [cards].
+/// Does nothing when [cards] is empty.
+Future<void> showRecallDeckSheet(
+  BuildContext context,
+  List<DeckCard> cards, {
+  String title = 'Recall deck',
+  int initialIndex = 0,
+}) async {
+  if (cards.isEmpty) return;
+  final int start = initialIndex.clamp(0, cards.length - 1);
+  final List<DeckCard> ordered = start == 0
+      ? cards
+      : <DeckCard>[
+          cards[start],
+          ...cards.sublist(0, start),
+          ...cards.sublist(start + 1),
+        ];
 
-  final Note note;
-  final List<RecallCard> cards;
-
-  @override
-  State<_QuizSheetView> createState() => _QuizSheetViewState();
+  await showModalBottomSheet<void>(
+    context: context,
+    useRootNavigator: true,
+    isScrollControlled: true,
+    showDragHandle: true,
+    builder: (BuildContext ctx) {
+      return _QuizSheetView(
+        title: title,
+        items: <_QuizItem>[
+          for (final DeckCard deckCard in ordered)
+            _QuizItem(
+              card: deckCard.card,
+              noteId: deckCard.note.id,
+              cardKey: deckCard.cardKey,
+              noteTitle: deckCard.note.title,
+              box: deckCard.box,
+              examCountdown: deckCard.examCountdown,
+            ),
+        ],
+      );
+    },
+  );
 }
 
-class _QuizSheetViewState extends State<_QuizSheetView> {
-  late QuizSession _session = QuizSession(widget.cards.length);
+class _QuizSheetView extends ConsumerStatefulWidget {
+  const _QuizSheetView({
+    required this.title,
+    required this.items,
+    this.headerNoteTitle,
+  });
+
+  final String title;
+  final String? headerNoteTitle;
+  final List<_QuizItem> items;
+
+  @override
+  ConsumerState<_QuizSheetView> createState() => _QuizSheetViewState();
+}
+
+class _QuizSheetViewState extends ConsumerState<_QuizSheetView> {
+  late QuizSession _session = QuizSession(widget.items.length);
   final Set<int> _revealed = <int>{};
 
   void _toggle(int index) {
@@ -54,6 +131,24 @@ class _QuizSheetViewState extends State<_QuizSheetView> {
 
   void _mark(int index, {required bool right}) {
     setState(() => _session.mark(index, right: right));
+    final _QuizItem item = widget.items[index];
+    final RecallController controller = ref.read(
+      recallControllerProvider.notifier,
+    );
+    unawaited(_persistOutcome(controller, item.noteId, item.cardKey, right));
+  }
+
+  Future<void> _persistOutcome(
+    RecallController controller,
+    int noteId,
+    String cardKey,
+    bool right,
+  ) async {
+    try {
+      await controller.recordOutcome(noteId, cardKey, right: right);
+    } catch (_) {
+      // Best-effort when rendered in isolated widget tests without a DB.
+    }
   }
 
   void _retryMissed() {
@@ -69,6 +164,11 @@ class _QuizSheetViewState extends State<_QuizSheetView> {
     final TextTheme textStyles = context.textStyles;
     final List<int> active = _session.active;
     final bool allRevealed = active.every(_revealed.contains);
+    final String countLabel =
+        '${active.length} ${active.length == 1 ? 'card' : 'cards'}';
+    final String subtitle = widget.headerNoteTitle != null
+        ? '${widget.headerNoteTitle} • $countLabel'
+        : '$countLabel due';
 
     return DraggableScrollableSheet(
       initialChildSize: 0.75,
@@ -96,18 +196,21 @@ class _QuizSheetViewState extends State<_QuizSheetView> {
                               color: colors.primary,
                             ),
                             const SizedBox(width: 6),
-                            Text(
-                              'Quiz',
-                              style: textStyles.titleLarge?.copyWith(
-                                fontWeight: FontWeight.bold,
+                            Flexible(
+                              child: Text(
+                                widget.title,
+                                style: textStyles.titleLarge?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                           ],
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          '${widget.note.title} • ${active.length} '
-                          '${active.length == 1 ? 'card' : 'cards'}',
+                          subtitle,
                           style: textStyles.bodySmall?.copyWith(
                             color: colors.onSurfaceVariant,
                           ),
@@ -145,7 +248,7 @@ class _QuizSheetViewState extends State<_QuizSheetView> {
                     final int index = active[position];
                     return _CardTile(
                       number: index + 1,
-                      card: widget.cards[index],
+                      item: widget.items[index],
                       revealed: _revealed.contains(index),
                       result: _session.resultOf(index),
                       onToggle: () => _toggle(index),
@@ -208,7 +311,7 @@ class _Tally extends StatelessWidget {
 class _CardTile extends StatelessWidget {
   const _CardTile({
     required this.number,
-    required this.card,
+    required this.item,
     required this.revealed,
     required this.result,
     required this.onToggle,
@@ -216,7 +319,7 @@ class _CardTile extends StatelessWidget {
   });
 
   final int number;
-  final RecallCard card;
+  final _QuizItem item;
   final bool revealed;
   final bool? result;
   final VoidCallback onToggle;
@@ -226,6 +329,7 @@ class _CardTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final ColorScheme colors = context.colors;
     final TextTheme textStyles = context.textStyles;
+    final RecallCard card = item.card;
 
     return Card(
       elevation: 0,
@@ -243,6 +347,74 @@ class _CardTile extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
+            if (item.noteTitle != null ||
+                item.box != null ||
+                item.examCountdown != null) ...<Widget>[
+              Wrap(
+                spacing: AppSpacing.sm,
+                runSpacing: AppSpacing.xs,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: <Widget>[
+                  if (item.noteTitle != null && item.noteTitle!.isNotEmpty)
+                    Text(
+                      item.noteTitle!,
+                      style: textStyles.labelSmall?.copyWith(
+                        color: colors.onSurfaceVariant,
+                      ),
+                    ),
+                  if (item.box != null)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: colors.secondaryContainer,
+                        borderRadius: AppRadius.pill,
+                      ),
+                      child: Text(
+                        'Box ${item.box}',
+                        style: textStyles.labelSmall?.copyWith(
+                          color: colors.onSecondaryContainer,
+                          fontFeatures: const <FontFeature>[
+                            FontFeature.tabularFigures(),
+                          ],
+                        ),
+                      ),
+                    ),
+                  if (item.examCountdown != null)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: colors.tertiaryContainer,
+                        borderRadius: AppRadius.pill,
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                          Icon(
+                            Icons.event_rounded,
+                            size: 12,
+                            color: colors.onTertiaryContainer,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Exam ${item.examCountdown}',
+                            style: textStyles.labelSmall?.copyWith(
+                              color: colors.onTertiaryContainer,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
+              AppSpacing.gapSm,
+            ],
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
