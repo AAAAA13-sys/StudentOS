@@ -12,7 +12,34 @@ import '../../features/insights/month_review.dart';
 import '../../features/work/work_repository.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_theme.dart';
+import 'backup.dart';
 import 'portable_export.dart';
+
+/// Exports the full on-device database to a user-chosen `.json` backup file.
+Future<void> runBackupExport(
+  ProviderContainer container,
+  ScaffoldMessengerState messenger,
+) async {
+  final BackupService backup = container.read(backupServiceProvider);
+  try {
+    final String json = await backup.exportJson();
+    final String stamp = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    final Uri? saved = await FilePicker.saveFile(
+      fileName: 'studentos-backup-$stamp.json',
+      bytes: utf8.encode(json),
+      mimeType: 'application/json',
+    );
+    if (saved != null) {
+      await backup.markBackedUp(DateTime.now());
+      container.invalidate(backupStatusProvider);
+      messenger.showSnackBar(const SnackBar(content: Text('Backup saved')));
+    }
+  } catch (_) {
+    messenger.showSnackBar(
+      const SnackBar(content: Text('Could not save the backup')),
+    );
+  }
+}
 
 /// Opens a modal sheet to export Transactions, Shifts, IOUs (`.csv`), or
 /// Month in Review (`.md`) using [container] and [messenger] captured before

@@ -41,6 +41,7 @@ import '../tasks/day_tasks.dart';
 import '../../core/widgets/ponpon.dart';
 import '../insights/insights_providers.dart';
 import '../insights/ponpon_talk_slot.dart';
+import '../search/command_palette_sheet.dart';
 
 const List<FontFeature> _tabular = <FontFeature>[FontFeature.tabularFigures()];
 
@@ -252,14 +253,31 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                   onTap: () => addShift(context, ref, day: _selectedDate),
                   child: const Text('Add a shift'),
                 ),
+                PopupMenuItem<void>(
+                  onTap: () => showCommandPalette(context),
+                  child: const Text('Search & commands'),
+                ),
               ],
             ),
-          ] else if (view == CalendarView.focus && !timerRunning)
+          ] else if (view == CalendarView.alarm)
             IconButton(
-              tooltip: 'Timer settings',
-              icon: const Icon(Icons.tune_rounded),
-              onPressed: () => showFocusSettings(context),
+              icon: const Icon(Icons.search_rounded),
+              tooltip: 'Search & commands',
+              onPressed: () => showCommandPalette(context),
+            )
+          else if (view == CalendarView.focus) ...<Widget>[
+            IconButton(
+              icon: const Icon(Icons.search_rounded),
+              tooltip: 'Search & commands',
+              onPressed: () => showCommandPalette(context),
             ),
+            if (!timerRunning)
+              IconButton(
+                tooltip: 'Timer settings',
+                icon: const Icon(Icons.tune_rounded),
+                onPressed: () => showFocusSettings(context),
+              ),
+          ],
         ],
       ),
       body: Column(
@@ -306,12 +324,14 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
       ),
       floatingActionButton: switch (view) {
         CalendarView.schedule => FloatingActionButton(
+          heroTag: 'calendar_schedule_fab',
           tooltip: 'New event',
           onPressed: () =>
               _showAddEventDialog(context, prefilledDate: _selectedDate),
           child: const Icon(Icons.add_rounded),
         ),
         CalendarView.alarm => FloatingActionButton(
+          heroTag: 'calendar_alarm_fab',
           tooltip: 'New alarm',
           onPressed: () => showAlarmEditor(context),
           child: const Icon(Icons.add_alarm_rounded),
@@ -1162,6 +1182,8 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     setState(() {
       _viewMonth = DateTime(day.year, day.month);
       _selectedDate = DateTime(day.year, day.month, day.day);
+      _filterByDay = true;
+      _weekAnchor = DateTime(day.year, day.month, day.day);
     });
   }
 

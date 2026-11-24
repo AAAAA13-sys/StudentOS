@@ -32,6 +32,7 @@ import '../work/work_pay_card.dart';
 import '../../core/widgets/ponpon.dart';
 import '../insights/insights_providers.dart';
 import '../insights/ponpon_talk_slot.dart';
+import '../search/command_palette_sheet.dart';
 
 const List<FontFeature> _tabular = <FontFeature>[FontFeature.tabularFigures()];
 
@@ -62,7 +63,16 @@ class FinanceScreen extends ConsumerWidget {
         _quickLog(context, ref);
       },
       child: Scaffold(
-        appBar: const AppTopBar(title: 'Finance'),
+        appBar: AppTopBar(
+          title: 'Finance',
+          actions: <Widget>[
+            IconButton(
+              icon: const Icon(Icons.search_rounded),
+              tooltip: 'Search & commands',
+              onPressed: () => showCommandPalette(context),
+            ),
+          ],
+        ),
         body: Column(
           children: <Widget>[
             Padding(
@@ -312,6 +322,7 @@ class FinanceScreen extends ConsumerWidget {
           ],
         ),
         floatingActionButton: FloatingActionButton(
+          heroTag: 'finance_fab',
           tooltip: switch (view) {
             FinanceView.goals => 'New goal',
             FinanceView.ious => 'New IOU',

@@ -631,3 +631,15 @@ Entries are appended, never edited. Corrections are new entries that reference t
 - Added Finance `Cashflow` search/type filter (`_CashflowFilterBar` hidden on empty month to keep empty-state single Ponpon intact), tappable `_MonthCard` opening `CategoryBreakdownSheet`, and formula-safe RFC 4180 `.csv`/`.md` exports (`sanitizeCsvCell`, `showExportSheet`) in `AppDrawer` + `PonponAction.seeMonthReview`.
 - Updated `AGENTS.md` Part 6.7 (`Dual-Tier Navigation` item 2) to reflect `Month in review` and `CSV/Markdown export` inside `NavigationDrawer`.
 **Open items:** live Android SAF save-file dialog trigger (`FilePicker.saveFile`) and `Screen time access off` card state (since UsageStats was already granted on `emulator-5554`), and physical-phone verification (`app-arm64-v8a-release.apk`).
+
+## Phase 51: Cross-Tab Global Search & Quick-Command Palette + Android `FocusTileService`
+**Date:** 2026-11-24
+**Verified by:** qa-verifier (`7b365954`) on `emulator-5554` (Light Mode, Dark Mode, and `1.3x` font scale + API 37 Quick Settings shade)
+**Evidence:** see the Phase 51 row in `PROGRESS.md`; `flutter analyze` clean (0 issues); `flutter test` **350/350 passed** (`command_palette_test.dart`, full suite); `:app:compileDebugKotlin` clean; release split APKs built (`x86_64` 24.5MB, `arm64-v8a` 23.1MB, `armeabi-v7a` 20.8MB); device screenshots (`screen_*`) & `QSTileHost` dumps kept in QA scratchpad.
+**Decisions:**
+- Built Rank #3 (`RICE 10.8`) from `docs/AGENCY_RESEARCH_ROADMAP_P49_P52.md` with zero schema changes (`schemaVersion` 14, `BackupService.formatVersion` 10), zero `INTERNET` permission, and strictly 3 bottom tabs preserved.
+- Added `GlobalSearch` snapshot indexer across all 9 local entities (`Event`, `Shift`, `Task`, `Note`, `Transaction`, `Bill`, `Goal`, `IOU`, `Alarm`) plus 10 Quick Commands (`runBackupExport` shared with `AppDrawer`), `showCommandPalette` modal with filter chips & smug Ponpon empty state, distinct `heroTag`s on all 3 tab FABs (preventing `HeroController` collision when pushing `/review` from the palette), and `_filterByDay = true` in `CalendarScreen._showDay`.
+- Added entry triggers in `AppDrawer` (`Search & commands`), Finance & Notes `AppTopBar` (`<= 2` actions), and Calendar `More` menu / `Alarms` / `Focus` views.
+- Added offline Android Quick Settings `FocusTileService.kt` (`BIND_QUICK_SETTINGS_TILE` + `ic_tile_focus.xml`) reading `FocusStore`, refreshed by `FocusStore` lifecycle (`start`, `stop`, `phaseEnded`), and branching API 34+ `startActivityAndCollapse(PendingIntent)` cleanly (`MainActivity.ROUTE_START_FOCUS` when idle / `ROUTE_TIMER` when running).
+- Updated `AGENTS.md` Part 6.7 (`Dual-Tier Navigation` item 2) to reflect `Search & commands`.
+**Open items:** Calendar/Note search hit selection live on device (covered in widget tests) and physical-phone verification (`app-arm64-v8a-release.apk`).

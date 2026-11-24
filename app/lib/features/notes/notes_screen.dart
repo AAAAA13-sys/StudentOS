@@ -17,6 +17,7 @@ import 'recall_panel.dart';
 import '../../core/widgets/ponpon.dart';
 import '../insights/insights_providers.dart';
 import '../insights/ponpon_talk_slot.dart';
+import '../search/command_palette_sheet.dart';
 import '../tasks/tasks_controller.dart';
 import '../tasks/tasks_panel.dart';
 
@@ -52,7 +53,16 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
         _showAddNoteDialog(context);
       },
       child: Scaffold(
-        appBar: const AppTopBar(title: 'Notes'),
+        appBar: AppTopBar(
+          title: 'Notes',
+          actions: <Widget>[
+            IconButton(
+              icon: const Icon(Icons.search_rounded),
+              tooltip: 'Search & commands',
+              onPressed: () => showCommandPalette(context),
+            ),
+          ],
+        ),
         body: Column(
           children: <Widget>[
             Padding(
@@ -275,11 +285,13 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
         ),
         floatingActionButton: switch (view) {
           NotesView.notes => FloatingActionButton(
+            heroTag: 'notes_notes_fab',
             tooltip: 'New note',
             onPressed: () => _showAddNoteDialog(context),
             child: const Icon(Icons.add_rounded),
           ),
           NotesView.tasks => FloatingActionButton(
+            heroTag: 'notes_tasks_fab',
             tooltip: 'New task',
             onPressed: () => showTaskEditor(context, ref),
             child: const Icon(Icons.add_rounded),

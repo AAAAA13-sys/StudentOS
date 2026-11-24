@@ -56,5 +56,6 @@ class MainActivity : FlutterActivity() {
 
         /** Opens the focus timer; Dart maps it to the tab and panel. */
         const val ROUTE_TIMER = "timer"
+        const val ROUTE_START_FOCUS = "start_focus"
     }
 }

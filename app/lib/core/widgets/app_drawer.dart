@@ -4,7 +4,6 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 
 import '../../features/calendar/calendar_controller.dart';
 import '../../features/calendar/schedule_view.dart';
@@ -20,6 +19,7 @@ import '../../features/work/payday.dart';
 import '../../features/work/work_controller.dart';
 import '../../features/notes/notes_controller.dart';
 import '../../features/notes/recall_controller.dart';
+import '../../features/search/command_palette_sheet.dart';
 import '../../features/tasks/tasks_controller.dart';
 import '../db/backup.dart';
 import '../db/export_sheet.dart';
@@ -69,27 +69,9 @@ class AppDrawer extends ConsumerWidget {
     // Everything needed is taken before the drawer closes; after that this
     // widget is gone and `ref` can no longer be used.
     final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
-    final BackupService backup = ref.read(backupServiceProvider);
     final ProviderContainer container = ProviderScope.containerOf(context);
     Navigator.pop(context);
-    try {
-      final String json = await backup.exportJson();
-      final String stamp = DateFormat('yyyy-MM-dd').format(DateTime.now());
-      final Uri? saved = await FilePicker.saveFile(
-        fileName: 'studentos-backup-$stamp.json',
-        bytes: utf8.encode(json),
-        mimeType: 'application/json',
-      );
-      if (saved != null) {
-        await backup.markBackedUp(DateTime.now());
-        container.invalidate(backupStatusProvider);
-        messenger.showSnackBar(const SnackBar(content: Text('Backup saved')));
-      }
-    } catch (_) {
-      messenger.showSnackBar(
-        const SnackBar(content: Text('Could not save the backup')),
-      );
-    }
+    await runBackupExport(container, messenger);
   }
 
   Future<void> _restore(BuildContext context, WidgetRef ref) async {
@@ -223,6 +205,19 @@ class AppDrawer extends ConsumerWidget {
                 ],
               ),
             ),
+          ),
+          ListTile(
+            leading: const Icon(Icons.search_rounded),
+            title: const Text('Search & commands'),
+            subtitle: const Text('Jump anywhere or run a quick action'),
+            onTap: () {
+              final BuildContext rootContext = Navigator.of(
+                context,
+                rootNavigator: true,
+              ).context;
+              Navigator.pop(context);
+              showCommandPalette(rootContext);
+            },
           ),
           sectionLabel('YOUR DATA'),
           ListTile(

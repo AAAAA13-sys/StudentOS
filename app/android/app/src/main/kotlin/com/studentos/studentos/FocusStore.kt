@@ -66,6 +66,7 @@ object FocusStore {
         stop(ctx)
         prefs(ctx).edit().putString(KEY, session.toString()).apply()
         reschedule(ctx)
+        FocusTileService.requestListening(ctx)
     }
 
     fun stop(ctx: Context) {
@@ -78,6 +79,7 @@ object FocusStore {
         val nm = ctx.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         nm.cancel(NOTE_RUN)
         CalendarWidgetProvider.refresh(ctx)
+        FocusTileService.requestListening(ctx)
     }
 
     private fun boundary(ctx: Context, index: Int): PendingIntent = PendingIntent.getBroadcast(
@@ -205,6 +207,7 @@ object FocusStore {
             showRunning(ctx)
         }
         CalendarWidgetProvider.refresh(ctx)
+        FocusTileService.requestListening(ctx)
     }
 }
 
