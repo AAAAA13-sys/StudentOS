@@ -15,11 +15,14 @@ import 'amount_validation.dart';
 import 'bill.dart';
 import 'bills_controller.dart';
 import 'goals_controller.dart';
+import 'iou_item.dart';
+import 'ious_controller.dart';
 import 'quick_again.dart';
 import 'savings_goal.dart';
 import 'transaction.dart';
 import 'widgets/bills_row.dart';
 import 'widgets/goals_panel.dart';
+import 'widgets/ious_panel.dart';
 import 'widgets/quick_expense_sheet.dart';
 import '../work/work_controller.dart';
 import '../work/payday.dart';
@@ -75,11 +78,15 @@ class FinanceScreen extends ConsumerWidget {
                   segments: const <ButtonSegment<FinanceView>>[
                     ButtonSegment<FinanceView>(
                       value: FinanceView.cashflow,
-                      label: Text('Cashflow'),
+                      label: Text('Cashflow', maxLines: 1, softWrap: false),
                     ),
                     ButtonSegment<FinanceView>(
                       value: FinanceView.goals,
-                      label: Text('Goals'),
+                      label: Text('Goals', maxLines: 1, softWrap: false),
+                    ),
+                    ButtonSegment<FinanceView>(
+                      value: FinanceView.ious,
+                      label: Text('IOUs', maxLines: 1, softWrap: false),
                     ),
                   ],
                   selected: <FinanceView>{view},
@@ -90,6 +97,8 @@ class FinanceScreen extends ConsumerWidget {
             ),
             if (view == FinanceView.goals)
               const Expanded(child: GoalsPanel())
+            else if (view == FinanceView.ious)
+              const Expanded(child: IousPanel())
             else
               Expanded(
                 child: financeState.when(
@@ -130,7 +139,8 @@ class FinanceScreen extends ConsumerWidget {
                         (state.transactions.isNotEmpty ||
                             _paydayWithPayWaiting(ref) ||
                             _hasDueBills(ref) ||
-                            _hasGoalTip(ref));
+                            _hasGoalTip(ref) ||
+                            _hasIouTip(ref));
                     final bool talkVisible =
                         talkSlotAllowed &&
                         !ref
@@ -250,12 +260,19 @@ class FinanceScreen extends ConsumerWidget {
           ],
         ),
         floatingActionButton: FloatingActionButton(
-          tooltip: view == FinanceView.goals ? 'New goal' : 'Quick expense',
+          tooltip: switch (view) {
+            FinanceView.goals => 'New goal',
+            FinanceView.ious => 'New IOU',
+            FinanceView.cashflow => 'Quick expense',
+          },
           onPressed: () {
-            if (view == FinanceView.goals) {
-              showGoalEditor(context, ref);
-            } else {
-              _quickLog(context, ref);
+            switch (view) {
+              case FinanceView.goals:
+                showGoalEditor(context, ref);
+              case FinanceView.ious:
+                showIouEditor(context, ref);
+              case FinanceView.cashflow:
+                _quickLog(context, ref);
             }
           },
           child: const Icon(Icons.add_rounded),
@@ -825,4 +842,10 @@ bool _hasGoalTip(WidgetRef ref) {
     }
   }
   return false;
+}
+
+bool _hasIouTip(WidgetRef ref) {
+  final List<IouItem> ious =
+      ref.watch(iousControllerProvider).value ?? const <IouItem>[];
+  return ious.any((IouItem i) => !i.settled);
 }

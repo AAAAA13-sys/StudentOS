@@ -11,6 +11,8 @@ import 'package:studentos/features/finance/bill.dart';
 import 'package:studentos/features/finance/bills_repository.dart';
 import 'package:studentos/features/finance/finance_repository.dart';
 import 'package:studentos/features/finance/goals_repository.dart';
+import 'package:studentos/features/finance/iou_item.dart';
+import 'package:studentos/features/finance/ious_repository.dart';
 import 'package:studentos/features/finance/savings_goal.dart';
 import 'package:studentos/features/finance/transaction.dart';
 import 'package:studentos/features/focus/alarm.dart';
@@ -273,6 +275,7 @@ void main() {
       alarms: 1,
       tasks: 1,
       goals: 0,
+      ious: 0,
     ));
 
     final TaskItem restoredTask = (await TaskRepository(target).getTasks()).single;
@@ -448,6 +451,121 @@ void main() {
         title: 'Laptop',
         targetCents: 3000000,
         createdAt: DateTime(2026, 11, 22),
+      ),
+    );
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+    expect(await BackupService(db).hasData(), isTrue);
+    expect(seen.last.hasData, isTrue);
+  });
+
+  test('v8 backup round-trips ious and counts them', () async {
+    final AppDatabase source = AppDatabase(NativeDatabase.memory());
+    final AppDatabase target = AppDatabase(NativeDatabase.memory());
+    addTearDown(source.close);
+    addTearDown(target.close);
+
+    await IousRepository(source).createIou(
+      IouItem(
+        id: 0,
+        person: 'Sam',
+        direction: IouDirection.owed,
+        amountCents: 12550,
+        note: 'Dinner split',
+        occurredOn: '2026-11-23',
+        createdAt: DateTime(2026, 11, 23),
+      ),
+    );
+    await IousRepository(source).createIou(
+      IouItem(
+        id: 0,
+        person: 'Alex',
+        direction: IouDirection.owing,
+        amountCents: 5000,
+        occurredOn: '2026-11-20',
+        settled: true,
+        settledAt: DateTime(2026, 11, 22),
+        createdAt: DateTime(2026, 11, 20),
+      ),
+    );
+
+    final String json = await BackupService(source).exportJson();
+    final counts = await BackupService(target).restoreJsonWithCounts(json);
+    expect(counts.ious, 2);
+
+    final List<IouItem> restored = await IousRepository(target).getIous();
+    expect(restored, hasLength(2));
+    expect(restored.first.person, 'Sam');
+    expect(restored.first.direction, IouDirection.owed);
+    expect(restored.first.amountCents, 12550);
+    expect(restored.first.note, 'Dinner split');
+    expect(restored.first.settled, isFalse);
+    expect(restored.last.person, 'Alex');
+    expect(restored.last.settled, isTrue);
+  });
+
+  test('Restoring a v7 backup without ious defaults ious to empty', () async {
+    final AppDatabase db = AppDatabase(NativeDatabase.memory());
+    addTearDown(db.close);
+    await IousRepository(db).createIou(
+      IouItem(
+        id: 0,
+        person: 'Old friend',
+        direction: IouDirection.owed,
+        amountCents: 10000,
+        occurredOn: '2026-11-20',
+        createdAt: DateTime(2026, 11, 20),
+      ),
+    );
+    expect(await BackupService(db).hasData(), isTrue);
+
+    final String v7Json = jsonEncode(<String, Object?>{
+      'app': 'studentos',
+      'format': 7,
+      'exported_at': '2026-11-20T00:00:00.000Z',
+      'events': <Object?>[],
+      'transactions': <Object?>[],
+      'notes': <Object?>[],
+      'bills': <Object?>[],
+      'tasks': <Object?>[],
+      'goals': <Object?>[],
+    });
+    final counts = await BackupService(db).restoreJsonWithCounts(v7Json);
+    expect(counts.ious, 0);
+    expect(await IousRepository(db).getIous(), isEmpty);
+  });
+
+  test('hasData and backupStatusProvider react to iou writes', () async {
+    final AppDatabase db = AppDatabase(NativeDatabase.memory());
+    final ProviderContainer container = ProviderContainer(
+      overrides: [appDatabaseProvider.overrideWithValue(db)],
+    );
+    addTearDown(() async {
+      container.dispose();
+      await db.close();
+    });
+
+    final List<BackupStatus> seen = <BackupStatus>[];
+    final sub = container.listen<AsyncValue<BackupStatus>>(
+      backupStatusProvider,
+      (_, AsyncValue<BackupStatus> next) {
+        if (next.hasValue) seen.add(next.requireValue);
+      },
+      fireImmediately: true,
+    );
+    addTearDown(sub.close);
+
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+    expect(seen.last, (last: null, hasData: false));
+    expect(await BackupService(db).hasData(), isFalse);
+
+    await IousRepository(db).createIou(
+      IouItem(
+        id: 0,
+        person: 'Jamie',
+        direction: IouDirection.owing,
+        amountCents: 20000,
+        occurredOn: '2026-11-24',
+        createdAt: DateTime(2026, 11, 24),
       ),
     );
     await Future<void>.delayed(const Duration(milliseconds: 50));

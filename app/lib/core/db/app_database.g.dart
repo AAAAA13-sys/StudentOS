@@ -5980,6 +5980,565 @@ class GoalRowsCompanion extends UpdateCompanion<GoalRow> {
   }
 }
 
+class $IouRowsTable extends IouRows with TableInfo<$IouRowsTable, IouRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $IouRowsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _personMeta = const VerificationMeta('person');
+  @override
+  late final GeneratedColumn<String> person = GeneratedColumn<String>(
+    'person',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _directionMeta = const VerificationMeta(
+    'direction',
+  );
+  @override
+  late final GeneratedColumn<String> direction = GeneratedColumn<String>(
+    'direction',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _amountCentsMeta = const VerificationMeta(
+    'amountCents',
+  );
+  @override
+  late final GeneratedColumn<int> amountCents = GeneratedColumn<int>(
+    'amount_cents',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _noteMeta = const VerificationMeta('note');
+  @override
+  late final GeneratedColumn<String> note = GeneratedColumn<String>(
+    'note',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _occurredOnMeta = const VerificationMeta(
+    'occurredOn',
+  );
+  @override
+  late final GeneratedColumn<String> occurredOn = GeneratedColumn<String>(
+    'occurred_on',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _settledMeta = const VerificationMeta(
+    'settled',
+  );
+  @override
+  late final GeneratedColumn<bool> settled = GeneratedColumn<bool>(
+    'settled',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("settled" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _settledAtMeta = const VerificationMeta(
+    'settledAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> settledAt = GeneratedColumn<DateTime>(
+    'settled_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    person,
+    direction,
+    amountCents,
+    note,
+    occurredOn,
+    settled,
+    settledAt,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'ious';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<IouRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('person')) {
+      context.handle(
+        _personMeta,
+        person.isAcceptableOrUnknown(data['person']!, _personMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_personMeta);
+    }
+    if (data.containsKey('direction')) {
+      context.handle(
+        _directionMeta,
+        direction.isAcceptableOrUnknown(data['direction']!, _directionMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_directionMeta);
+    }
+    if (data.containsKey('amount_cents')) {
+      context.handle(
+        _amountCentsMeta,
+        amountCents.isAcceptableOrUnknown(
+          data['amount_cents']!,
+          _amountCentsMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_amountCentsMeta);
+    }
+    if (data.containsKey('note')) {
+      context.handle(
+        _noteMeta,
+        note.isAcceptableOrUnknown(data['note']!, _noteMeta),
+      );
+    }
+    if (data.containsKey('occurred_on')) {
+      context.handle(
+        _occurredOnMeta,
+        occurredOn.isAcceptableOrUnknown(data['occurred_on']!, _occurredOnMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_occurredOnMeta);
+    }
+    if (data.containsKey('settled')) {
+      context.handle(
+        _settledMeta,
+        settled.isAcceptableOrUnknown(data['settled']!, _settledMeta),
+      );
+    }
+    if (data.containsKey('settled_at')) {
+      context.handle(
+        _settledAtMeta,
+        settledAt.isAcceptableOrUnknown(data['settled_at']!, _settledAtMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  IouRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return IouRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      person: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}person'],
+      )!,
+      direction: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}direction'],
+      )!,
+      amountCents: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}amount_cents'],
+      )!,
+      note: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}note'],
+      ),
+      occurredOn: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}occurred_on'],
+      )!,
+      settled: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}settled'],
+      )!,
+      settledAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}settled_at'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $IouRowsTable createAlias(String alias) {
+    return $IouRowsTable(attachedDatabase, alias);
+  }
+}
+
+class IouRow extends DataClass implements Insertable<IouRow> {
+  final int id;
+  final String person;
+
+  /// `'owed'` (owed to me) or `'owing'` (I owe).
+  final String direction;
+
+  /// Centavos, so amounts never accumulate floating-point error.
+  final int amountCents;
+  final String? note;
+
+  /// `YYYY-MM-DD`.
+  final String occurredOn;
+  final bool settled;
+  final DateTime? settledAt;
+  final DateTime createdAt;
+  const IouRow({
+    required this.id,
+    required this.person,
+    required this.direction,
+    required this.amountCents,
+    this.note,
+    required this.occurredOn,
+    required this.settled,
+    this.settledAt,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['person'] = Variable<String>(person);
+    map['direction'] = Variable<String>(direction);
+    map['amount_cents'] = Variable<int>(amountCents);
+    if (!nullToAbsent || note != null) {
+      map['note'] = Variable<String>(note);
+    }
+    map['occurred_on'] = Variable<String>(occurredOn);
+    map['settled'] = Variable<bool>(settled);
+    if (!nullToAbsent || settledAt != null) {
+      map['settled_at'] = Variable<DateTime>(settledAt);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  IouRowsCompanion toCompanion(bool nullToAbsent) {
+    return IouRowsCompanion(
+      id: Value(id),
+      person: Value(person),
+      direction: Value(direction),
+      amountCents: Value(amountCents),
+      note: note == null && nullToAbsent ? const Value.absent() : Value(note),
+      occurredOn: Value(occurredOn),
+      settled: Value(settled),
+      settledAt: settledAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(settledAt),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory IouRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return IouRow(
+      id: serializer.fromJson<int>(json['id']),
+      person: serializer.fromJson<String>(json['person']),
+      direction: serializer.fromJson<String>(json['direction']),
+      amountCents: serializer.fromJson<int>(json['amountCents']),
+      note: serializer.fromJson<String?>(json['note']),
+      occurredOn: serializer.fromJson<String>(json['occurredOn']),
+      settled: serializer.fromJson<bool>(json['settled']),
+      settledAt: serializer.fromJson<DateTime?>(json['settledAt']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'person': serializer.toJson<String>(person),
+      'direction': serializer.toJson<String>(direction),
+      'amountCents': serializer.toJson<int>(amountCents),
+      'note': serializer.toJson<String?>(note),
+      'occurredOn': serializer.toJson<String>(occurredOn),
+      'settled': serializer.toJson<bool>(settled),
+      'settledAt': serializer.toJson<DateTime?>(settledAt),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  IouRow copyWith({
+    int? id,
+    String? person,
+    String? direction,
+    int? amountCents,
+    Value<String?> note = const Value.absent(),
+    String? occurredOn,
+    bool? settled,
+    Value<DateTime?> settledAt = const Value.absent(),
+    DateTime? createdAt,
+  }) => IouRow(
+    id: id ?? this.id,
+    person: person ?? this.person,
+    direction: direction ?? this.direction,
+    amountCents: amountCents ?? this.amountCents,
+    note: note.present ? note.value : this.note,
+    occurredOn: occurredOn ?? this.occurredOn,
+    settled: settled ?? this.settled,
+    settledAt: settledAt.present ? settledAt.value : this.settledAt,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  IouRow copyWithCompanion(IouRowsCompanion data) {
+    return IouRow(
+      id: data.id.present ? data.id.value : this.id,
+      person: data.person.present ? data.person.value : this.person,
+      direction: data.direction.present ? data.direction.value : this.direction,
+      amountCents: data.amountCents.present
+          ? data.amountCents.value
+          : this.amountCents,
+      note: data.note.present ? data.note.value : this.note,
+      occurredOn: data.occurredOn.present
+          ? data.occurredOn.value
+          : this.occurredOn,
+      settled: data.settled.present ? data.settled.value : this.settled,
+      settledAt: data.settledAt.present ? data.settledAt.value : this.settledAt,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('IouRow(')
+          ..write('id: $id, ')
+          ..write('person: $person, ')
+          ..write('direction: $direction, ')
+          ..write('amountCents: $amountCents, ')
+          ..write('note: $note, ')
+          ..write('occurredOn: $occurredOn, ')
+          ..write('settled: $settled, ')
+          ..write('settledAt: $settledAt, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    person,
+    direction,
+    amountCents,
+    note,
+    occurredOn,
+    settled,
+    settledAt,
+    createdAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is IouRow &&
+          other.id == this.id &&
+          other.person == this.person &&
+          other.direction == this.direction &&
+          other.amountCents == this.amountCents &&
+          other.note == this.note &&
+          other.occurredOn == this.occurredOn &&
+          other.settled == this.settled &&
+          other.settledAt == this.settledAt &&
+          other.createdAt == this.createdAt);
+}
+
+class IouRowsCompanion extends UpdateCompanion<IouRow> {
+  final Value<int> id;
+  final Value<String> person;
+  final Value<String> direction;
+  final Value<int> amountCents;
+  final Value<String?> note;
+  final Value<String> occurredOn;
+  final Value<bool> settled;
+  final Value<DateTime?> settledAt;
+  final Value<DateTime> createdAt;
+  const IouRowsCompanion({
+    this.id = const Value.absent(),
+    this.person = const Value.absent(),
+    this.direction = const Value.absent(),
+    this.amountCents = const Value.absent(),
+    this.note = const Value.absent(),
+    this.occurredOn = const Value.absent(),
+    this.settled = const Value.absent(),
+    this.settledAt = const Value.absent(),
+    this.createdAt = const Value.absent(),
+  });
+  IouRowsCompanion.insert({
+    this.id = const Value.absent(),
+    required String person,
+    required String direction,
+    required int amountCents,
+    this.note = const Value.absent(),
+    required String occurredOn,
+    this.settled = const Value.absent(),
+    this.settledAt = const Value.absent(),
+    required DateTime createdAt,
+  }) : person = Value(person),
+       direction = Value(direction),
+       amountCents = Value(amountCents),
+       occurredOn = Value(occurredOn),
+       createdAt = Value(createdAt);
+  static Insertable<IouRow> custom({
+    Expression<int>? id,
+    Expression<String>? person,
+    Expression<String>? direction,
+    Expression<int>? amountCents,
+    Expression<String>? note,
+    Expression<String>? occurredOn,
+    Expression<bool>? settled,
+    Expression<DateTime>? settledAt,
+    Expression<DateTime>? createdAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (person != null) 'person': person,
+      if (direction != null) 'direction': direction,
+      if (amountCents != null) 'amount_cents': amountCents,
+      if (note != null) 'note': note,
+      if (occurredOn != null) 'occurred_on': occurredOn,
+      if (settled != null) 'settled': settled,
+      if (settledAt != null) 'settled_at': settledAt,
+      if (createdAt != null) 'created_at': createdAt,
+    });
+  }
+
+  IouRowsCompanion copyWith({
+    Value<int>? id,
+    Value<String>? person,
+    Value<String>? direction,
+    Value<int>? amountCents,
+    Value<String?>? note,
+    Value<String>? occurredOn,
+    Value<bool>? settled,
+    Value<DateTime?>? settledAt,
+    Value<DateTime>? createdAt,
+  }) {
+    return IouRowsCompanion(
+      id: id ?? this.id,
+      person: person ?? this.person,
+      direction: direction ?? this.direction,
+      amountCents: amountCents ?? this.amountCents,
+      note: note ?? this.note,
+      occurredOn: occurredOn ?? this.occurredOn,
+      settled: settled ?? this.settled,
+      settledAt: settledAt ?? this.settledAt,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (person.present) {
+      map['person'] = Variable<String>(person.value);
+    }
+    if (direction.present) {
+      map['direction'] = Variable<String>(direction.value);
+    }
+    if (amountCents.present) {
+      map['amount_cents'] = Variable<int>(amountCents.value);
+    }
+    if (note.present) {
+      map['note'] = Variable<String>(note.value);
+    }
+    if (occurredOn.present) {
+      map['occurred_on'] = Variable<String>(occurredOn.value);
+    }
+    if (settled.present) {
+      map['settled'] = Variable<bool>(settled.value);
+    }
+    if (settledAt.present) {
+      map['settled_at'] = Variable<DateTime>(settledAt.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('IouRowsCompanion(')
+          ..write('id: $id, ')
+          ..write('person: $person, ')
+          ..write('direction: $direction, ')
+          ..write('amountCents: $amountCents, ')
+          ..write('note: $note, ')
+          ..write('occurredOn: $occurredOn, ')
+          ..write('settled: $settled, ')
+          ..write('settledAt: $settledAt, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -5999,6 +6558,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $BillRowsTable billRows = $BillRowsTable(this);
   late final $TaskRowsTable taskRows = $TaskRowsTable(this);
   late final $GoalRowsTable goalRows = $GoalRowsTable(this);
+  late final $IouRowsTable iouRows = $IouRowsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -6016,6 +6576,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     billRows,
     taskRows,
     goalRows,
+    iouRows,
   ];
 }
 
@@ -9099,6 +9660,281 @@ typedef $$GoalRowsTableProcessedTableManager =
       GoalRow,
       PrefetchHooks Function()
     >;
+typedef $$IouRowsTableCreateCompanionBuilder = IouRowsCompanion Function({
+  Value<int> id,
+  required String person,
+  required String direction,
+  required int amountCents,
+  Value<String?> note,
+  required String occurredOn,
+  Value<bool> settled,
+  Value<DateTime?> settledAt,
+  required DateTime createdAt,
+});
+typedef $$IouRowsTableUpdateCompanionBuilder = IouRowsCompanion Function({
+  Value<int> id,
+  Value<String> person,
+  Value<String> direction,
+  Value<int> amountCents,
+  Value<String?> note,
+  Value<String> occurredOn,
+  Value<bool> settled,
+  Value<DateTime?> settledAt,
+  Value<DateTime> createdAt,
+});
+
+class $$IouRowsTableFilterComposer
+    extends Composer<_$AppDatabase, $IouRowsTable> {
+  $$IouRowsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get person => $composableBuilder(
+    column: $table.person,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get direction => $composableBuilder(
+    column: $table.direction,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get amountCents => $composableBuilder(
+    column: $table.amountCents,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get note => $composableBuilder(
+    column: $table.note,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get occurredOn => $composableBuilder(
+    column: $table.occurredOn,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get settled => $composableBuilder(
+    column: $table.settled,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get settledAt => $composableBuilder(
+    column: $table.settledAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$IouRowsTableOrderingComposer
+    extends Composer<_$AppDatabase, $IouRowsTable> {
+  $$IouRowsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get person => $composableBuilder(
+    column: $table.person,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get direction => $composableBuilder(
+    column: $table.direction,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get amountCents => $composableBuilder(
+    column: $table.amountCents,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get note => $composableBuilder(
+    column: $table.note,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get occurredOn => $composableBuilder(
+    column: $table.occurredOn,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get settled => $composableBuilder(
+    column: $table.settled,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get settledAt => $composableBuilder(
+    column: $table.settledAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$IouRowsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $IouRowsTable> {
+  $$IouRowsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get person =>
+      $composableBuilder(column: $table.person, builder: (column) => column);
+
+  GeneratedColumn<String> get direction =>
+      $composableBuilder(column: $table.direction, builder: (column) => column);
+
+  GeneratedColumn<int> get amountCents => $composableBuilder(
+    column: $table.amountCents,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get note =>
+      $composableBuilder(column: $table.note, builder: (column) => column);
+
+  GeneratedColumn<String> get occurredOn => $composableBuilder(
+    column: $table.occurredOn,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get settled =>
+      $composableBuilder(column: $table.settled, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get settledAt =>
+      $composableBuilder(column: $table.settledAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+}
+
+class $$IouRowsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $IouRowsTable,
+          IouRow,
+          $$IouRowsTableFilterComposer,
+          $$IouRowsTableOrderingComposer,
+          $$IouRowsTableAnnotationComposer,
+          $$IouRowsTableCreateCompanionBuilder,
+          $$IouRowsTableUpdateCompanionBuilder,
+          (IouRow, BaseReferences<_$AppDatabase, $IouRowsTable, IouRow>),
+          IouRow,
+          PrefetchHooks Function()
+        > {
+  $$IouRowsTableTableManager(_$AppDatabase db, $IouRowsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$IouRowsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$IouRowsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$IouRowsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> person = const Value.absent(),
+                Value<String> direction = const Value.absent(),
+                Value<int> amountCents = const Value.absent(),
+                Value<String?> note = const Value.absent(),
+                Value<String> occurredOn = const Value.absent(),
+                Value<bool> settled = const Value.absent(),
+                Value<DateTime?> settledAt = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+              }) => IouRowsCompanion(
+                id: id,
+                person: person,
+                direction: direction,
+                amountCents: amountCents,
+                note: note,
+                occurredOn: occurredOn,
+                settled: settled,
+                settledAt: settledAt,
+                createdAt: createdAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String person,
+                required String direction,
+                required int amountCents,
+                Value<String?> note = const Value.absent(),
+                required String occurredOn,
+                Value<bool> settled = const Value.absent(),
+                Value<DateTime?> settledAt = const Value.absent(),
+                required DateTime createdAt,
+              }) => IouRowsCompanion.insert(
+                id: id,
+                person: person,
+                direction: direction,
+                amountCents: amountCents,
+                note: note,
+                occurredOn: occurredOn,
+                settled: settled,
+                settledAt: settledAt,
+                createdAt: createdAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$IouRowsTable, IouRow>(table),
+                  BaseReferences<_$AppDatabase, $IouRowsTable, IouRow>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$IouRowsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $IouRowsTable,
+      IouRow,
+      $$IouRowsTableFilterComposer,
+      $$IouRowsTableOrderingComposer,
+      $$IouRowsTableAnnotationComposer,
+      $$IouRowsTableCreateCompanionBuilder,
+      $$IouRowsTableUpdateCompanionBuilder,
+      (IouRow, BaseReferences<_$AppDatabase, $IouRowsTable, IouRow>),
+      IouRow,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -9127,4 +9963,6 @@ class $AppDatabaseManager {
       $$TaskRowsTableTableManager(_db, _db.taskRows);
   $$GoalRowsTableTableManager get goalRows =>
       $$GoalRowsTableTableManager(_db, _db.goalRows);
+  $$IouRowsTableTableManager get iouRows =>
+      $$IouRowsTableTableManager(_db, _db.iouRows);
 }

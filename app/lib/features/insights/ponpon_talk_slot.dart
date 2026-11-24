@@ -90,5 +90,8 @@ void runPonponAction(BuildContext context, WidgetRef ref, PonponAction action) {
     case PonponAction.seeGoals:
       ref.read(financeViewProvider.notifier).show(FinanceView.goals);
       GoRouter.maybeOf(context)?.go('/finance?view=goals');
+    case PonponAction.seeIous:
+      ref.read(financeViewProvider.notifier).show(FinanceView.ious);
+      GoRouter.maybeOf(context)?.go('/finance?view=ious');
   }
 }

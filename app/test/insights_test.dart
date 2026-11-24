@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:studentos/core/widgets/ponpon.dart';
 import 'package:studentos/features/calendar/event.dart';
 import 'package:studentos/features/finance/bill.dart';
+import 'package:studentos/features/finance/iou_item.dart';
 import 'package:studentos/features/finance/savings_goal.dart';
 import 'package:studentos/features/finance/transaction.dart';
 import 'package:studentos/features/insights/calendar_insights.dart';
@@ -10,6 +11,7 @@ import 'package:studentos/features/insights/notes_insights.dart';
 import 'package:studentos/features/insights/ponpon_insight.dart';
 import 'package:studentos/features/notes/note.dart';
 import 'package:studentos/features/tasks/task_item.dart';
+import 'package:studentos/features/work/payday.dart';
 import 'package:studentos/features/work/shift.dart';
 
 void main() {
@@ -790,6 +792,146 @@ void main() {
         'Tuition target is in 5 days (₱900 to go).',
       );
       expect(dueSoon.single.action, PonponAction.seeGoals);
+    });
+
+    test('payday settle IOU, open owing, and open owed tips emit seeIous', () {
+      // Friday 20 Nov 2026 -> payday weekly:5 (Friday).
+      final List<PonponInsight> paydayOne = financeInsights(
+        thisMonth: const <Transaction>[],
+        lastMonth: const <Transaction>[],
+        now: now,
+        payday: PaydaySchedule.weekly(DateTime.friday),
+        ious: <IouItem>[
+          IouItem(
+            id: 1,
+            person: 'Sam',
+            direction: IouDirection.owing,
+            amountCents: 15000,
+            occurredOn: '2026-11-18',
+            createdAt: DateTime(2026, 11, 18),
+          ),
+        ],
+      );
+      expect(
+        paydayOne.single.text,
+        'Payday today: settle ₱150 with Sam.',
+      );
+      expect(paydayOne.single.priority, 1);
+      expect(paydayOne.single.action, PonponAction.seeIous);
+
+      final List<PonponInsight> paydayMulti = financeInsights(
+        thisMonth: const <Transaction>[],
+        lastMonth: const <Transaction>[],
+        now: now,
+        payday: PaydaySchedule.weekly(DateTime.friday),
+        ious: <IouItem>[
+          IouItem(
+            id: 1,
+            person: 'Sam',
+            direction: IouDirection.owing,
+            amountCents: 15000,
+            occurredOn: '2026-11-18',
+            createdAt: DateTime(2026, 11, 18),
+          ),
+          IouItem(
+            id: 2,
+            person: 'Alex',
+            direction: IouDirection.owing,
+            amountCents: 25050,
+            occurredOn: '2026-11-19',
+            createdAt: DateTime(2026, 11, 19),
+          ),
+        ],
+      );
+      expect(
+        paydayMulti.single.text,
+        'Payday today: settle ₱400.50 across 2 IOUs.',
+      );
+      expect(paydayMulti.single.priority, 1);
+      expect(paydayMulti.single.action, PonponAction.seeIous);
+
+      // Non-payday with open owing IOUs.
+      final List<PonponInsight> nonPaydayOwing = financeInsights(
+        thisMonth: const <Transaction>[],
+        lastMonth: const <Transaction>[],
+        now: now,
+        payday: PaydaySchedule.weekly(DateTime.monday),
+        ious: <IouItem>[
+          IouItem(
+            id: 1,
+            person: 'Sam',
+            direction: IouDirection.owing,
+            amountCents: 30000,
+            occurredOn: '2026-11-18',
+            createdAt: DateTime(2026, 11, 18),
+          ),
+          IouItem(
+            id: 2,
+            person: 'Settled Person',
+            direction: IouDirection.owing,
+            amountCents: 99900,
+            occurredOn: '2026-11-10',
+            settled: true,
+            settledAt: DateTime(2026, 11, 15),
+            createdAt: DateTime(2026, 11, 10),
+          ),
+        ],
+      );
+      expect(
+        nonPaydayOwing.single.text,
+        'You owe ₱300 across 1 open IOU.',
+      );
+      expect(nonPaydayOwing.single.priority, 3);
+      expect(nonPaydayOwing.single.action, PonponAction.seeIous);
+
+      // Only open owed IOUs.
+      final List<PonponInsight> oneOwed = financeInsights(
+        thisMonth: const <Transaction>[],
+        lastMonth: const <Transaction>[],
+        now: now,
+        ious: <IouItem>[
+          IouItem(
+            id: 3,
+            person: 'Bea',
+            direction: IouDirection.owed,
+            amountCents: 45000,
+            occurredOn: '2026-11-19',
+            createdAt: DateTime(2026, 11, 19),
+          ),
+        ],
+      );
+      expect(oneOwed.single.text, 'Bea owes you ₱450.');
+      expect(oneOwed.single.priority, 4);
+      expect(oneOwed.single.action, PonponAction.seeIous);
+
+      final List<PonponInsight> multiOwed = financeInsights(
+        thisMonth: <Transaction>[income],
+        lastMonth: const <Transaction>[],
+        now: now,
+        ious: <IouItem>[
+          IouItem(
+            id: 3,
+            person: 'Bea',
+            direction: IouDirection.owed,
+            amountCents: 45000,
+            occurredOn: '2026-11-19',
+            createdAt: DateTime(2026, 11, 19),
+          ),
+          IouItem(
+            id: 4,
+            person: 'Chris',
+            direction: IouDirection.owed,
+            amountCents: 15000,
+            occurredOn: '2026-11-19',
+            createdAt: DateTime(2026, 11, 19),
+          ),
+        ],
+      );
+      final PonponInsight multiOwedTip = multiOwed.firstWhere(
+        (PonponInsight i) => i.action == PonponAction.seeIous,
+      );
+      expect(multiOwedTip.text, '2 people owe you ₱600.');
+      expect(multiOwedTip.priority, 4);
     });
   });
 

@@ -10,6 +10,7 @@ import '../../features/calendar/schedule_view.dart';
 import '../../features/finance/bills_controller.dart';
 import '../../features/finance/finance_controller.dart';
 import '../../features/finance/goals_controller.dart';
+import '../../features/finance/ious_controller.dart';
 import '../../features/focus/focus_controller.dart';
 import '../../features/focus/focus_platform.dart';
 import '../../features/phone/phone_controller.dart';
@@ -30,7 +31,7 @@ class AppDrawer extends ConsumerWidget {
   static String _count(int n, String noun) => '$n $noun${n == 1 ? '' : 's'}';
 
   /// Formats the restore snackbar message, omitting zero counts for optional
-  /// modules (`bills`, `shifts`, `alarms`, `tasks`, `goals`).
+  /// modules (`bills`, `shifts`, `alarms`, `tasks`, `goals`, `ious`).
   static String formatRestoreSummary({
     required int events,
     required int transactions,
@@ -40,6 +41,7 @@ class AppDrawer extends ConsumerWidget {
     int alarms = 0,
     int tasks = 0,
     int goals = 0,
+    int ious = 0,
   }) {
     final List<String> parts = <String>[
       _count(events, 'event'),
@@ -50,6 +52,7 @@ class AppDrawer extends ConsumerWidget {
       if (alarms > 0) _count(alarms, 'alarm'),
       if (tasks > 0) _count(tasks, 'task'),
       if (goals > 0) _count(goals, 'goal'),
+      if (ious > 0) _count(ious, 'IOU'),
     ];
     final String head = parts.sublist(0, parts.length - 1).join(', ');
     return 'Restored $head and ${parts.last}';
@@ -107,6 +110,7 @@ class AppDrawer extends ConsumerWidget {
         ..invalidate(financeControllerProvider)
         ..invalidate(financeViewProvider)
         ..invalidate(goalsControllerProvider)
+        ..invalidate(iousControllerProvider)
         ..invalidate(billsControllerProvider)
         ..invalidate(notesControllerProvider)
         ..invalidate(notesViewProvider)
@@ -129,6 +133,7 @@ class AppDrawer extends ConsumerWidget {
               alarms: counts.alarms,
               tasks: counts.tasks,
               goals: counts.goals,
+              ious: counts.ious,
             ),
           ),
         ),

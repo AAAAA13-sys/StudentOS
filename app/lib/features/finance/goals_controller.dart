@@ -5,8 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'goals_repository.dart';
 import 'savings_goal.dart';
 
-/// The two views inside the Finance tab: Cashflow and Goals.
-enum FinanceView { cashflow, goals }
+/// The views inside the Finance tab: Cashflow, Goals, and IOUs.
+enum FinanceView { cashflow, goals, ious }
 
 /// Which view of the Finance tab is showing (`Cashflow` by default).
 final NotifierProvider<FinanceViewController, FinanceView> financeViewProvider =

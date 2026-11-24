@@ -331,6 +331,35 @@ class GoalRows extends Table {
   DateTimeColumn get createdAt => dateTime()();
 }
 
+/// An open or settled IOU / split inside Finance, isolated from cashflow
+/// transactions unless the user explicitly records settlement in cashflow.
+@DataClassName('IouRow')
+class IouRows extends Table {
+  @override
+  String get tableName => 'ious';
+
+  IntColumn get id => integer().autoIncrement()();
+
+  TextColumn get person => text()();
+
+  /// `'owed'` (owed to me) or `'owing'` (I owe).
+  TextColumn get direction => text()();
+
+  /// Centavos, so amounts never accumulate floating-point error.
+  IntColumn get amountCents => integer()();
+
+  TextColumn get note => text().nullable()();
+
+  /// `YYYY-MM-DD`.
+  TextColumn get occurredOn => text()();
+
+  BoolColumn get settled => boolean().withDefault(const Constant(false))();
+
+  DateTimeColumn get settledAt => dateTime().nullable()();
+
+  DateTimeColumn get createdAt => dateTime()();
+}
+
 /// The app's only data store. Everything lives on this device.
 @DriftDatabase(
   tables: <Type>[
@@ -346,6 +375,7 @@ class GoalRows extends Table {
     BillRows,
     TaskRows,
     GoalRows,
+    IouRows,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -353,7 +383,7 @@ class AppDatabase extends _$AppDatabase {
     : super(executor ?? driftDatabase(name: 'studentos'));
 
   @override
-  int get schemaVersion => 11;
+  int get schemaVersion => 12;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -389,6 +419,9 @@ class AppDatabase extends _$AppDatabase {
       }
       if (from < 11) {
         await m.createTable(goalRows);
+      }
+      if (from < 12) {
+        await m.createTable(iouRows);
       }
     },
   );

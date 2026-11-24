@@ -130,8 +130,8 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar> {
     final bool onNotes = shell.currentIndex == 2;
 
     // Back on Alarms/Focus returns to Schedule first; Back on Finance > Goals
-    // returns to Finance > Cashflow first; Back on Notes > Tasks returns to
-    // Notes > Notes first.
+    // or IOUs returns to Finance > Cashflow first; Back on Notes > Tasks
+    // returns to Notes > Notes first.
     return PopScope(
       canPop:
           !(onCalendar && view != CalendarView.schedule) &&

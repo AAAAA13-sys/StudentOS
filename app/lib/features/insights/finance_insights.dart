@@ -1,5 +1,6 @@
 import '../../core/widgets/ponpon.dart';
 import '../finance/bill.dart';
+import '../finance/iou_item.dart';
 import '../finance/savings_goal.dart';
 import '../finance/transaction.dart';
 import '../work/payday.dart';
@@ -18,6 +19,7 @@ List<PonponInsight> financeInsights({
   int waitingPayCents = 0,
   List<Bill> bills = const <Bill>[],
   List<SavingsGoal> goals = const <SavingsGoal>[],
+  List<IouItem> ious = const <IouItem>[],
 }) {
   final PonponInsight? paydayTip =
       waitingPayCents > 0 && isPaydayToday(payday, now)
@@ -90,8 +92,57 @@ List<PonponInsight> financeInsights({
     }
   }
 
+  final List<IouItem> openOwing = <IouItem>[
+    for (final IouItem item in ious)
+      if (!item.settled && item.direction == IouDirection.owing) item,
+  ];
+  final List<IouItem> openOwed = <IouItem>[
+    for (final IouItem item in ious)
+      if (!item.settled && item.direction == IouDirection.owed) item,
+  ];
+  final int totalOwingCents = openOwing.fold<int>(
+    0,
+    (int s, IouItem i) => s + i.amountCents,
+  );
+  final int totalOwedCents = openOwed.fold<int>(
+    0,
+    (int s, IouItem i) => s + i.amountCents,
+  );
+  final PonponInsight? iouTip;
+  if (isPaydayToday(payday, now) && openOwing.isNotEmpty) {
+    final String text = openOwing.length == 1
+        ? 'Payday today: settle ${pesoText(openOwing.single.amount)} with ${openOwing.single.person}.'
+        : 'Payday today: settle ${pesoText(totalOwingCents / 100)} across ${openOwing.length} IOUs.';
+    iouTip = PonponInsight(
+      text: text,
+      priority: 1,
+      action: PonponAction.seeIous,
+    );
+  } else if (openOwing.isNotEmpty) {
+    iouTip = PonponInsight(
+      text:
+          'You owe ${pesoText(totalOwingCents / 100)} across ${openOwing.length} open ${openOwing.length == 1 ? 'IOU' : 'IOUs'}.',
+      priority: 3,
+      action: PonponAction.seeIous,
+    );
+  } else if (openOwed.isNotEmpty) {
+    iouTip = PonponInsight(
+      text:
+          '${openOwed.length == 1 ? '${openOwed.single.person} owes' : '${openOwed.length} people owe'} you ${pesoText(totalOwedCents / 100)}.',
+      priority: 4,
+      action: PonponAction.seeIous,
+    );
+  } else {
+    iouTip = null;
+  }
+
   if (thisMonth.isEmpty) {
-    return rankInsights(<PonponInsight>[?paydayTip, ?billTip, ?goalTip]);
+    return rankInsights(<PonponInsight>[
+      ?paydayTip,
+      ?billTip,
+      ?goalTip,
+      ?iouTip,
+    ]);
   }
   final List<Transaction> spent = <Transaction>[
     for (final Transaction t in thisMonth)
@@ -204,6 +255,7 @@ List<PonponInsight> financeInsights({
   if (paydayTip != null) out.add(paydayTip);
   if (billTip != null) out.add(billTip);
   if (goalTip != null) out.add(goalTip);
+  if (iouTip != null) out.add(iouTip);
 
   // Nothing spent yet today.
   if (today == 0) {

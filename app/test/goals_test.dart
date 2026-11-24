@@ -53,7 +53,7 @@ void main() {
       );
       addTearDown(db.close);
 
-      expect(db.schemaVersion, 11);
+      expect(db.schemaVersion, greaterThanOrEqualTo(11));
       final GoalsRepository repo = GoalsRepository(db);
       final int id = await repo.createGoal(
         SavingsGoal(

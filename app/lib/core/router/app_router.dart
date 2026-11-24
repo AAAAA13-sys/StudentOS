@@ -22,9 +22,10 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((ref) {
       // The old Clock and Focus pages now live inside the Calendar tab.
       GoRoute(path: '/clock', redirect: (_, _) => '/calendar?view=alarm'),
       GoRoute(path: '/focus', redirect: (_, _) => '/calendar?view=focus'),
-      // Tasks live inside the Notes tab; Goals live inside the Finance tab.
+      // Tasks live inside the Notes tab; Goals and IOUs live inside Finance.
       GoRoute(path: '/tasks', redirect: (_, _) => '/notes?view=tasks'),
       GoRoute(path: '/goals', redirect: (_, _) => '/finance?view=goals'),
+      GoRoute(path: '/ious', redirect: (_, _) => '/finance?view=ious'),
       StatefulShellRoute.indexedStack(
         builder:
             (
@@ -159,7 +160,8 @@ class _NotesViewFromQueryState extends ConsumerState<_NotesViewFromQuery> {
   Widget build(BuildContext context) => widget.child;
 }
 
-/// Opens the Finance tab on the view named by `?view=` (`cashflow`, `goals`).
+/// Opens the Finance tab on the view named by `?view=` (`cashflow`, `goals`,
+/// `ious`).
 class _FinanceViewFromQuery extends ConsumerStatefulWidget {
   const _FinanceViewFromQuery({required this.view, required this.child});
 
@@ -187,6 +189,7 @@ class _FinanceViewFromQueryState extends ConsumerState<_FinanceViewFromQuery> {
   void _apply() {
     final FinanceView? view = switch (widget.view) {
       'goals' => FinanceView.goals,
+      'ious' => FinanceView.ious,
       'cashflow' => FinanceView.cashflow,
       _ => null,
     };

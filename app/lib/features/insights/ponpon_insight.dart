@@ -17,7 +17,10 @@ enum PonponAction {
   seeTasks('See tasks'),
 
   /// Open Finance > Goals.
-  seeGoals('See goals');
+  seeGoals('See goals'),
+
+  /// Open Finance > IOUs.
+  seeIous('See IOUs');
 
   const PonponAction(this.label);
 
