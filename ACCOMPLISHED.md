@@ -574,3 +574,15 @@ Entries are appended, never edited. Corrections are new entries that reference t
 - Drift `schemaVersion` bumped 9 -> 10 (`TaskRows`), `BackupService.formatVersion` bumped 5 -> 6 (`tasks` list, automatic `[]` fallback for v1–v5 backups, reactive `backupStatusProvider` over `taskRows`, and `AppDrawer` restore invalidation/summary).
 - Updated `AGENTS.md` Part 6.7 (`Dual-Tier Navigation` item 1) to reflect `Notes | Tasks` and `Calendar DayTasks`.
 **Open items:** repeating-task `dueOn` advance on tap (unit tested) and real-phone verification remain for device testing (`app-arm64-v8a-release.apk`).
+
+## Phase 46: Savings Pockets (`Finance [Cashflow | Goals]`)
+**Date:** 2026-11-24
+**Verified by:** qa-verifier (`3d9d7bb1`) on `emulator-5554` (Light Mode, Dark Mode, and `1.3x` font scale)
+**Evidence:** see the Phase 46 row in `PROGRESS.md`; `flutter analyze` clean (0 issues); `flutter test` **290/290 passed** (`goals_test.dart`, `backup_test.dart`, `insights_test.dart`, `tasks_test.dart`, full suite); release split APKs built (`x86_64` 24.2MB, `arm64-v8a` 22.7MB, `armeabi-v7a` 20.3MB); device screenshots & UI dumps kept in QA scratchpad.
+**Decisions:**
+- Built Rank #2 (`RICE 12.0`) from `docs/AGENCY_RESEARCH_ROADMAP_P45_P48.md` as a 100% local-first Finance sub-view while preserving the 3-destination `NavigationBar` (`Calendar`, `Finance`, `Notes`).
+- Drift `schemaVersion` bumped 10 -> 11 (`GoalRows` / `goals` table), `BackupService.formatVersion` bumped 6 -> 7 (`goals` export/restore with `[]` fallback for v1–v6 backups, `hasData()` & reactive `backupStatusProvider` over `goalRows`, and `AppDrawer` restore invalidation/summary).
+- Kept Savings Pockets cleanly isolated from `Transactions`, `"Left this month"`, `MoneyWidgetSync`, and Safe-to-Spend math (personal allocation buckets, zero ledger distortion).
+- Added optional `"Stash part of pay"` inside Work `_GotPaidDialog` when active goals exist, `/goals` redirect (`FinanceScreen` `Cashflow | Goals` + Back pop `Goals -> Cashflow`), and `PonponAction.seeGoals` (`almost there` / `target due soon` tips).
+- Updated `AGENTS.md` Part 6.7 (`Dual-Tier Navigation` item 1) to reflect `Finance [Cashflow | Goals]`.
+**Open items:** target-date picker & `"Stash part of pay"` dialog interaction on emulator (unit/widget tested), Calendar past/future event inspection on the v11 emulator upgrade, on-device backup/restore, and real-phone verification (`app-arm64-v8a-release.apk`).

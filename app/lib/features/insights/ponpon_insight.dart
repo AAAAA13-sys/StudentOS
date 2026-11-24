@@ -14,7 +14,10 @@ enum PonponAction {
   seeWeek('See your week'),
 
   /// Open Notes > Tasks.
-  seeTasks('See tasks');
+  seeTasks('See tasks'),
+
+  /// Open Finance > Goals.
+  seeGoals('See goals');
 
   const PonponAction(this.label);
 

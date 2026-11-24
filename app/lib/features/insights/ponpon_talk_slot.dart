@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/widgets/ponpon_talk.dart';
 import '../calendar/schedule_view.dart';
+import '../finance/goals_controller.dart';
 import '../focus/clock_panels.dart';
 import '../notes/note.dart';
 import '../notes/notes_controller.dart';
@@ -86,5 +87,8 @@ void runPonponAction(BuildContext context, WidgetRef ref, PonponAction action) {
     case PonponAction.seeTasks:
       ref.read(notesViewProvider.notifier).show(NotesView.tasks);
       GoRouter.maybeOf(context)?.go('/notes?view=tasks');
+    case PonponAction.seeGoals:
+      ref.read(financeViewProvider.notifier).show(FinanceView.goals);
+      GoRouter.maybeOf(context)?.go('/finance?view=goals');
   }
 }

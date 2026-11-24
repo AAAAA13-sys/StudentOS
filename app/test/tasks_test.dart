@@ -54,7 +54,7 @@ void main() {
       );
       addTearDown(db.close);
 
-      expect(db.schemaVersion, 10);
+      expect(db.schemaVersion, greaterThanOrEqualTo(10));
       final TaskRepository repo = TaskRepository(db);
       final int id = await repo.createTask(
         TaskItem(

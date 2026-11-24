@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../features/calendar/calendar_controller.dart';
 import '../../features/calendar/calendar_screen.dart';
 import '../../features/finance/bills_controller.dart';
+import '../../features/finance/goals_controller.dart';
 import '../../features/focus/focus_controller.dart';
 import '../../features/focus/focus_plan.dart';
 import '../../features/focus/focus_platform.dart';
@@ -61,6 +62,7 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar> {
         ref.read(calendarShowTodayProvider.notifier).request();
         shell.goBranch(0);
       case 'finance':
+        ref.read(financeViewProvider.notifier).show(FinanceView.cashflow);
         shell.goBranch(1);
       case 'clock':
         ref.read(calendarViewProvider.notifier).show(CalendarView.alarm);
@@ -122,19 +124,25 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar> {
 
     final CalendarView view = ref.watch(calendarViewProvider);
     final bool onCalendar = shell.currentIndex == 0;
+    final FinanceView financeView = ref.watch(financeViewProvider);
+    final bool onFinance = shell.currentIndex == 1;
     final NotesView notesView = ref.watch(notesViewProvider);
     final bool onNotes = shell.currentIndex == 2;
 
-    // Back on Alarms/Focus returns to Schedule first; Back on Notes > Tasks
-    // returns to Notes > Notes first.
+    // Back on Alarms/Focus returns to Schedule first; Back on Finance > Goals
+    // returns to Finance > Cashflow first; Back on Notes > Tasks returns to
+    // Notes > Notes first.
     return PopScope(
       canPop:
           !(onCalendar && view != CalendarView.schedule) &&
+          !(onFinance && financeView != FinanceView.cashflow) &&
           !(onNotes && notesView != NotesView.notes),
       onPopInvokedWithResult: (bool didPop, Object? _) {
         if (!didPop) {
           if (onCalendar && view != CalendarView.schedule) {
             ref.read(calendarViewProvider.notifier).show(CalendarView.schedule);
+          } else if (onFinance && financeView != FinanceView.cashflow) {
+            ref.read(financeViewProvider.notifier).show(FinanceView.cashflow);
           } else if (onNotes && notesView != NotesView.notes) {
             ref.read(notesViewProvider.notifier).show(NotesView.notes);
           }

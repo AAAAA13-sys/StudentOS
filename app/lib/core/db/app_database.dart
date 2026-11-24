@@ -308,6 +308,29 @@ class TaskRows extends Table {
   DateTimeColumn get createdAt => dateTime()();
 }
 
+/// A personal savings pocket / goal pot inside Finance. Isolated from
+/// cashflow transactions and monthly spending balance.
+@DataClassName('GoalRow')
+class GoalRows extends Table {
+  @override
+  String get tableName => 'goals';
+
+  IntColumn get id => integer().autoIncrement()();
+
+  TextColumn get title => text()();
+
+  /// Target amount in centavos.
+  IntColumn get targetCents => integer()();
+
+  /// Stashed amount in centavos.
+  IntColumn get savedCents => integer().withDefault(const Constant(0))();
+
+  /// Optional target date as `YYYY-MM-DD`.
+  TextColumn get targetDate => text().nullable()();
+
+  DateTimeColumn get createdAt => dateTime()();
+}
+
 /// The app's only data store. Everything lives on this device.
 @DriftDatabase(
   tables: <Type>[
@@ -322,6 +345,7 @@ class TaskRows extends Table {
     FocusLogRows,
     BillRows,
     TaskRows,
+    GoalRows,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -329,7 +353,7 @@ class AppDatabase extends _$AppDatabase {
     : super(executor ?? driftDatabase(name: 'studentos'));
 
   @override
-  int get schemaVersion => 10;
+  int get schemaVersion => 11;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -362,6 +386,9 @@ class AppDatabase extends _$AppDatabase {
       }
       if (from < 10) {
         await m.createTable(taskRows);
+      }
+      if (from < 11) {
+        await m.createTable(goalRows);
       }
     },
   );

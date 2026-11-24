@@ -10,6 +10,8 @@ import 'package:studentos/features/calendar/schedule_view.dart';
 import 'package:studentos/features/finance/bill.dart';
 import 'package:studentos/features/finance/bills_repository.dart';
 import 'package:studentos/features/finance/finance_repository.dart';
+import 'package:studentos/features/finance/goals_repository.dart';
+import 'package:studentos/features/finance/savings_goal.dart';
 import 'package:studentos/features/finance/transaction.dart';
 import 'package:studentos/features/focus/alarm.dart';
 import 'package:studentos/features/focus/focus_repository.dart';
@@ -270,6 +272,7 @@ void main() {
       shifts: 1,
       alarms: 1,
       tasks: 1,
+      goals: 0,
     ));
 
     final TaskItem restoredTask = (await TaskRepository(target).getTasks()).single;
@@ -356,5 +359,99 @@ void main() {
     await Future<void>.delayed(const Duration(milliseconds: 50));
     expect(seen.last.hasData, isTrue);
     expect(seen.last.last, backedUpAt);
+  });
+
+  test('v7 backup round-trips goals and counts them', () async {
+    final AppDatabase source = AppDatabase(NativeDatabase.memory());
+    final AppDatabase target = AppDatabase(NativeDatabase.memory());
+    addTearDown(source.close);
+    addTearDown(target.close);
+
+    await GoalsRepository(source).createGoal(
+      SavingsGoal(
+        id: 0,
+        title: 'Tuition',
+        targetCents: 1500000,
+        savedCents: 450000,
+        targetDate: '2026-12-20',
+        createdAt: DateTime(2026, 11, 20),
+      ),
+    );
+
+    final String json = await BackupService(source).exportJson();
+    final counts = await BackupService(target).restoreJsonWithCounts(json);
+    expect(counts.goals, 1);
+
+    final SavingsGoal restored =
+        (await GoalsRepository(target).getGoals()).single;
+    expect(restored.title, 'Tuition');
+    expect(restored.targetCents, 1500000);
+    expect(restored.savedCents, 450000);
+    expect(restored.targetDate, '2026-12-20');
+  });
+
+  test('Restoring a v6 backup without goals defaults goals to empty', () async {
+    final AppDatabase db = AppDatabase(NativeDatabase.memory());
+    addTearDown(db.close);
+    await GoalsRepository(db).createGoal(
+      SavingsGoal(
+        id: 0,
+        title: 'Old goal',
+        targetCents: 50000,
+        createdAt: DateTime(2026, 11, 20),
+      ),
+    );
+    expect(await BackupService(db).hasData(), isTrue);
+
+    final String v6Json = jsonEncode(<String, Object?>{
+      'app': 'studentos',
+      'format': 6,
+      'exported_at': '2026-11-20T00:00:00.000Z',
+      'events': <Object?>[],
+      'transactions': <Object?>[],
+      'notes': <Object?>[],
+      'bills': <Object?>[],
+      'tasks': <Object?>[],
+    });
+    final counts = await BackupService(db).restoreJsonWithCounts(v6Json);
+    expect(counts.goals, 0);
+    expect(await GoalsRepository(db).getGoals(), isEmpty);
+  });
+
+  test('hasData and backupStatusProvider react to goal writes', () async {
+    final AppDatabase db = AppDatabase(NativeDatabase.memory());
+    final ProviderContainer container = ProviderContainer(
+      overrides: [appDatabaseProvider.overrideWithValue(db)],
+    );
+    addTearDown(() async {
+      container.dispose();
+      await db.close();
+    });
+
+    final List<BackupStatus> seen = <BackupStatus>[];
+    final sub = container.listen<AsyncValue<BackupStatus>>(
+      backupStatusProvider,
+      (_, AsyncValue<BackupStatus> next) {
+        if (next.hasValue) seen.add(next.requireValue);
+      },
+      fireImmediately: true,
+    );
+    addTearDown(sub.close);
+
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+    expect(seen.last, (last: null, hasData: false));
+    expect(await BackupService(db).hasData(), isFalse);
+
+    await GoalsRepository(db).createGoal(
+      SavingsGoal(
+        id: 0,
+        title: 'Laptop',
+        targetCents: 3000000,
+        createdAt: DateTime(2026, 11, 22),
+      ),
+    );
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+    expect(await BackupService(db).hasData(), isTrue);
+    expect(seen.last.hasData, isTrue);
   });
 }

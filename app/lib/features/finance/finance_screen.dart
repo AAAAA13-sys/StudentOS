@@ -14,9 +14,12 @@ import 'finance_repository.dart';
 import 'amount_validation.dart';
 import 'bill.dart';
 import 'bills_controller.dart';
+import 'goals_controller.dart';
 import 'quick_again.dart';
+import 'savings_goal.dart';
 import 'transaction.dart';
 import 'widgets/bills_row.dart';
+import 'widgets/goals_panel.dart';
 import 'widgets/quick_expense_sheet.dart';
 import '../work/work_controller.dart';
 import '../work/payday.dart';
@@ -41,6 +44,7 @@ class FinanceScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final FinanceView view = ref.watch(financeViewProvider);
     final AsyncValue<FinanceState> financeState = ref.watch(
       financeControllerProvider,
     );
@@ -49,150 +53,211 @@ class FinanceScreen extends ConsumerWidget {
 
     return CaptureListener(
       action: CaptureAction.addExpense,
-      onCapture: () => _quickLog(context, ref),
+      onCapture: () {
+        ref.read(financeViewProvider.notifier).show(FinanceView.cashflow);
+        _quickLog(context, ref);
+      },
       child: Scaffold(
         appBar: const AppTopBar(title: 'Finance'),
-        body: financeState.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (Object _, StackTrace _) => Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                Icon(
-                  Icons.error_outline_rounded,
-                  size: 48,
-                  color: colors.error,
+        body: Column(
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.lg,
+                AppSpacing.xs,
+                AppSpacing.lg,
+                AppSpacing.xs,
+              ),
+              child: SizedBox(
+                width: double.infinity,
+                child: SegmentedButton<FinanceView>(
+                  showSelectedIcon: false,
+                  segments: const <ButtonSegment<FinanceView>>[
+                    ButtonSegment<FinanceView>(
+                      value: FinanceView.cashflow,
+                      label: Text('Cashflow'),
+                    ),
+                    ButtonSegment<FinanceView>(
+                      value: FinanceView.goals,
+                      label: Text('Goals'),
+                    ),
+                  ],
+                  selected: <FinanceView>{view},
+                  onSelectionChanged: (Set<FinanceView> s) =>
+                      ref.read(financeViewProvider.notifier).show(s.first),
                 ),
-                AppSpacing.gapMd,
-                const Text('Couldn’t load your finances.'),
-                AppSpacing.gapLg,
-                FilledButton(
-                  onPressed: () =>
-                      ref.read(financeControllerProvider.notifier).refresh(),
-                  child: const Text('Retry'),
-                ),
-              ],
+              ),
             ),
-          ),
-          data: (FinanceState state) {
-            final DateTime currentMonthDate =
-                DateTime.tryParse('${state.month}-01') ?? DateTime.now();
-            final bool thisMonth =
-                state.month == DateFormat('yyyy-MM').format(DateTime.now());
-            final List<MapEntry<DateTime, List<Transaction>>> days =
-                _groupByDay(state.transactions);
-            final bool talkSlotAllowed =
-                thisMonth &&
-                (state.transactions.isNotEmpty ||
-                    _paydayWithPayWaiting(ref) ||
-                    _hasDueBills(ref));
-            final bool talkVisible =
-                talkSlotAllowed &&
-                !ref
-                    .watch(ponponDismissalsProvider)
-                    .contains(PonponSurface.finance) &&
-                (ref.watch(financeInsightsProvider).value?.isNotEmpty ?? false);
-
-            return RefreshIndicator(
-              onRefresh: () async {
-                await ref
-                    .read(billsControllerProvider.notifier)
-                    .refreshAutoLog();
-                await ref.read(financeControllerProvider.notifier).refresh();
-              },
-              child: CustomScrollView(
-                slivers: <Widget>[
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(
-                        AppSpacing.lg,
-                        0,
-                        AppSpacing.lg,
-                        AppSpacing.sm,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: <Widget>[
-                          MonthSwitcher(
-                            month: currentMonthDate,
-                            onChanged: (DateTime month) => ref
-                                .read(financeControllerProvider.notifier)
-                                .setMonth(DateFormat('yyyy-MM').format(month)),
-                          ),
-                          // An empty month already shows Ponpon below, so
-                          // the bubble waits for a transaction, except on a
-                          // payday with pay still waiting or when a bill is
-                          // due.
-                          if (talkSlotAllowed)
-                            const PonponTalkSlot(
-                              surface: PonponSurface.finance,
-                              horizontalPadding: 0,
-                            ),
-                          _MonthCard(summary: state.summary),
-                          if (thisMonth) const WorkPayRow(),
-                          if (thisMonth) const BillsRow(),
-                        ],
-                      ),
+            if (view == FinanceView.goals)
+              const Expanded(child: GoalsPanel())
+            else
+              Expanded(
+                child: financeState.when(
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
+                  error: (Object _, StackTrace _) => Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        Icon(
+                          Icons.error_outline_rounded,
+                          size: 48,
+                          color: colors.error,
+                        ),
+                        AppSpacing.gapMd,
+                        const Text('Couldn’t load your finances.'),
+                        AppSpacing.gapLg,
+                        FilledButton(
+                          onPressed: () => ref
+                              .read(financeControllerProvider.notifier)
+                              .refresh(),
+                          child: const Text('Retry'),
+                        ),
+                      ],
                     ),
                   ),
-                  if (state.transactions.isEmpty)
-                    SliverFillRemaining(
-                      hasScrollBody: false,
-                      child: Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: <Widget>[
-                            if (!talkVisible) ...<Widget>[
-                              const Ponpon(size: 88),
-                              AppSpacing.gapMd,
-                            ],
-                            Text(
-                              'No transactions this month',
-                              textAlign: TextAlign.center,
-                              style: textStyles.titleMedium?.copyWith(
-                                color: colors.onSurfaceVariant,
+                  data: (FinanceState state) {
+                    final DateTime currentMonthDate =
+                        DateTime.tryParse('${state.month}-01') ??
+                        DateTime.now();
+                    final bool thisMonth =
+                        state.month ==
+                        DateFormat('yyyy-MM').format(DateTime.now());
+                    final List<MapEntry<DateTime, List<Transaction>>> days =
+                        _groupByDay(state.transactions);
+                    final bool talkSlotAllowed =
+                        thisMonth &&
+                        (state.transactions.isNotEmpty ||
+                            _paydayWithPayWaiting(ref) ||
+                            _hasDueBills(ref) ||
+                            _hasGoalTip(ref));
+                    final bool talkVisible =
+                        talkSlotAllowed &&
+                        !ref
+                            .watch(ponponDismissalsProvider)
+                            .contains(PonponSurface.finance) &&
+                        (ref
+                                .watch(financeInsightsProvider)
+                                .value
+                                ?.isNotEmpty ??
+                            false);
+
+                    return RefreshIndicator(
+                      onRefresh: () async {
+                        await ref
+                            .read(billsControllerProvider.notifier)
+                            .refreshAutoLog();
+                        await ref
+                            .read(financeControllerProvider.notifier)
+                            .refresh();
+                      },
+                      child: CustomScrollView(
+                        slivers: <Widget>[
+                          SliverToBoxAdapter(
+                            child: Padding(
+                              padding: const EdgeInsets.fromLTRB(
+                                AppSpacing.lg,
+                                0,
+                                AppSpacing.lg,
+                                AppSpacing.sm,
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: <Widget>[
+                                  MonthSwitcher(
+                                    month: currentMonthDate,
+                                    onChanged: (DateTime month) => ref
+                                        .read(
+                                          financeControllerProvider.notifier,
+                                        )
+                                        .setMonth(
+                                          DateFormat('yyyy-MM').format(month),
+                                        ),
+                                  ),
+                                  // An empty month already shows Ponpon below,
+                                  // so the bubble waits for a transaction,
+                                  // except on a payday with pay still waiting,
+                                  // when a bill is due, or when a goal tip
+                                  // applies.
+                                  if (talkSlotAllowed)
+                                    const PonponTalkSlot(
+                                      surface: PonponSurface.finance,
+                                      horizontalPadding: 0,
+                                    ),
+                                  _MonthCard(summary: state.summary),
+                                  if (thisMonth) const WorkPayRow(),
+                                  if (thisMonth) const BillsRow(),
+                                ],
                               ),
                             ),
-                          ],
-                        ),
-                      ),
-                    )
-                  else
-                    SliverPadding(
-                      padding: const EdgeInsets.fromLTRB(
-                        AppSpacing.lg,
-                        0,
-                        AppSpacing.lg,
-                        96,
-                      ),
-                      sliver: SliverList(
-                        delegate: SliverChildBuilderDelegate((
-                          BuildContext context,
-                          int index,
-                        ) {
-                          final MapEntry<DateTime, List<Transaction>> day =
-                              days[index];
-                          return _DayGroup(
-                            day: day.key,
-                            transactions: day.value,
-                            onOpen: (Transaction tx) =>
-                                _showAddTransactionDialog(
-                                  context,
-                                  ref,
-                                  existing: tx,
+                          ),
+                          if (state.transactions.isEmpty)
+                            SliverFillRemaining(
+                              hasScrollBody: false,
+                              child: Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: <Widget>[
+                                    if (!talkVisible) ...<Widget>[
+                                      const Ponpon(size: 88),
+                                      AppSpacing.gapMd,
+                                    ],
+                                    Text(
+                                      'No transactions this month',
+                                      textAlign: TextAlign.center,
+                                      style: textStyles.titleMedium?.copyWith(
+                                        color: colors.onSurfaceVariant,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                          );
-                        }, childCount: days.length),
+                              ),
+                            )
+                          else
+                            SliverPadding(
+                              padding: const EdgeInsets.fromLTRB(
+                                AppSpacing.lg,
+                                0,
+                                AppSpacing.lg,
+                                96,
+                              ),
+                              sliver: SliverList(
+                                delegate: SliverChildBuilderDelegate((
+                                  BuildContext context,
+                                  int index,
+                                ) {
+                                  final MapEntry<DateTime, List<Transaction>>
+                                  day = days[index];
+                                  return _DayGroup(
+                                    day: day.key,
+                                    transactions: day.value,
+                                    onOpen: (Transaction tx) =>
+                                        _showAddTransactionDialog(
+                                          context,
+                                          ref,
+                                          existing: tx,
+                                        ),
+                                  );
+                                }, childCount: days.length),
+                              ),
+                            ),
+                        ],
                       ),
-                    ),
-                ],
+                    );
+                  },
+                ),
               ),
-            );
-          },
+          ],
         ),
         floatingActionButton: FloatingActionButton(
-          tooltip: 'Quick expense',
-          onPressed: () => _quickLog(context, ref),
+          tooltip: view == FinanceView.goals ? 'New goal' : 'Quick expense',
+          onPressed: () {
+            if (view == FinanceView.goals) {
+              showGoalEditor(context, ref);
+            } else {
+              _quickLog(context, ref);
+            }
+          },
           child: const Icon(Icons.add_rounded),
         ),
       ),
@@ -745,4 +810,19 @@ bool _hasDueBills(WidgetRef ref) {
   final List<Bill> bills =
       ref.watch(billsControllerProvider).value ?? const <Bill>[];
   return bills.any((Bill b) => b.isDueOnOrBefore(now));
+}
+
+bool _hasGoalTip(WidgetRef ref) {
+  final DateTime now = DateTime.now();
+  final List<SavingsGoal> goals =
+      ref.watch(goalsControllerProvider).value ?? const <SavingsGoal>[];
+  for (final SavingsGoal goal in goals) {
+    if (goal.isReached) continue;
+    if (goal.progress >= 0.80) return true;
+    final int? days = goal.daysLeft(now);
+    if (goal.targetDate != null && days != null && days >= 0 && days <= 7) {
+      return true;
+    }
+  }
+  return false;
 }

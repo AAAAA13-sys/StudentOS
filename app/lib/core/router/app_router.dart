@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../features/calendar/calendar_screen.dart';
 import '../../features/finance/finance_screen.dart';
+import '../../features/finance/goals_controller.dart';
 import '../../features/notes/notes_screen.dart';
 import '../../features/focus/clock_panels.dart';
 import '../../features/tasks/tasks_controller.dart';
@@ -21,8 +22,9 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((ref) {
       // The old Clock and Focus pages now live inside the Calendar tab.
       GoRoute(path: '/clock', redirect: (_, _) => '/calendar?view=alarm'),
       GoRoute(path: '/focus', redirect: (_, _) => '/calendar?view=focus'),
-      // Tasks live inside the Notes tab.
+      // Tasks live inside the Notes tab; Goals live inside the Finance tab.
       GoRoute(path: '/tasks', redirect: (_, _) => '/notes?view=tasks'),
+      GoRoute(path: '/goals', redirect: (_, _) => '/finance?view=goals'),
       StatefulShellRoute.indexedStack(
         builder:
             (
@@ -50,7 +52,10 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: '/finance',
                 builder: (BuildContext context, GoRouterState state) =>
-                    const FinanceScreen(),
+                    _FinanceViewFromQuery(
+                      view: state.uri.queryParameters['view'],
+                      child: const FinanceScreen(),
+                    ),
               ),
             ],
           ),
@@ -147,6 +152,47 @@ class _NotesViewFromQueryState extends ConsumerState<_NotesViewFromQuery> {
     if (view == null) return;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) ref.read(notesViewProvider.notifier).show(view);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
+}
+
+/// Opens the Finance tab on the view named by `?view=` (`cashflow`, `goals`).
+class _FinanceViewFromQuery extends ConsumerStatefulWidget {
+  const _FinanceViewFromQuery({required this.view, required this.child});
+
+  final String? view;
+  final Widget child;
+
+  @override
+  ConsumerState<_FinanceViewFromQuery> createState() =>
+      _FinanceViewFromQueryState();
+}
+
+class _FinanceViewFromQueryState extends ConsumerState<_FinanceViewFromQuery> {
+  @override
+  void initState() {
+    super.initState();
+    _apply();
+  }
+
+  @override
+  void didUpdateWidget(_FinanceViewFromQuery old) {
+    super.didUpdateWidget(old);
+    if (old.view != widget.view) _apply();
+  }
+
+  void _apply() {
+    final FinanceView? view = switch (widget.view) {
+      'goals' => FinanceView.goals,
+      'cashflow' => FinanceView.cashflow,
+      _ => null,
+    };
+    if (view == null) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) ref.read(financeViewProvider.notifier).show(view);
     });
   }
 

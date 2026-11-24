@@ -6,6 +6,8 @@ import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/confirm_dialog.dart';
 import '../finance/amount_validation.dart';
+import '../finance/goals_controller.dart';
+import '../finance/savings_goal.dart';
 import 'add_shift_sheet.dart';
 import 'payday.dart';
 import 'shift.dart';
@@ -94,15 +96,37 @@ class WorkPayRow extends ConsumerWidget {
         trailing: waiting
             ? TextButton(
                 onPressed: () async {
-                  final double? amount = await showDialog<double>(
-                    context: context,
-                    builder: (BuildContext ctx) =>
-                        _GotPaidDialog(expectedCents: summary.workedPayCents),
-                  );
-                  if (amount != null) {
+                  final ScaffoldMessengerState messenger =
+                      ScaffoldMessenger.of(context);
+                  final _GotPaidResult? result =
+                      await showDialog<_GotPaidResult>(
+                        context: context,
+                        builder: (BuildContext ctx) => _GotPaidDialog(
+                          expectedCents: summary.workedPayCents,
+                        ),
+                      );
+                  if (result != null) {
                     await ref
                         .read(workControllerProvider.notifier)
-                        .gotPaid(amount);
+                        .gotPaid(result.amount);
+                    if (result.goal != null && result.stashCents > 0) {
+                      await ref
+                          .read(goalsControllerProvider.notifier)
+                          .adjustSaved(result.goal!.id, result.stashCents);
+                      messenger
+                        ..hideCurrentSnackBar()
+                        ..showSnackBar(
+                          SnackBar(
+                            behavior: SnackBarBehavior.floating,
+                            margin: const EdgeInsets.fromLTRB(16, 0, 16, 88),
+                            duration: const Duration(seconds: 2),
+                            content: Text(
+                              'Stashed ${_pesos(result.stashCents)} to '
+                              '${result.goal!.title}',
+                            ),
+                          ),
+                        );
+                    }
                   }
                 },
                 child: const Text('I got paid'),
@@ -113,41 +137,86 @@ class WorkPayRow extends ConsumerWidget {
   }
 }
 
+typedef _GotPaidResult = ({double amount, SavingsGoal? goal, int stashCents});
+
 /// Asks what was actually received and compares it with the logged hours.
-class _GotPaidDialog extends StatefulWidget {
+class _GotPaidDialog extends ConsumerStatefulWidget {
   const _GotPaidDialog({required this.expectedCents});
 
   final int expectedCents;
 
   @override
-  State<_GotPaidDialog> createState() => _GotPaidDialogState();
+  ConsumerState<_GotPaidDialog> createState() => _GotPaidDialogState();
 }
 
-class _GotPaidDialogState extends State<_GotPaidDialog> {
+class _GotPaidDialogState extends ConsumerState<_GotPaidDialog> {
   late final TextEditingController _amount = TextEditingController(
     text: widget.expectedCents == 0
         ? ''
         : (widget.expectedCents / 100).toStringAsFixed(2),
   );
+  final TextEditingController _stashAmount = TextEditingController();
+  int? _selectedGoalId;
   String? _error;
+  String? _stashError;
 
   @override
   void dispose() {
     _amount.dispose();
+    _stashAmount.dispose();
     super.dispose();
   }
 
-  void _save() {
+  void _save(List<SavingsGoal> unreachedGoals) {
     final String? problem = validateAmount(_amount.text);
     if (problem != null) {
       setState(() => _error = problem);
       return;
     }
-    Navigator.pop(context, double.parse(_amount.text.trim()));
+    final double received = double.parse(_amount.text.trim());
+    final int receivedCents = (received * 100).round();
+
+    SavingsGoal? selectedGoal;
+    int stashCents = 0;
+    if (_selectedGoalId != null) {
+      for (final SavingsGoal g in unreachedGoals) {
+        if (g.id == _selectedGoalId) {
+          selectedGoal = g;
+          break;
+        }
+      }
+      if (selectedGoal != null && _stashAmount.text.trim().isNotEmpty) {
+        final String? stashProblem = validateAmount(_stashAmount.text);
+        if (stashProblem != null) {
+          setState(() => _stashError = stashProblem);
+          return;
+        }
+        stashCents = (double.parse(_stashAmount.text.trim()) * 100).round();
+        if (stashCents > receivedCents) {
+          setState(() => _stashError = 'Exceeds amount received');
+          return;
+        }
+      }
+    }
+
+    Navigator.pop<_GotPaidResult>(context, (
+      amount: received,
+      goal: selectedGoal,
+      stashCents: stashCents,
+    ));
   }
 
   @override
   Widget build(BuildContext context) {
+    final List<SavingsGoal> unreachedGoals =
+        (ref.watch(goalsControllerProvider).value ?? const <SavingsGoal>[])
+            .where((SavingsGoal g) => !g.isReached)
+            .toList();
+    final int? effectiveGoalId =
+        unreachedGoals.any((SavingsGoal g) => g.id == _selectedGoalId)
+        ? _selectedGoalId
+        : null;
+
     final double? typed = double.tryParse(_amount.text.trim());
     final int difference = typed == null || widget.expectedCents == 0
         ? 0
@@ -160,46 +229,114 @@ class _GotPaidDialogState extends State<_GotPaidDialog> {
 
     return AlertDialog(
       title: const Text('I got paid'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          const Text(
-            'Enter what you received. It is added as income, and the shifts '
-            'worked so far are marked paid.',
-          ),
-          AppSpacing.gapLg,
-          TextField(
-            controller: _amount,
-            autofocus: true,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            style: const TextStyle(fontFeatures: _tabular),
-            decoration: InputDecoration(
-              labelText: 'Amount received',
-              prefixText: '₱ ',
-              errorText: _error,
-              border: const OutlineInputBorder(),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            const Text(
+              'Enter what you received. It is added as income, and the shifts '
+              'worked so far are marked paid.',
             ),
-            onChanged: (_) => setState(() => _error = null),
-            onSubmitted: (_) => _save(),
-          ),
-          if (compare != null) ...<Widget>[
-            AppSpacing.gapSm,
-            Text(
-              compare,
-              style: context.textStyles.bodySmall?.copyWith(
-                fontFeatures: _tabular,
+            AppSpacing.gapLg,
+            TextField(
+              controller: _amount,
+              autofocus: true,
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
               ),
+              style: const TextStyle(fontFeatures: _tabular),
+              decoration: InputDecoration(
+                labelText: 'Amount received',
+                prefixText: '₱ ',
+                errorText: _error,
+                border: const OutlineInputBorder(),
+              ),
+              onChanged: (_) => setState(() => _error = null),
+              onSubmitted: (_) => _save(unreachedGoals),
             ),
+            if (compare != null) ...<Widget>[
+              AppSpacing.gapSm,
+              Text(
+                compare,
+                style: context.textStyles.bodySmall?.copyWith(
+                  fontFeatures: _tabular,
+                ),
+              ),
+            ],
+            if (unreachedGoals.isNotEmpty) ...<Widget>[
+              AppSpacing.gapLg,
+              Text(
+                'Stash part of pay (optional)',
+                style: context.textStyles.labelMedium?.copyWith(
+                  color: context.colors.onSurfaceVariant,
+                ),
+              ),
+              AppSpacing.gapXs,
+              DropdownButtonFormField<int?>(
+                initialValue: effectiveGoalId,
+                isExpanded: true,
+                decoration: const InputDecoration(
+                  labelText: 'Goal',
+                  border: OutlineInputBorder(),
+                ),
+                items: <DropdownMenuItem<int?>>[
+                  const DropdownMenuItem<int?>(
+                    value: null,
+                    child: Text('None'),
+                  ),
+                  for (final SavingsGoal g in unreachedGoals)
+                    DropdownMenuItem<int?>(
+                      value: g.id,
+                      child: Text(
+                        g.title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                ],
+                onChanged: (int? value) {
+                  setState(() {
+                    _selectedGoalId = value;
+                    _stashError = null;
+                  });
+                },
+              ),
+              if (effectiveGoalId != null) ...<Widget>[
+                AppSpacing.gapSm,
+                TextField(
+                  controller: _stashAmount,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  style: const TextStyle(fontFeatures: _tabular),
+                  decoration: InputDecoration(
+                    labelText: 'Stash amount',
+                    prefixText: '₱ ',
+                    errorText: _stashError,
+                    border: const OutlineInputBorder(),
+                  ),
+                  onChanged: (_) {
+                    if (_stashError != null) {
+                      setState(() => _stashError = null);
+                    }
+                  },
+                  onSubmitted: (_) => _save(unreachedGoals),
+                ),
+              ],
+            ],
           ],
-        ],
+        ),
       ),
       actions: <Widget>[
         TextButton(
           onPressed: () => Navigator.pop(context),
           child: const Text('Cancel'),
         ),
-        FilledButton(onPressed: _save, child: const Text('Save')),
+        FilledButton(
+          onPressed: () => _save(unreachedGoals),
+          child: const Text('Save'),
+        ),
       ],
     );
   }

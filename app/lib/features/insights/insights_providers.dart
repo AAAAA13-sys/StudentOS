@@ -8,6 +8,8 @@ import '../finance/bill.dart';
 import '../finance/bills_controller.dart';
 import '../finance/finance_controller.dart';
 import '../finance/finance_repository.dart';
+import '../finance/goals_controller.dart';
+import '../finance/savings_goal.dart';
 import '../finance/transaction.dart';
 import '../notes/note.dart';
 import '../notes/notes_controller.dart';
@@ -83,6 +85,8 @@ final FutureProvider<List<PonponInsight>> financeInsightsProvider =
           ref.watch(workControllerProvider).value ?? const <Shift>[];
       final List<Bill> bills =
           ref.watch(billsControllerProvider).value ?? const <Bill>[];
+      final List<SavingsGoal> goals =
+          ref.watch(goalsControllerProvider).value ?? const <SavingsGoal>[];
       return financeInsights(
         thisMonth: state.transactions,
         lastMonth: last,
@@ -90,6 +94,7 @@ final FutureProvider<List<PonponInsight>> financeInsightsProvider =
         payday: ref.watch(paydayProvider),
         waitingPayCents: WorkSummary.of(shifts, now).workedPayCents,
         bills: bills,
+        goals: goals,
       );
     });
 

@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:studentos/core/widgets/ponpon.dart';
 import 'package:studentos/features/calendar/event.dart';
 import 'package:studentos/features/finance/bill.dart';
+import 'package:studentos/features/finance/savings_goal.dart';
 import 'package:studentos/features/finance/transaction.dart';
 import 'package:studentos/features/insights/calendar_insights.dart';
 import 'package:studentos/features/insights/finance_insights.dart';
@@ -715,6 +716,80 @@ void main() {
         ],
       );
       expect(multiDue.single.text, '2 bills due (₱4,200).');
+    });
+
+    test('near-target and due-soon savings goals emit seeGoals tips', () {
+      final List<PonponInsight> nearTarget = financeInsights(
+        thisMonth: const <Transaction>[],
+        lastMonth: const <Transaction>[],
+        now: now,
+        goals: <SavingsGoal>[
+          SavingsGoal(
+            id: 1,
+            title: 'Headphones',
+            targetCents: 100000,
+            savedCents: 85000,
+            createdAt: DateTime(2026, 11, 1),
+          ),
+        ],
+      );
+      expect(nearTarget.single.text, 'Almost there: Headphones is ₱150 away.');
+      expect(nearTarget.single.priority, 2);
+      expect(nearTarget.single.action, PonponAction.seeGoals);
+
+      final List<PonponInsight> dueToday = financeInsights(
+        thisMonth: <Transaction>[income],
+        lastMonth: const <Transaction>[],
+        now: now,
+        goals: <SavingsGoal>[
+          SavingsGoal(
+            id: 2,
+            title: 'Lab Fee',
+            targetCents: 50000,
+            savedCents: 20000,
+            targetDate: '2026-11-20',
+            createdAt: DateTime(2026, 11, 1),
+          ),
+        ],
+      );
+      expect(
+        dueToday.map((PonponInsight i) => i.text),
+        contains('Lab Fee target is today (₱300 to go).'),
+      );
+      final PonponInsight dueTip = dueToday.firstWhere(
+        (PonponInsight i) => i.text.startsWith('Lab Fee'),
+      );
+      expect(dueTip.priority, 3);
+      expect(dueTip.action, PonponAction.seeGoals);
+
+      final List<PonponInsight> dueSoon = financeInsights(
+        thisMonth: const <Transaction>[],
+        lastMonth: const <Transaction>[],
+        now: now,
+        goals: <SavingsGoal>[
+          SavingsGoal(
+            id: 3,
+            title: 'Tuition',
+            targetCents: 100000,
+            savedCents: 10000,
+            targetDate: '2026-11-25',
+            createdAt: DateTime(2026, 11, 1),
+          ),
+          SavingsGoal(
+            id: 4,
+            title: 'Already Reached',
+            targetCents: 10000,
+            savedCents: 10000,
+            targetDate: '2026-11-20',
+            createdAt: DateTime(2026, 11, 1),
+          ),
+        ],
+      );
+      expect(
+        dueSoon.single.text,
+        'Tuition target is in 5 days (₱900 to go).',
+      );
+      expect(dueSoon.single.action, PonponAction.seeGoals);
     });
   });
 

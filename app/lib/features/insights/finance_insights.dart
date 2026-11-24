@@ -1,5 +1,6 @@
 import '../../core/widgets/ponpon.dart';
 import '../finance/bill.dart';
+import '../finance/savings_goal.dart';
 import '../finance/transaction.dart';
 import '../work/payday.dart';
 import 'ponpon_insight.dart';
@@ -16,6 +17,7 @@ List<PonponInsight> financeInsights({
   PaydaySchedule payday = PaydaySchedule.none,
   int waitingPayCents = 0,
   List<Bill> bills = const <Bill>[],
+  List<SavingsGoal> goals = const <SavingsGoal>[],
 }) {
   final PonponInsight? paydayTip =
       waitingPayCents > 0 && isPaydayToday(payday, now)
@@ -51,8 +53,45 @@ List<PonponInsight> financeInsights({
     );
   }
 
+  final List<SavingsGoal> activeGoals = <SavingsGoal>[
+    for (final SavingsGoal goal in goals)
+      if (!goal.isReached) goal,
+  ];
+  PonponInsight? goalTip;
+  for (final SavingsGoal goal in activeGoals) {
+    if (goal.progress >= 0.80) {
+      goalTip = PonponInsight(
+        text:
+            'Almost there: ${goal.title} is ${pesoText(goal.remainingCents / 100)} away.',
+        priority: 2,
+        action: PonponAction.seeGoals,
+      );
+      break;
+    }
+  }
+  if (goalTip == null) {
+    for (final SavingsGoal goal in activeGoals) {
+      if (goal.targetDate == null) continue;
+      final int? days = goal.daysLeft(now);
+      if (days != null && days >= 0 && days <= 7) {
+        final String when = days == 0
+            ? 'today'
+            : days == 1
+            ? 'tomorrow'
+            : 'in $days days';
+        goalTip = PonponInsight(
+          text:
+              '${goal.title} target is $when (${pesoText(goal.remainingCents / 100)} to go).',
+          priority: 3,
+          action: PonponAction.seeGoals,
+        );
+        break;
+      }
+    }
+  }
+
   if (thisMonth.isEmpty) {
-    return rankInsights(<PonponInsight>[?paydayTip, ?billTip]);
+    return rankInsights(<PonponInsight>[?paydayTip, ?billTip, ?goalTip]);
   }
   final List<Transaction> spent = <Transaction>[
     for (final Transaction t in thisMonth)
@@ -164,6 +203,7 @@ List<PonponInsight> financeInsights({
 
   if (paydayTip != null) out.add(paydayTip);
   if (billTip != null) out.add(billTip);
+  if (goalTip != null) out.add(goalTip);
 
   // Nothing spent yet today.
   if (today == 0) {
