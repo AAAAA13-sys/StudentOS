@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/confirm_dialog.dart';
 import '../../core/widgets/ponpon.dart';
+import '../focus/clock_panels.dart';
+import '../focus/focus_controller.dart';
+import '../focus/focus_plan.dart';
 import '../insights/insights_providers.dart';
 import '../insights/ponpon_talk_slot.dart';
 import 'task_item.dart';
@@ -305,9 +309,9 @@ class _TaskRow extends ConsumerWidget {
       child: ConstrainedBox(
         constraints: const BoxConstraints(minHeight: AppSizes.minTouchTarget),
         child: Padding(
-          padding: const EdgeInsets.only(
+          padding: EdgeInsets.only(
             left: AppSpacing.xs,
-            right: AppSpacing.lg,
+            right: task.done ? AppSpacing.lg : AppSpacing.xs,
             top: AppSpacing.xs,
             bottom: AppSpacing.xs,
           ),
@@ -406,6 +410,33 @@ class _TaskRow extends ConsumerWidget {
                   ),
                 ),
               ),
+              if (!task.done)
+                IconButton(
+                  tooltip: 'Focus on task',
+                  icon: const Icon(Icons.center_focus_strong_rounded, size: 20),
+                  color: colors.primary,
+                  constraints: const BoxConstraints(
+                    minWidth: AppSizes.minTouchTarget,
+                    minHeight: AppSizes.minTouchTarget,
+                  ),
+                  onPressed: () async {
+                    await ref
+                        .read(focusControllerProvider.notifier)
+                        .setIntention(
+                          FocusIntention(
+                            type: FocusTargetType.task,
+                            id: task.id,
+                            label: task.title,
+                          ),
+                        );
+                    ref
+                        .read(calendarViewProvider.notifier)
+                        .show(CalendarView.focus);
+                    if (context.mounted) {
+                      GoRouter.maybeOf(context)?.go('/calendar?view=focus');
+                    }
+                  },
+                ),
             ],
           ),
         ),

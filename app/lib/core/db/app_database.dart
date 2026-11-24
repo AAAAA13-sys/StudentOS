@@ -255,6 +255,15 @@ class FocusLogRows extends Table {
 
   /// True when it was stopped before the last round ended.
   BoolColumn get endedEarly => boolean().withDefault(const Constant(false))();
+
+  /// Optional focus intention target (`task`, `event`, or `recall`).
+  TextColumn get targetType => text().nullable()();
+
+  /// Optional ID of the targeted task or event.
+  IntColumn get targetId => integer().nullable()();
+
+  /// Optional human-readable label of the targeted item at session time.
+  TextColumn get targetLabel => text().nullable()();
 }
 
 /// A recurring expense bill (rent, wifi, load, tuition, subscriptions).
@@ -411,7 +420,7 @@ class AppDatabase extends _$AppDatabase {
     : super(executor ?? driftDatabase(name: 'studentos'));
 
   @override
-  int get schemaVersion => 13;
+  int get schemaVersion => 14;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -453,6 +462,27 @@ class AppDatabase extends _$AppDatabase {
       }
       if (from < 13) {
         await m.createTable(recallReviewRows);
+      }
+      if (from < 14) {
+        final List<QueryRow> cols = await customSelect(
+          "PRAGMA table_info('focus_logs')",
+        ).get();
+        if (cols.isEmpty) {
+          await m.createTable(focusLogRows);
+        } else {
+          final Set<String> names = <String>{
+            for (final QueryRow row in cols) row.read<String>('name'),
+          };
+          if (!names.contains('target_type')) {
+            await m.addColumn(focusLogRows, focusLogRows.targetType);
+          }
+          if (!names.contains('target_id')) {
+            await m.addColumn(focusLogRows, focusLogRows.targetId);
+          }
+          if (!names.contains('target_label')) {
+            await m.addColumn(focusLogRows, focusLogRows.targetLabel);
+          }
+        }
       }
     },
   );

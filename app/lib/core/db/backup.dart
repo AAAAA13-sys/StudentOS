@@ -24,8 +24,9 @@ class BackupService {
 
   /// 2 added work shifts, 3 phone use, 4 alarms and focus sessions,
   /// 5 recurring bills, 6 tasks, 7 savings goals, 8 IOUs and splits,
-  /// 9 spaced recall reviews. Older files restore with none of what they lack.
-  static const int formatVersion = 9;
+  /// 9 spaced recall reviews, 10 focus log intentions. Older files restore
+  /// with none of what they lack.
+  static const int formatVersion = 10;
 
   /// Settings key holding when a backup was last saved (UTC ISO 8601).
   static const String lastBackupKey = 'last_backup_at';
@@ -213,7 +214,18 @@ class BackupService {
           : rows('alarms').map(AlarmRow.fromJson).toList();
       focusLogs = decoded['focus_logs'] == null
           ? <FocusLogRow>[]
-          : rows('focus_logs').map(FocusLogRow.fromJson).toList();
+          : rows('focus_logs')
+                .map(
+                  (Map<String, dynamic> m) => FocusLogRow.fromJson(
+                    <String, dynamic>{
+                      'targetType': null,
+                      'targetId': null,
+                      'targetLabel': null,
+                      ...m,
+                    },
+                  ),
+                )
+                .toList();
       bills = decoded['bills'] == null
           ? <BillRow>[]
           : rows('bills')

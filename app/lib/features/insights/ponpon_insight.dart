@@ -1,6 +1,7 @@
 import 'package:intl/intl.dart';
 
 import '../../core/widgets/ponpon.dart';
+import '../focus/focus_plan.dart';
 
 /// What a tip's small text button does.
 enum PonponAction {
@@ -38,12 +39,14 @@ class PonponInsight {
     required this.priority,
     this.mood = PonponMood.happy,
     this.action,
+    this.focusTarget,
   });
 
   final String text;
   final PonponMood mood;
   final int priority;
   final PonponAction? action;
+  final FocusIntention? focusTarget;
 
   @override
   String toString() => 'PonponInsight($priority, $mood, $text)';

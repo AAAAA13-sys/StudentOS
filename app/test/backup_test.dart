@@ -16,6 +16,7 @@ import 'package:studentos/features/finance/ious_repository.dart';
 import 'package:studentos/features/finance/savings_goal.dart';
 import 'package:studentos/features/finance/transaction.dart';
 import 'package:studentos/features/focus/alarm.dart';
+import 'package:studentos/features/focus/focus_plan.dart';
 import 'package:studentos/features/focus/focus_repository.dart';
 import 'package:studentos/features/notes/note.dart';
 import 'package:studentos/features/notes/notes_repository.dart';
@@ -688,4 +689,74 @@ void main() {
     expect(await BackupService(db).hasData(), isTrue);
     expect(seen.last.hasData, isTrue);
   });
+
+  test('v10 backup round-trips focus_logs intentions', () async {
+    final AppDatabase source = AppDatabase(NativeDatabase.memory());
+    final AppDatabase target = AppDatabase(NativeDatabase.memory());
+    addTearDown(source.close);
+    addTearDown(target.close);
+
+    final FocusRepository sourceRepo = FocusRepository(source);
+    await sourceRepo.logSession(
+      startedAt: DateTime(2026, 11, 24, 9),
+      endedAt: DateTime(2026, 11, 24, 9, 25),
+      focusMs: 1500000,
+      rounds: 1,
+      endedEarly: false,
+      intention: const FocusIntention(
+        type: FocusTargetType.task,
+        id: 42,
+        label: 'Read Chapter 4',
+      ),
+    );
+
+    final String json = await BackupService(source).exportJson();
+    expect(json, contains('"format": 10'));
+    await BackupService(target).restoreJsonWithCounts(json);
+
+    final FocusLog? restored = await FocusRepository(target).latestLog();
+    expect(restored, isNotNull);
+    expect(restored!.focusMs, 1500000);
+    expect(
+      restored.intention,
+      const FocusIntention(
+        type: FocusTargetType.task,
+        id: 42,
+        label: 'Read Chapter 4',
+      ),
+    );
+  });
+
+  test(
+    'Restoring a v9 backup without target fields preserves null intentions',
+    () async {
+      final AppDatabase db = AppDatabase(NativeDatabase.memory());
+      addTearDown(db.close);
+
+      final String v9Json = jsonEncode(<String, Object?>{
+        'app': 'studentos',
+        'format': 9,
+        'exported_at': '2026-11-24T00:00:00.000Z',
+        'events': <Object?>[],
+        'transactions': <Object?>[],
+        'notes': <Object?>[],
+        'focus_logs': <Object?>[
+          <String, Object?>{
+            'id': 1,
+            'startedAt': DateTime(2026, 11, 24, 8).millisecondsSinceEpoch,
+            'endedAt': DateTime(2026, 11, 24, 8, 25).millisecondsSinceEpoch,
+            'focusMs': 1500000,
+            'rounds': 1,
+            'endedEarly': false,
+          },
+        ],
+      });
+
+      await BackupService(db).restoreJsonWithCounts(v9Json);
+      final FocusLog? restored = await FocusRepository(db).latestLog();
+      expect(restored, isNotNull);
+      expect(restored!.focusMs, 1500000);
+      expect(restored.intention, isNull);
+    },
+  );
 }

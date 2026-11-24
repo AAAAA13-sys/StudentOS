@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/checklist.dart';
@@ -19,6 +20,7 @@ import 'reminder_field.dart';
 import '../focus/alarm_editor_sheet.dart';
 import '../focus/clock_panels.dart';
 import '../focus/focus_controller.dart';
+import '../focus/focus_plan.dart';
 import '../focus/focus_settings_sheet.dart';
 import '../phone/phone_controller.dart';
 import '../notes/note.dart';
@@ -796,7 +798,9 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                           .updateEvent(event.toggleChecklistItem(i));
                     },
                   ),
-                if (trackable || canQuiz)
+                if (trackable ||
+                    canQuiz ||
+                    (!event.done && (trackable || !at.isBefore(today))))
                   Wrap(
                     spacing: AppSpacing.sm,
                     children: <Widget>[
@@ -827,6 +831,36 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                           ),
                           label: const Text('Quiz'),
                           onPressed: () => showQuizSheet(context, linked!),
+                        ),
+                      if (!event.done && (trackable || !at.isBefore(today)))
+                        TextButton.icon(
+                          style: TextButton.styleFrom(
+                            minimumSize: const Size(0, AppSizes.minTouchTarget),
+                          ),
+                          icon: const Icon(
+                            Icons.center_focus_strong_rounded,
+                            size: AppSizes.iconSm,
+                          ),
+                          label: const Text('Focus'),
+                          onPressed: () async {
+                            await ref
+                                .read(focusControllerProvider.notifier)
+                                .setIntention(
+                                  FocusIntention(
+                                    type: FocusTargetType.event,
+                                    id: event.id,
+                                    label: event.title,
+                                  ),
+                                );
+                            ref
+                                .read(calendarViewProvider.notifier)
+                                .show(CalendarView.focus);
+                            if (mounted) {
+                              GoRouter.maybeOf(
+                                context,
+                              )?.go('/calendar?view=focus');
+                            }
+                          },
                         ),
                     ],
                   ),

@@ -68,6 +68,7 @@ class PonponTalk extends StatefulWidget {
     required this.insights,
     required this.onClose,
     this.onAction,
+    this.onInsightAction,
     super.key,
   });
 
@@ -76,6 +77,9 @@ class PonponTalk extends StatefulWidget {
 
   /// Called when the small action button of a tip is pressed.
   final void Function(PonponAction action)? onAction;
+
+  /// Called with the full insight when the small action button is pressed.
+  final ValueChanged<PonponInsight>? onInsightAction;
 
   @override
   State<PonponTalk> createState() => _PonponTalkState();
@@ -164,11 +168,17 @@ class _PonponTalkState extends State<PonponTalk> {
                                 ),
                               ),
                               if (insight.action != null &&
-                                  widget.onAction != null)
+                                  (widget.onInsightAction != null ||
+                                      widget.onAction != null))
                                 _ActionButton(
                                   label: insight.action!.label,
-                                  onPressed: () =>
-                                      widget.onAction!(insight.action!),
+                                  onPressed: () {
+                                    if (widget.onInsightAction != null) {
+                                      widget.onInsightAction!(insight);
+                                    } else {
+                                      widget.onAction!(insight.action!);
+                                    }
+                                  },
                                 ),
                             ],
                           ),

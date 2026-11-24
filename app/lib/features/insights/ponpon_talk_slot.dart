@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -7,6 +9,7 @@ import '../../core/widgets/ponpon_talk.dart';
 import '../calendar/schedule_view.dart';
 import '../finance/goals_controller.dart';
 import '../focus/clock_panels.dart';
+import '../focus/focus_controller.dart';
 import '../notes/note.dart';
 import '../notes/notes_controller.dart';
 import '../notes/quiz_sheet.dart';
@@ -54,11 +57,29 @@ class PonponTalkSlot extends ConsumerWidget {
         insights: insights,
         onClose: () =>
             ref.read(ponponDismissalsProvider.notifier).dismiss(surface),
-        onAction: (PonponAction action) =>
-            runPonponAction(context, ref, action),
+        onInsightAction: (PonponInsight insight) =>
+            runPonponInsightAction(context, ref, insight),
       ),
     );
   }
+}
+
+/// Runs [insight.action], arming [insight.focusTarget] when starting Focus.
+void runPonponInsightAction(
+  BuildContext context,
+  WidgetRef ref,
+  PonponInsight insight,
+) {
+  final PonponAction? action = insight.action;
+  if (action == null) return;
+  if (action == PonponAction.startFocus && insight.focusTarget != null) {
+    unawaited(
+      ref
+          .read(focusControllerProvider.notifier)
+          .setIntention(insight.focusTarget),
+    );
+  }
+  runPonponAction(context, ref, action);
 }
 
 /// The first note, in list order, that has quiz cards.

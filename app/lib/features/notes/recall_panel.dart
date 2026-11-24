@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/ponpon.dart';
+import '../focus/clock_panels.dart';
+import '../focus/focus_controller.dart';
+import '../focus/focus_plan.dart';
 import '../insights/insights_providers.dart';
 import '../insights/ponpon_talk_slot.dart';
 import 'quiz_sheet.dart';
@@ -166,13 +170,13 @@ class RecallPanel extends ConsumerWidget {
   }
 }
 
-class _SummaryCard extends StatelessWidget {
+class _SummaryCard extends ConsumerWidget {
   const _SummaryCard({required this.deck});
 
   final RecallDeckState deck;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final ColorScheme colors = context.colors;
     final TextTheme textStyles = context.textStyles;
     final int dueCount = deck.dueCards.length;
@@ -262,17 +266,68 @@ class _SummaryCard extends StatelessWidget {
               ],
             ),
             AppSpacing.gapMd,
-            ConstrainedBox(
-              constraints: const BoxConstraints(
-                minHeight: AppSizes.minTouchTarget,
-              ),
-              child: FilledButton.icon(
-                onPressed: dueCount == 0
-                    ? null
-                    : () => showRecallDeckSheet(context, deck.dueCards),
-                icon: const Icon(Icons.bolt_rounded),
-                label: Text('Review due ($dueCount)'),
-              ),
+            Row(
+              children: <Widget>[
+                Expanded(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(
+                      minHeight: AppSizes.minTouchTarget,
+                    ),
+                    child: FilledButton.icon(
+                      style: FilledButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.md,
+                        ),
+                      ),
+                      onPressed: dueCount == 0
+                          ? null
+                          : () => showRecallDeckSheet(context, deck.dueCards),
+                      icon: const Icon(Icons.bolt_rounded),
+                      label: Text('Review due ($dueCount)'),
+                    ),
+                  ),
+                ),
+                if (dueCount > 0) ...<Widget>[
+                  AppSpacing.gapSm,
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(
+                      minHeight: AppSizes.minTouchTarget,
+                    ),
+                    child: OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        minimumSize: const Size(
+                          AppSizes.minTouchTarget,
+                          AppSizes.buttonHeight,
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.md,
+                        ),
+                      ),
+                      onPressed: () async {
+                        await ref
+                            .read(focusControllerProvider.notifier)
+                            .setIntention(
+                              FocusIntention(
+                                type: FocusTargetType.recall,
+                                label: 'Recall deck ($dueCount due)',
+                              ),
+                            );
+                        ref
+                            .read(calendarViewProvider.notifier)
+                            .show(CalendarView.focus);
+                        if (context.mounted) {
+                          GoRouter.maybeOf(context)?.go('/calendar?view=focus');
+                        }
+                      },
+                      icon: const Icon(
+                        Icons.center_focus_strong_rounded,
+                        size: AppSizes.iconSm,
+                      ),
+                      label: const Text('Focus'),
+                    ),
+                  ),
+                ],
+              ],
             ),
           ],
         ),

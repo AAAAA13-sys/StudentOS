@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import '../../core/widgets/ponpon.dart';
 import '../calendar/event.dart';
 import '../calendar/week_agenda.dart';
+import '../focus/focus_plan.dart';
 import '../tasks/task_item.dart';
 import '../work/shift.dart';
 import 'ponpon_insight.dart';
@@ -102,6 +103,11 @@ List<PonponInsight> calendarInsights({
         mood: PonponMood.focused,
         priority: 1,
         action: PonponAction.startFocus,
+        focusTarget: FocusIntention(
+          type: FocusTargetType.event,
+          id: due.event.id,
+          label: due.event.title,
+        ),
       ),
     );
   }

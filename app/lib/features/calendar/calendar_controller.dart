@@ -62,6 +62,9 @@ class CalendarController extends AsyncNotifier<List<CalendarEvent>> {
     unawaited(syncReminders());
   }
 
+  Future<void> toggleDone(CalendarEvent event) =>
+      updateEvent(event.copyWith(done: !event.done));
+
   Future<void> deleteEvent(int id) async {
     await _repo.deleteEvent(id);
     state = AsyncData(

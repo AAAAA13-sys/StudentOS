@@ -15,6 +15,7 @@ class FocusRepository {
 
   static const String _settingsKey = 'focus_settings';
   static const String _sessionKey = 'focus_session';
+  static const String _intentionKey = 'active_focus_intention';
 
   // Alarms.
 
@@ -131,12 +132,22 @@ class FocusRepository {
         )..where((t) => t.key.equals(_sessionKey))).go()
       : _put(_sessionKey, session.encode());
 
+  Future<FocusIntention?> getIntention() async =>
+      FocusIntention.tryParse(await _setting(_intentionKey));
+
+  Future<void> saveIntention(FocusIntention? intention) => intention == null
+      ? (_db.delete(
+          _db.settingRows,
+        )..where((t) => t.key.equals(_intentionKey))).go()
+      : _put(_intentionKey, intention.toJsonString());
+
   Future<void> logSession({
     required DateTime startedAt,
     required DateTime endedAt,
     required int focusMs,
     required int rounds,
     required bool endedEarly,
+    FocusIntention? intention,
   }) => _db
       .into(_db.focusLogRows)
       .insert(
@@ -146,8 +157,67 @@ class FocusRepository {
           focusMs: focusMs,
           rounds: rounds,
           endedEarly: Value(endedEarly),
+          targetType: Value(intention?.type.key),
+          targetId: Value(intention?.id),
+          targetLabel: Value(intention?.label),
         ),
       );
+
+  static FocusLog _logFromRow(FocusLogRow row) {
+    final FocusTargetType? type = FocusTargetType.fromKey(row.targetType);
+    final String? label = row.targetLabel?.trim();
+    final FocusIntention? intention =
+        type != null && label != null && label.isNotEmpty
+        ? FocusIntention(type: type, id: row.targetId, label: label)
+        : null;
+    return FocusLog(
+      id: row.id,
+      startedAt: row.startedAt,
+      endedAt: row.endedAt,
+      focusMs: row.focusMs,
+      rounds: row.rounds,
+      endedEarly: row.endedEarly,
+      intention: intention,
+    );
+  }
+
+  Future<FocusLog?> latestLog() async {
+    final FocusLogRow? row =
+        await (_db.select(_db.focusLogRows)
+              ..orderBy([
+                (t) => OrderingTerm.desc(t.endedAt),
+                (t) => OrderingTerm.desc(t.id),
+              ])
+              ..limit(1))
+            .getSingleOrNull();
+    return row == null ? null : _logFromRow(row);
+  }
+
+  /// Focus time grouped by intention label for sessions ending on or after
+  /// [since], longest duration first.
+  Future<List<({String label, int focusMs})>> todayByTarget(
+    DateTime since,
+  ) async {
+    final List<FocusLogRow> rows = await (_db.select(
+      _db.focusLogRows,
+    )..where((t) => t.endedAt.isBiggerOrEqualValue(since))).get();
+    final Map<String, int> totals = <String, int>{};
+    for (final FocusLogRow row in rows) {
+      final String? label = row.targetLabel?.trim();
+      if (label == null || label.isEmpty || row.focusMs <= 0) continue;
+      totals[label] = (totals[label] ?? 0) + row.focusMs;
+    }
+    final List<({String label, int focusMs})> out =
+        <({String label, int focusMs})>[
+          for (final MapEntry<String, int> entry in totals.entries)
+            (label: entry.key, focusMs: entry.value),
+        ];
+    out.sort((a, b) {
+      final int byMs = b.focusMs.compareTo(a.focusMs);
+      return byMs != 0 ? byMs : a.label.compareTo(b.label);
+    });
+    return out;
+  }
 
   /// Focus time and finished rounds of sessions that ended on or after
   /// [from].

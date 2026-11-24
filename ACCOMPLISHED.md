@@ -610,3 +610,13 @@ Entries are appended, never edited. Corrections are new entries that reference t
 - Leitner box spacing (`1, 2, 4, 7, 14` days) with exam-linked priority sorting (`CalendarEvent.isExam` via `noteId`, weakest box, earliest due date), persistent `Got it`/`Missed` directly from single-note `QuizSheet` or multi-note `showRecallDeckSheet`, and Ponpon `reviewRecall` (`Exam soon` priority 1 / `Review N due recall cards` priority 2) preserving initial legacy `'Quiz yourself?'` behavior until review begins.
 - Updated `AGENTS.md` Part 6.7 (`Dual-Tier Navigation` item 1) to reflect `Notes [Notes | Tasks | Recall]`.
 **Open items:** live `"Missed"` demotion & `"Reveal all"` toggle tap on device (automated-tested), exam-linked note countdown pill on device, on-device backup/restore, and real-phone verification (`app-arm64-v8a-release.apk`).
+
+## Phase 49: Context-Bound Focus Intentions & Adaptive Micro-Sprints
+**Date:** 2026-11-24
+**Verified by:** qa-verifier (`9c8a49da`) on `emulator-5554` (Light Mode, Dark Mode, and `1.3x` font scale)
+**Evidence:** see `docs/AGENCY_RESEARCH_ROADMAP_P49_P52.md` and the Phase 49 row in `PROGRESS.md`; `flutter analyze` clean (0 issues); `flutter test` **326/326 passed** (`focus_intentions_test.dart`, `backup_test.dart`, full suite); release split APKs built (`x86_64` 24.3MB, `arm64-v8a` 22.9MB, `armeabi-v7a` 20.5MB); device screenshots (`01`–`16`) & UI dumps kept in QA scratchpad.
+**Decisions:**
+- Synthesized the 3-unit Agency-Agents Research Department findings (`613f7aa3` UX, `f440a106` Psychology, `f997cce6` Systems) into `docs/AGENCY_RESEARCH_ROADMAP_P49_P52.md` (Phases 49–52, RICE-ranked).
+- Built #1 **Context-Bound Focus Intentions & Adaptive Micro-Sprints**: Drift `schemaVersion` bumped 13 -> 14 (`focus_logs` nullable `targetType`, `targetId`, `targetLabel`), `BackupService.formatVersion` bumped 9 -> 10 (`null` fallback for v1–v9 backups), `FocusIntention` (`task`, `event`, `recall`) stored in `SettingRows` (`active_focus_intention`) and logged per completed session, one-shot `FocusController.start(overrideSettings:)` leaving saved `FocusSettings` untouched, `showFocusIntentionPicker`, `'Quick starter'` (`10m starter` / `15m sprint`), post-session `_CompletionBanner` (`Mark done` / `Review cards`), direct `"Focus"` entry hooks (`TasksPanel`, `CalendarScreen`, `RecallPanel`), and `PonponTalkSlot` target forwarding.
+- `AGENTS.md` reviewed after QA passed: no updates required (preserves 3-tab shell and existing Focus UI conventions).
+**Open items:** `15m sprint` run and waiting out a real-time `00:00` countdown on device (covered in unit/widget tests), and physical-phone installation (`app-arm64-v8a-release.apk`).

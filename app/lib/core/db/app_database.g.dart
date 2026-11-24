@@ -4241,6 +4241,39 @@ class $FocusLogRowsTable extends FocusLogRows
     ),
     defaultValue: const Constant(false),
   );
+  static const VerificationMeta _targetTypeMeta = const VerificationMeta(
+    'targetType',
+  );
+  @override
+  late final GeneratedColumn<String> targetType = GeneratedColumn<String>(
+    'target_type',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _targetIdMeta = const VerificationMeta(
+    'targetId',
+  );
+  @override
+  late final GeneratedColumn<int> targetId = GeneratedColumn<int>(
+    'target_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _targetLabelMeta = const VerificationMeta(
+    'targetLabel',
+  );
+  @override
+  late final GeneratedColumn<String> targetLabel = GeneratedColumn<String>(
+    'target_label',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -4249,6 +4282,9 @@ class $FocusLogRowsTable extends FocusLogRows
     focusMs,
     rounds,
     endedEarly,
+    targetType,
+    targetId,
+    targetLabel,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -4303,6 +4339,27 @@ class $FocusLogRowsTable extends FocusLogRows
         endedEarly.isAcceptableOrUnknown(data['ended_early']!, _endedEarlyMeta),
       );
     }
+    if (data.containsKey('target_type')) {
+      context.handle(
+        _targetTypeMeta,
+        targetType.isAcceptableOrUnknown(data['target_type']!, _targetTypeMeta),
+      );
+    }
+    if (data.containsKey('target_id')) {
+      context.handle(
+        _targetIdMeta,
+        targetId.isAcceptableOrUnknown(data['target_id']!, _targetIdMeta),
+      );
+    }
+    if (data.containsKey('target_label')) {
+      context.handle(
+        _targetLabelMeta,
+        targetLabel.isAcceptableOrUnknown(
+          data['target_label']!,
+          _targetLabelMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -4336,6 +4393,18 @@ class $FocusLogRowsTable extends FocusLogRows
         DriftSqlType.bool,
         data['${effectivePrefix}ended_early'],
       )!,
+      targetType: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}target_type'],
+      ),
+      targetId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}target_id'],
+      ),
+      targetLabel: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}target_label'],
+      ),
     );
   }
 
@@ -4358,6 +4427,15 @@ class FocusLogRow extends DataClass implements Insertable<FocusLogRow> {
 
   /// True when it was stopped before the last round ended.
   final bool endedEarly;
+
+  /// Optional focus intention target (`task`, `event`, or `recall`).
+  final String? targetType;
+
+  /// Optional ID of the targeted task or event.
+  final int? targetId;
+
+  /// Optional human-readable label of the targeted item at session time.
+  final String? targetLabel;
   const FocusLogRow({
     required this.id,
     required this.startedAt,
@@ -4365,6 +4443,9 @@ class FocusLogRow extends DataClass implements Insertable<FocusLogRow> {
     required this.focusMs,
     required this.rounds,
     required this.endedEarly,
+    this.targetType,
+    this.targetId,
+    this.targetLabel,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -4375,6 +4456,15 @@ class FocusLogRow extends DataClass implements Insertable<FocusLogRow> {
     map['focus_ms'] = Variable<int>(focusMs);
     map['rounds'] = Variable<int>(rounds);
     map['ended_early'] = Variable<bool>(endedEarly);
+    if (!nullToAbsent || targetType != null) {
+      map['target_type'] = Variable<String>(targetType);
+    }
+    if (!nullToAbsent || targetId != null) {
+      map['target_id'] = Variable<int>(targetId);
+    }
+    if (!nullToAbsent || targetLabel != null) {
+      map['target_label'] = Variable<String>(targetLabel);
+    }
     return map;
   }
 
@@ -4386,6 +4476,15 @@ class FocusLogRow extends DataClass implements Insertable<FocusLogRow> {
       focusMs: Value(focusMs),
       rounds: Value(rounds),
       endedEarly: Value(endedEarly),
+      targetType: targetType == null && nullToAbsent
+          ? const Value.absent()
+          : Value(targetType),
+      targetId: targetId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(targetId),
+      targetLabel: targetLabel == null && nullToAbsent
+          ? const Value.absent()
+          : Value(targetLabel),
     );
   }
 
@@ -4401,6 +4500,9 @@ class FocusLogRow extends DataClass implements Insertable<FocusLogRow> {
       focusMs: serializer.fromJson<int>(json['focusMs']),
       rounds: serializer.fromJson<int>(json['rounds']),
       endedEarly: serializer.fromJson<bool>(json['endedEarly']),
+      targetType: serializer.fromJson<String?>(json['targetType']),
+      targetId: serializer.fromJson<int?>(json['targetId']),
+      targetLabel: serializer.fromJson<String?>(json['targetLabel']),
     );
   }
   @override
@@ -4413,6 +4515,9 @@ class FocusLogRow extends DataClass implements Insertable<FocusLogRow> {
       'focusMs': serializer.toJson<int>(focusMs),
       'rounds': serializer.toJson<int>(rounds),
       'endedEarly': serializer.toJson<bool>(endedEarly),
+      'targetType': serializer.toJson<String?>(targetType),
+      'targetId': serializer.toJson<int?>(targetId),
+      'targetLabel': serializer.toJson<String?>(targetLabel),
     };
   }
 
@@ -4423,6 +4528,9 @@ class FocusLogRow extends DataClass implements Insertable<FocusLogRow> {
     int? focusMs,
     int? rounds,
     bool? endedEarly,
+    Value<String?> targetType = const Value.absent(),
+    Value<int?> targetId = const Value.absent(),
+    Value<String?> targetLabel = const Value.absent(),
   }) => FocusLogRow(
     id: id ?? this.id,
     startedAt: startedAt ?? this.startedAt,
@@ -4430,6 +4538,9 @@ class FocusLogRow extends DataClass implements Insertable<FocusLogRow> {
     focusMs: focusMs ?? this.focusMs,
     rounds: rounds ?? this.rounds,
     endedEarly: endedEarly ?? this.endedEarly,
+    targetType: targetType.present ? targetType.value : this.targetType,
+    targetId: targetId.present ? targetId.value : this.targetId,
+    targetLabel: targetLabel.present ? targetLabel.value : this.targetLabel,
   );
   FocusLogRow copyWithCompanion(FocusLogRowsCompanion data) {
     return FocusLogRow(
@@ -4441,6 +4552,13 @@ class FocusLogRow extends DataClass implements Insertable<FocusLogRow> {
       endedEarly: data.endedEarly.present
           ? data.endedEarly.value
           : this.endedEarly,
+      targetType: data.targetType.present
+          ? data.targetType.value
+          : this.targetType,
+      targetId: data.targetId.present ? data.targetId.value : this.targetId,
+      targetLabel: data.targetLabel.present
+          ? data.targetLabel.value
+          : this.targetLabel,
     );
   }
 
@@ -4452,14 +4570,26 @@ class FocusLogRow extends DataClass implements Insertable<FocusLogRow> {
           ..write('endedAt: $endedAt, ')
           ..write('focusMs: $focusMs, ')
           ..write('rounds: $rounds, ')
-          ..write('endedEarly: $endedEarly')
+          ..write('endedEarly: $endedEarly, ')
+          ..write('targetType: $targetType, ')
+          ..write('targetId: $targetId, ')
+          ..write('targetLabel: $targetLabel')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, startedAt, endedAt, focusMs, rounds, endedEarly);
+  int get hashCode => Object.hash(
+    id,
+    startedAt,
+    endedAt,
+    focusMs,
+    rounds,
+    endedEarly,
+    targetType,
+    targetId,
+    targetLabel,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -4469,7 +4599,10 @@ class FocusLogRow extends DataClass implements Insertable<FocusLogRow> {
           other.endedAt == this.endedAt &&
           other.focusMs == this.focusMs &&
           other.rounds == this.rounds &&
-          other.endedEarly == this.endedEarly);
+          other.endedEarly == this.endedEarly &&
+          other.targetType == this.targetType &&
+          other.targetId == this.targetId &&
+          other.targetLabel == this.targetLabel);
 }
 
 class FocusLogRowsCompanion extends UpdateCompanion<FocusLogRow> {
@@ -4479,6 +4612,9 @@ class FocusLogRowsCompanion extends UpdateCompanion<FocusLogRow> {
   final Value<int> focusMs;
   final Value<int> rounds;
   final Value<bool> endedEarly;
+  final Value<String?> targetType;
+  final Value<int?> targetId;
+  final Value<String?> targetLabel;
   const FocusLogRowsCompanion({
     this.id = const Value.absent(),
     this.startedAt = const Value.absent(),
@@ -4486,6 +4622,9 @@ class FocusLogRowsCompanion extends UpdateCompanion<FocusLogRow> {
     this.focusMs = const Value.absent(),
     this.rounds = const Value.absent(),
     this.endedEarly = const Value.absent(),
+    this.targetType = const Value.absent(),
+    this.targetId = const Value.absent(),
+    this.targetLabel = const Value.absent(),
   });
   FocusLogRowsCompanion.insert({
     this.id = const Value.absent(),
@@ -4494,6 +4633,9 @@ class FocusLogRowsCompanion extends UpdateCompanion<FocusLogRow> {
     required int focusMs,
     required int rounds,
     this.endedEarly = const Value.absent(),
+    this.targetType = const Value.absent(),
+    this.targetId = const Value.absent(),
+    this.targetLabel = const Value.absent(),
   }) : startedAt = Value(startedAt),
        endedAt = Value(endedAt),
        focusMs = Value(focusMs),
@@ -4505,6 +4647,9 @@ class FocusLogRowsCompanion extends UpdateCompanion<FocusLogRow> {
     Expression<int>? focusMs,
     Expression<int>? rounds,
     Expression<bool>? endedEarly,
+    Expression<String>? targetType,
+    Expression<int>? targetId,
+    Expression<String>? targetLabel,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -4513,6 +4658,9 @@ class FocusLogRowsCompanion extends UpdateCompanion<FocusLogRow> {
       if (focusMs != null) 'focus_ms': focusMs,
       if (rounds != null) 'rounds': rounds,
       if (endedEarly != null) 'ended_early': endedEarly,
+      if (targetType != null) 'target_type': targetType,
+      if (targetId != null) 'target_id': targetId,
+      if (targetLabel != null) 'target_label': targetLabel,
     });
   }
 
@@ -4523,6 +4671,9 @@ class FocusLogRowsCompanion extends UpdateCompanion<FocusLogRow> {
     Value<int>? focusMs,
     Value<int>? rounds,
     Value<bool>? endedEarly,
+    Value<String?>? targetType,
+    Value<int?>? targetId,
+    Value<String?>? targetLabel,
   }) {
     return FocusLogRowsCompanion(
       id: id ?? this.id,
@@ -4531,6 +4682,9 @@ class FocusLogRowsCompanion extends UpdateCompanion<FocusLogRow> {
       focusMs: focusMs ?? this.focusMs,
       rounds: rounds ?? this.rounds,
       endedEarly: endedEarly ?? this.endedEarly,
+      targetType: targetType ?? this.targetType,
+      targetId: targetId ?? this.targetId,
+      targetLabel: targetLabel ?? this.targetLabel,
     );
   }
 
@@ -4555,6 +4709,15 @@ class FocusLogRowsCompanion extends UpdateCompanion<FocusLogRow> {
     if (endedEarly.present) {
       map['ended_early'] = Variable<bool>(endedEarly.value);
     }
+    if (targetType.present) {
+      map['target_type'] = Variable<String>(targetType.value);
+    }
+    if (targetId.present) {
+      map['target_id'] = Variable<int>(targetId.value);
+    }
+    if (targetLabel.present) {
+      map['target_label'] = Variable<String>(targetLabel.value);
+    }
     return map;
   }
 
@@ -4566,7 +4729,10 @@ class FocusLogRowsCompanion extends UpdateCompanion<FocusLogRow> {
           ..write('endedAt: $endedAt, ')
           ..write('focusMs: $focusMs, ')
           ..write('rounds: $rounds, ')
-          ..write('endedEarly: $endedEarly')
+          ..write('endedEarly: $endedEarly, ')
+          ..write('targetType: $targetType, ')
+          ..write('targetId: $targetId, ')
+          ..write('targetLabel: $targetLabel')
           ..write(')'))
         .toString();
   }
@@ -9158,6 +9324,9 @@ typedef $$FocusLogRowsTableCreateCompanionBuilder =
       required int focusMs,
       required int rounds,
       Value<bool> endedEarly,
+      Value<String?> targetType,
+      Value<int?> targetId,
+      Value<String?> targetLabel,
     });
 typedef $$FocusLogRowsTableUpdateCompanionBuilder =
     FocusLogRowsCompanion Function({
@@ -9167,6 +9336,9 @@ typedef $$FocusLogRowsTableUpdateCompanionBuilder =
       Value<int> focusMs,
       Value<int> rounds,
       Value<bool> endedEarly,
+      Value<String?> targetType,
+      Value<int?> targetId,
+      Value<String?> targetLabel,
     });
 
 class $$FocusLogRowsTableFilterComposer
@@ -9205,6 +9377,21 @@ class $$FocusLogRowsTableFilterComposer
 
   ColumnFilters<bool> get endedEarly => $composableBuilder(
     column: $table.endedEarly,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get targetType => $composableBuilder(
+    column: $table.targetType,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get targetId => $composableBuilder(
+    column: $table.targetId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get targetLabel => $composableBuilder(
+    column: $table.targetLabel,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -9247,6 +9434,21 @@ class $$FocusLogRowsTableOrderingComposer
     column: $table.endedEarly,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get targetType => $composableBuilder(
+    column: $table.targetType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get targetId => $composableBuilder(
+    column: $table.targetId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get targetLabel => $composableBuilder(
+    column: $table.targetLabel,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$FocusLogRowsTableAnnotationComposer
@@ -9275,6 +9477,19 @@ class $$FocusLogRowsTableAnnotationComposer
 
   GeneratedColumn<bool> get endedEarly => $composableBuilder(
     column: $table.endedEarly,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get targetType => $composableBuilder(
+    column: $table.targetType,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get targetId =>
+      $composableBuilder(column: $table.targetId, builder: (column) => column);
+
+  GeneratedColumn<String> get targetLabel => $composableBuilder(
+    column: $table.targetLabel,
     builder: (column) => column,
   );
 }
@@ -9316,6 +9531,9 @@ class $$FocusLogRowsTableTableManager
                 Value<int> focusMs = const Value.absent(),
                 Value<int> rounds = const Value.absent(),
                 Value<bool> endedEarly = const Value.absent(),
+                Value<String?> targetType = const Value.absent(),
+                Value<int?> targetId = const Value.absent(),
+                Value<String?> targetLabel = const Value.absent(),
               }) => FocusLogRowsCompanion(
                 id: id,
                 startedAt: startedAt,
@@ -9323,6 +9541,9 @@ class $$FocusLogRowsTableTableManager
                 focusMs: focusMs,
                 rounds: rounds,
                 endedEarly: endedEarly,
+                targetType: targetType,
+                targetId: targetId,
+                targetLabel: targetLabel,
               ),
           createCompanionCallback:
               ({
@@ -9332,6 +9553,9 @@ class $$FocusLogRowsTableTableManager
                 required int focusMs,
                 required int rounds,
                 Value<bool> endedEarly = const Value.absent(),
+                Value<String?> targetType = const Value.absent(),
+                Value<int?> targetId = const Value.absent(),
+                Value<String?> targetLabel = const Value.absent(),
               }) => FocusLogRowsCompanion.insert(
                 id: id,
                 startedAt: startedAt,
@@ -9339,6 +9563,9 @@ class $$FocusLogRowsTableTableManager
                 focusMs: focusMs,
                 rounds: rounds,
                 endedEarly: endedEarly,
+                targetType: targetType,
+                targetId: targetId,
+                targetLabel: targetLabel,
               ),
           withReferenceMapper: (p0) => p0
               .map(

@@ -1,5 +1,88 @@
 import 'dart:convert';
 
+/// What a focus session can be aimed at.
+enum FocusTargetType {
+  task('task'),
+  event('event'),
+  recall('recall');
+
+  const FocusTargetType(this.key);
+
+  final String key;
+
+  static FocusTargetType? fromKey(String? key) {
+    for (final FocusTargetType value in FocusTargetType.values) {
+      if (value.key == key) return value;
+    }
+    return null;
+  }
+}
+
+/// Optional target bound to a focus session before or while running.
+class FocusIntention {
+  const FocusIntention({required this.type, this.id, required this.label});
+
+  final FocusTargetType type;
+  final int? id;
+  final String label;
+
+  Map<String, Object?> toJson() => <String, Object?>{
+    'type': type.key,
+    if (id != null) 'id': id,
+    'label': label,
+  };
+
+  String toJsonString() => jsonEncode(toJson());
+
+  static FocusIntention? tryParse(String? raw) {
+    if (raw == null || raw.trim().isEmpty) return null;
+    try {
+      final Object? decoded = jsonDecode(raw);
+      if (decoded is! Map<Object?, Object?>) return null;
+      final FocusTargetType? type = FocusTargetType.fromKey(
+        decoded['type'] as String?,
+      );
+      final String? label = (decoded['label'] as String?)?.trim();
+      if (type == null || label == null || label.isEmpty) return null;
+      final int? id = (decoded['id'] as num?)?.toInt();
+      return FocusIntention(type: type, id: id, label: label);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      other is FocusIntention &&
+      other.type == type &&
+      other.id == id &&
+      other.label == label;
+
+  @override
+  int get hashCode => Object.hash(type, id, label);
+}
+
+/// One finished focus session recorded in the local database.
+class FocusLog {
+  const FocusLog({
+    required this.id,
+    required this.startedAt,
+    required this.endedAt,
+    required this.focusMs,
+    required this.rounds,
+    required this.endedEarly,
+    this.intention,
+  });
+
+  final int id;
+  final DateTime startedAt;
+  final DateTime endedAt;
+  final int focusMs;
+  final int rounds;
+  final bool endedEarly;
+  final FocusIntention? intention;
+}
+
 /// How hard a focus phase holds the phone.
 enum Lockdown {
   off('off', 'Off', 'Timer only. Nothing is blocked.'),
